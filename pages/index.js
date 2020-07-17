@@ -1,26 +1,18 @@
-import Head from 'next/head'
-import Link from 'next/link'
-import useSwr from 'swr'
-
-
-const fetcher = (url) => fetch(url).then((res) => res.json())
+import Head from 'next/head';
+import Link from "next/link";
 
 export default function Home() {
-  const { data, error } = useSwr('/api/hello', fetcher)
-  if (error) return <div>Failed to load users</div>
-  if (!data) return <div>Loading...</div>
   return (
     <div className="container">
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
       <main>
-        Read <Link href="/api/hello"><a>this page!</a></Link>
-
         <h1 className="title">
-          Welcome to <a href="/api/hello">Next.js!</a>
+          <Link href="/UserList"><a>get UserList</a></Link>
+          <br></br>
+          Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
         <p className="description">
