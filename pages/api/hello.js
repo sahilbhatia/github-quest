@@ -5,7 +5,8 @@ const data = (req, res) => {
     if (error) {
       throw error
     }
-    res.status(200).send(results.rows.map((item)=>item.last_name));
+    res.status(200).send(results.rows.map((item) => item.last_name));
   })
 };
- export default data;
+
+export default data;
