@@ -10,6 +10,8 @@ export default function Home() {
 
       <main>
         <h1 className="title">
+          <a href="api/hello">my response</a>
+          <br></br>
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
