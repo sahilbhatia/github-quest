@@ -17,23 +17,22 @@ exports.up = (db, callback) => {
       },
       description: {
         type: "text",
-        notNull: true,
+        notNull: false,
       },
       is_forked: {
         type: "boolean",
-        notNull: true,
-      },
-      is_forked: {
-        type: "boolean",
-        notNull: true,
+        defaultValue: false,
+        notNull: true,  
       },
       is_archived: {
         type: "boolean",
         notNull: true,
+        defaultValue: false,
       },
       is_disabled: {
         type: "boolean",
         notNull: true,
+        defaultValue: false,
       },
       parent_id: {
         type: "int",
