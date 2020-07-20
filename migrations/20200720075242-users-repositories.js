@@ -1,12 +1,5 @@
 "use strict";
 
-let dbm;
-
-exports.setup = (
-  options
-) => {
-  dbm = options.dbmigrate;
-};
 exports.up = (db, callback) => {
   db.createTable(
     "users_repositories",
