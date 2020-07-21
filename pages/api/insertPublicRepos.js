@@ -1,4 +1,4 @@
-const pool = require("../../../config/postgres-config");
+const pool = require("../../config/postgres-config");
 const request = require("superagent")
 
 export default async function insertPublicRepos(req, res) {
