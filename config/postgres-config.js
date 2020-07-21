@@ -1,4 +1,4 @@
-const Pool = require(process.env.DB_DRIVER).Pool
+const Pool = require("pg").Pool
 
 const dbConnection = new Pool({
   user: process.env.DB_USERNAME,
