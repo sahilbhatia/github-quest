@@ -18,12 +18,6 @@ export default function Index() {
   const Wrapper = styled.div`
     border:1px solid black; 
   `;
-
-  const getFormatedDate = (data) => {
-    const date = data.split("T")[0];
-    const time =data.split("T")[1].split(".")[0];
-    return `${date} ${time}`
-  };
   return (
     <Wrapper >
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"></link>
