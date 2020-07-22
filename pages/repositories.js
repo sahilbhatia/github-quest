@@ -33,29 +33,23 @@ export default function Index() {
       <Table  hover className="text-center">
         <thead className="bg-primary" >
           <tr>
-            <TH>Sr.n</TH>
+            <TH>Sr.No</TH>
             <TH>Name</TH>
-            <TH>Url</TH>
             <TH>Description</TH>
             <TH>Forked</TH>
             <TH>Archived</TH>
             <TH>Disabled</TH>
-            <TH>Created At</TH>
-            <TH>Updated At</TH>
           </tr>
         </thead>
         <tbody>
         {data.map((item,Index) => (
           <tr >
             <td>{Index+1}</td>
-            <td><b>{item.name}</b></td>
-            <td className="text-primary"><a href={item.url}>{item.url}</a></td>
-            <td>{item.description}</td>
+            <td className="text-left"><b><a href={item.url}>{item.name}</a></b></td>
+            <td>{item.description==null?item.description:"No description provided"}</td>
             <td>{item.is_forked ? <h3 className="text-success" style={{ marginTop:"-5px" }}> ✔</h3> : <p className="text-danger">✘</p>}</td>
             <td>{item.is_archived ? <h3 className="text-success" style={{ marginTop:"-5px" }}> ✔</h3> : <p className="text-danger">✘</p>}</td>
             <td>{item.is_disabled ? <h3 className="text-success" style={{ marginTop:"-5px" }}> ✔</h3> : <p className="text-danger">✘</p>}</td>
-            <td>{getFormatedDate(item.created_at)}</td>
-            <td>{getFormatedDate(item.updated_at)}</td>
           </tr>
         ))}
         </tbody>
@@ -63,3 +57,4 @@ export default function Index() {
     </Wrapper>
   )
 }
+
