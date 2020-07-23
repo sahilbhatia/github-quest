@@ -25,6 +25,12 @@ exports.up = (db, callback) => {
         length: 30,
         notNull: true,
       },
+      created_at: {
+        type: "timestamp",
+      },
+      updated_at: {
+        type: "timestamp",
+      },
     },
     function (err) {
       if (err) return callback(err);
