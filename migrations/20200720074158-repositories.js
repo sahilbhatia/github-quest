@@ -10,9 +10,18 @@ exports.up = (db, callback) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      github_repo_id: {
+        type: "bigint",
+        notNull: true,
+        unique: true,
+      },
       name: {
         type: "string",
         length: 50,
+        notNull: true,
+      },
+      url: {
+        type: "text",
         notNull: true,
       },
       description: {
@@ -22,7 +31,7 @@ exports.up = (db, callback) => {
       is_forked: {
         type: "boolean",
         defaultValue: false,
-        notNull: true,  
+        notNull: true,
       },
       is_archived: {
         type: "boolean",
@@ -34,17 +43,11 @@ exports.up = (db, callback) => {
         notNull: true,
         defaultValue: false,
       },
-      parent_id: {
-        type: "int",
-        notNull: false,
-        foreignKey: {
-          name: "repositories_self_join_fk",
-          table: "repositories",
-          mapping: "id",
-          rules: {
-            onDelete: "NO ACTION",
-          },
-        },
+      created_at: {
+        type: "timestamp",
+      },
+      updated_at: {
+        type: "timestamp",
       }
     },
     function (err) {
