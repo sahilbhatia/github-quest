@@ -11,6 +11,8 @@
     "db-migrate-pg": "^1.2.2",
     "next": "9.4.4",
     "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "react-dom": "16.13.1",
+    "sequelize": "^5.21.6",
+    "sequelize-cli": "^5.5.1"
   }
 }
