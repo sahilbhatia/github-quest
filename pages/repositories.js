@@ -1,11 +1,11 @@
 import useSWR from 'swr';
 import styled from "styled-components";
-import { Table, Button } from "react-bootstrap";
+import { Table, Button, Dropdown, DropdownButton } from "react-bootstrap";
 import { useState } from "react";
 const fetcher = (url) => fetch(url).then((res) => res.json())
-let limit = 5;
-export default function Index() {
 
+export default function Index() {
+  let [limit, setLimit] = useState(5);
   let [offset, setOffset] = useState(0);
   let { data, error } = useSWR(`/api/getPublicRepos?limit=${limit}&offset=${offset}`, fetcher);
   if (error) return <div>Failed to load</div>
@@ -18,7 +18,7 @@ export default function Index() {
   `;
   const Wrapper = styled.div`
     border:1px solid black;
-    height: 100vh; 
+    min-height: 100vh; 
     overflow: hidden;
   `;
   const EmptyList = styled.p`
@@ -32,13 +32,13 @@ export default function Index() {
     margin-top:10px;
   `;
   const prev = () => {
-    offset = offset <= 0 ? 0 : offset - limit;
+    offset = offset <= 0 ? 0 : offset - limit <= 0 ? 0 : offset - limit;
     setOffset(offset);
-  }
-  const next = async () => {
+  };
+  const next = () => {
     offset = data.length < limit ? offset : offset + limit;
     setOffset(offset);
-  }
+  };
   return (
     <Wrapper className="bg-light grey">
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"></link>
@@ -70,18 +70,24 @@ export default function Index() {
         </tbody>}
       </Table>
       <div className="d-flex justify-content-end">
-        <Button onClick={prev} className="bg-white text-dark">
-          {offset == 0
+        <DropdownButton variant="light" title={`Rows per page: ${limit ? limit : "All"}`}>
+          <Dropdown.Item onClick={() => setLimit(5)}>5</Dropdown.Item>
+          <Dropdown.Item onClick={() => setLimit(10)}>10</Dropdown.Item>
+          <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
+          <Dropdown.Item onClick={() => { setLimit(null); setOffset(0) }}>All</Dropdown.Item>
+        </DropdownButton>
+        <Button onClick={prev} className=" ml-5 bg-white text-dark">
+          {offset == 0 || data.length > limit
             ? <span className="text-muted">&laquo;</span>
-            : <span>&laquo; {`${offset - limit + 1} - ${offset}`}</span>}
+            : <span>&laquo; {offset - limit < 0 ? <>{`0 - ${limit}`}</> : <>{`${offset - limit + 1} - ${offset}`}</>}</span>}
         </Button>
         <Button onClick={next} className="mx-5 bg-white text-dark">
-          {data.length < limit
+          {data.length < limit || data.length > limit
             ? <>&raquo;</>
             : <>{`${offset + limit + 1} - ${limit + offset + limit}`} &raquo;</>}
         </Button>
       </div>
     </Wrapper>
   )
-}
+};
 
