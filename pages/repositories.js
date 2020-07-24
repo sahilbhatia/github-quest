@@ -1,6 +1,5 @@
 import useSWR from 'swr';
-import styled from "styled-components";
-import { Table, Button, Dropdown, DropdownButton } from "react-bootstrap";
+import DataTable from "react-data-table-component";
 import { useState } from "react";
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
@@ -10,84 +9,64 @@ export default function Index() {
   let { data, error } = useSWR(`/api/getPublicRepos?limit=${limit}&offset=${offset}`, fetcher);
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Loading...</div>
-  const TH = styled.th`
-    font-weight: 800;
-    font-size: 16px;
-    text-transform: uppercase;
-    text-align:center;
-  `;
-  const Wrapper = styled.div`
-    border:1px solid black;
-    min-height: 100vh; 
-    overflow: hidden;
-  `;
-  const EmptyList = styled.p`
-    position: fixed;
-    font-size: 16px;
-    border:1px solid black;
-    color: red;
-    margin-left:45%;
-    padding :10px;
-    border-radius: 20px;
-    margin-top:10px;
-  `;
-  const prev = () => {
-    offset = offset <= 0 ? 0 : offset - limit <= 0 ? 0 : offset - limit;
-    setOffset(offset);
-  };
-  const next = () => {
-    offset = data.length < limit ? offset : offset + limit;
-    setOffset(offset);
+  
+  const columns = [
+    {
+      name: 'Name',
+      selector: d=><a href={d.url}>{d.name}</a>,
+      sortable: true,
+    },
+    {
+      name: 'description',
+      selector: d=>(d.description=="null"?"description not provided":d.description),
+      sortable: true,
+    },
+    {
+      name: 'Forked',
+      selector: d =>d.is_forked?<>✔</>:<>✘</>, 
+      sortable: true,
+    },
+    {
+      name: 'Archived',
+      selector: d=>d.is_archived?<>✔</>:<>✘</>,
+      sortable: true,
+    },
+    {
+      name: 'Disabled',
+      selector: d=>d.is_disabled?<>✔</>:<>✘</>,
+      sortable: true,
+    },
+  ];
+  const customStyles = {
+    rows: {
+      style: {
+        color:"black",
+        backgroundColor:"blue",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor:"blue",
+        fontWeight: "800",
+        fontSize: "18px",
+        color: "white"
+      },
+    },
+    cells: {
+      style: {
+        backgroundColor:"whitesmoke",
+        fontSize: "16px",
+      },
+    },
   };
   return (
-    <Wrapper className="bg-light grey">
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"></link>
-      <div className="text-center ">
-        <u><h1><b>Repositories</b></h1></u>
-      </div>
-      <Table hover className="text-center" size="sm">
-        <thead className="bg-info text-white" >
-          <tr>
-            <TH>Sr.No</TH>
-            <TH>Name</TH>
-            <TH>Description</TH>
-            <TH>Forked</TH>
-            <TH>Archived</TH>
-            <TH>Disabled</TH>
-          </tr>
-        </thead>
-        {data.length == 0 ? <EmptyList>List Is Empty...</EmptyList> : <tbody>
-          {data.map((item, Index) => (
-            <tr key={Index}>
-              <td>{offset + Index + 1}</td>
-              <td className="text-left"><b><a href={item.url} className="text-primary">{item.name}</a></b></td>
-              <td>{item.description == null ? item.description : "No description provided"}</td>
-              <td>{item.is_forked ? <h3 className="text-success"> ✔</h3> : <p className="text-danger">✘</p>}</td>
-              <td>{item.is_archived ? <h3 className="text-success"> ✔</h3> : <p className="text-danger">✘</p>}</td>
-              <td>{item.is_disabled ? <h3 className="text-success"> ✔</h3> : <p className="text-danger">✘</p>}</td>
-            </tr>
-          ))}
-        </tbody>}
-      </Table>
-      <div className="d-flex justify-content-end">
-        <DropdownButton variant="light" title={`Rows per page: ${limit ? limit : "All"}`}>
-          <Dropdown.Item onClick={() => setLimit(5)}>5</Dropdown.Item>
-          <Dropdown.Item onClick={() => setLimit(10)}>10</Dropdown.Item>
-          <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
-          <Dropdown.Item onClick={() => { setLimit(null); setOffset(0) }}>All</Dropdown.Item>
-        </DropdownButton>
-        <Button onClick={prev} className=" ml-5 bg-white text-dark">
-          {offset == 0 || data.length > limit
-            ? <span className="text-muted">&laquo;</span>
-            : <span>&laquo; {offset - limit < 0 ? <>{`0 - ${limit}`}</> : <>{`${offset - limit + 1} - ${offset}`}</>}</span>}
-        </Button>
-        <Button onClick={next} className="mx-5 bg-white text-dark">
-          {data.length < limit || data.length > limit
-            ? <>&raquo;</>
-            : <>{`${offset + limit + 1} - ${limit + offset + limit}`} &raquo;</>}
-        </Button>
-      </div>
-    </Wrapper>
-  )
+    <DataTable
+      title="Repositories"
+      columns={columns}
+      customStyles={customStyles}
+      data={data}
+      pagination
+      highlightOnHover
+    />)
 };
 
