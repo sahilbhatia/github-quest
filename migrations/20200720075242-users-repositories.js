@@ -1,47 +1,41 @@
 "use strict";
 
-exports.up = (db, callback) => {
-  db.createTable(
-    "users_repositories",
-    {
-      id: {
-        type: "int",
-        notNull: true,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      user_id: {
-        type: "int",
-        notNull: true,
-        foreignKey: {
-          name: "users_repositories_users_join_fk",
-          table: "users",
-          mapping: "id",
-          rules: {
-            onDelete: "NO ACTION",
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable(
+      "users_repositories",
+      {
+        id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          primaryKey: true,
+          autoIncrement: true,
+        },
+        user_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: "users",
+            key: "id",
+          },
+        },
+        repository_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: "repositories",
+            key: "id",
           },
         },
       },
-      repository_id: {
-        type: "int",
-        notNull: true,
-        foreignKey: {
-          name: "users_repositories_repositories_join_fk",
-          table: "repositories",
-          mapping: "id",
-          rules: {
-            onDelete: "NO ACTION",
-          },
-        },
+      {
+        timestamp: false,
+        createdAt: false,
+        updatedAt: false,
       }
-    },
-    function (err) {
-      if (err) return callback(err);
-      return callback();
-    }
-  );
-};
-
-exports.down = (db, callback) => {
-  db.dropTable("users_repositories", callback);
+    );
+  },
+  down: (queryInterface) => {
+    return queryInterface.dropTable("users_repositories");
+  },
 };
