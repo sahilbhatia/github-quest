@@ -1,40 +1,83 @@
 var cron = require("node-cron");
-const pool = require("../../config/postgres-config");
 const request = require("superagent");
 const { headers } = require("../../constants/header");
 const moment = require('moment');
 let fetchReposAfterTime = process.env.INSERT_REPOS_AFTER_TIME;
 
+const dbConn = require("../../models/sequelize");
+dbConn.sequelize;
+const db = require("../../models/sequelize");
+const Users = db.users;
+const Repositories = db.repositories;
+const Users_repositories = db.users_repositories;
+const Parent_repositories = db.parent_repositories;
+
 export default async function insertPublicRepos(req, res) {
 
   await cron.schedule(process.env.INSERT_PUBLIC_REPOS_SCHEDULE, async () => {
 
-    const usersList = await pool.query(`select id, github_handle from users`);
+    const usersList = await Users.findAll({
+      attributes: ["id", "github_handle"],
+      order: [["id", "ASC"]]
+    });
     let iterator = 0;
-    while (iterator < usersList.rows.length) {
+    while (iterator < usersList.length) {
 
       const data = await request
-        .get("https://api.github.com/users/" + usersList.rows[iterator].github_handle + "/repos?since=" + fetchReposAfterTime + "")
+        .get("https://api.github.com/users/" + usersList[iterator].dataValues.github_handle + "/repos?since=" + fetchReposAfterTime + "")
         .set(headers);
       const mapData = await data.body.map(async (item) => {
-        const result = await pool.query(`select * from repositories where github_repo_id = ${item.id}`);
-        
-        if (result.rowCount === 0 && item.fork === false) {
 
-          const insertRepos = await pool.query(`insert into repositories (github_repo_id, name, url, description, is_forked, is_disabled, is_archived, created_at, updated_at ) values (${item.id},'${item.name}','${item.url}','${item.description}',${item.fork},${item.disabled},${item.archived},'${item.created_at}','${item.updated_at}') returning *`);
-          await pool.query(`insert into users_repositories (user_id,repository_id) values (${usersList.rows[iterator].id},${insertRepos.rows[0].id})`);
-        
-        } else if (result.rowCount === 0 && item.fork == true) {
+        const result = await Repositories.findAll({
+          where: { github_repo_id: item.id },
+          order: [["id", "ASC"]]
+        });
+
+        if (result.length === 0 && item.fork === false) {
+          const insertRepos = await Repositories.create({
+            github_repo_id: item.id,
+            name: item.name,
+            url: item.url,
+            description: item.description,
+            is_forked: item.fork,
+            is_disabled: item.disabled,
+            is_archived: item.archived,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+          })
+          await Users_repositories.create({
+            user_id: usersList[iterator].dataValues.id,
+            repository_id: insertRepos.dataValues.id,
+          })
+
+        } else if (result.length === 0 && item.fork == true) {
 
           const parentRepo = await request
-            .get(`https://api.github.com/repos/${usersList.rows[iterator].github_handle}/${item.name}`)
+            .get(`https://api.github.com/repos/${usersList[iterator].dataValues.github_handle}/${item.name}`)
             .set(headers);
-          const insertRepos = await pool.query(`insert into repositories (github_repo_id, name, url, description, is_forked, is_disabled, is_archived, created_at, updated_at ) values (${item.id},'${item.name}','${item.url}','${item.description}',${item.fork},${item.disabled},${item.archived},'${item.created_at}','${item.updated_at}') returning *`);
-          await pool.query(`insert into users_repositories (user_id,repository_id) values (${usersList.rows[iterator].id},${insertRepos.rows[0].id})`);
-          await pool.query(`insert into forked_repositories (repo_id ,github_parent_repo_id,is_private_parent_repo) values (${insertRepos.rows[0].id},${parentRepo.body.parent.id},${parentRepo.body.parent.private})`);
-        
-        }
+          const insertParentRepositories = await Parent_repositories.create({
+            github_repo_id: parentRepo.body.parent.id,
+            url: parentRepo.body.parent.url,
+            is_private: parentRepo.body.parent.private,
+          })
 
+          const insertRepos = await Repositories.create({
+            github_repo_id: item.id,
+            name: item.name,
+            url: item.url,
+            description: item.description,
+            is_forked: item.fork,
+            is_disabled: item.disabled,
+            is_archived: item.archived,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            parent_repo_id: insertParentRepositories.dataValues.id,
+          })
+          await Users_repositories.create({
+            user_id: usersList[iterator].dataValues.id,
+            repository_id: insertRepos.dataValues.id,
+          })
+        }
       })
       await Promise.all(mapData)
       iterator++;
