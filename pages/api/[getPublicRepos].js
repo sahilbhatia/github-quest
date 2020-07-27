@@ -1,4 +1,5 @@
 const Sequelize = require("sequelize");
+const moment = require("moment");
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../models/sequelize");
@@ -30,7 +31,6 @@ const getAllPublicRepos = async (req, res) => {
     limit: limit,
     offset: offset,
   }
-
   const getWhereClause = () => {
 
     if (like || forked || archived || disabled || startDate || endDate) {
@@ -60,9 +60,14 @@ const getAllPublicRepos = async (req, res) => {
         where.created_at = {
           [Sequelize.Op.between]: [startDate, endDate]
         }
-      } else if(endDate){
+      } else if (endDate) {
         where.created_at = {
           [Sequelize.Op.lt]: endDate,
+        }
+      } else if (startDate) {
+        let endDate = moment().toISOString();
+        where.created_at = {
+          [Sequelize.Op.between]: [startDate, endDate]
         }
       }
 
