@@ -3,9 +3,7 @@ const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../models/sequelize");
 const qs = require("qs");
-const Users = db.users;
 const Repositories = db.repositories;
-const Users_repositories = db.users_repositories;
 const Parent_repositories = db.parent_repositories;
 
 Repositories.belongsTo(Parent_repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true } })
@@ -17,7 +15,6 @@ const getAllPublicRepos = async (req, res) => {
   let forked = req.query.forked;
   let archived = req.query.archived;
   let disabled = req.query.disabled;
-  let date_range = req.query.startDate;
   let limit = req.query.limit;
   let offset = req.query.offset;
   let startDate = req.query.startDate;
@@ -37,7 +34,8 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClause = () => {
-    if (like || forked || archived || disabled || date_range) {
+
+    if (like || forked || archived || disabled || startDate || endDate) {
       if (like) {
         where = {
           [Sequelize.Op.or]: {
@@ -70,6 +68,7 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClauseObject = await getWhereClause();
+
   if (getWhereClauseObject) {
     findAllClause.where = getWhereClauseObject
     const repositories = await Repositories.findAll(findAllClause);
