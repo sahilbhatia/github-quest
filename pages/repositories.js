@@ -1,6 +1,7 @@
 import useSWR from 'swr';
 import DataTable from "react-data-table-component";
 import { useState } from "react";
+import Filter from "../components/filter";
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Index() {
@@ -60,13 +61,18 @@ export default function Index() {
     },
   };
   return (
+    <div>
+       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"></link>
     <DataTable
       title="Repositories"
+      subHeader 
+      subHeaderComponent={<Filter/>}
       columns={columns}
       customStyles={customStyles}
       data={data}
       pagination
       highlightOnHover
-    />)
+    />
+    </div>)
 };
 
