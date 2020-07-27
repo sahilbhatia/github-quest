@@ -51,39 +51,67 @@ export default async function insertPublicRepos(req, res) {
           })
 
         } else if (result.length === 0 && item.fork == true) {
-
+          let insertParentRepositories;
           const parentRepo = await request
             .get(`https://api.github.com/repos/${usersList[iterator].dataValues.github_handle}/${item.name}`)
             .set(headers);
-          const insertParentRepositories = await Parent_repositories.create({
-            github_repo_id: parentRepo.body.parent.id,
-            url: parentRepo.body.parent.url,
-            is_private: parentRepo.body.parent.private,
-          })
 
-          const insertRepos = await Repositories.create({
-            github_repo_id: item.id,
-            name: item.name,
-            url: item.url,
-            description: item.description,
-            is_forked: item.fork,
-            is_disabled: item.disabled,
-            is_archived: item.archived,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-            parent_repo_id: insertParentRepositories.dataValues.id,
+          insertParentRepositories = await Parent_repositories.findOne({
+            where: { github_repo_id: parentRepo.body.parent.id }
           })
-          await Users_repositories.create({
-            user_id: usersList[iterator].dataValues.id,
-            repository_id: insertRepos.dataValues.id,
-          })
+          if (insertParentRepositories) {
+
+            const insertRepos = await Repositories.create({
+              github_repo_id: item.id,
+              name: item.name,
+              url: item.url,
+              description: item.description,
+              is_forked: item.fork,
+              is_disabled: item.disabled,
+              is_archived: item.archived,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              parent_repo_id: insertParentRepositories.dataValues.id,
+            })
+            await Users_repositories.create({
+              user_id: usersList[iterator].dataValues.id,
+              repository_id: insertRepos.dataValues.id,
+            })
+
+          } else {
+            insertParentRepositories = await Parent_repositories.create({
+              github_repo_id: parentRepo.body.parent.id,
+              url: parentRepo.body.parent.url,
+              is_private: parentRepo.body.parent.private,
+            })
+
+            const insertRepos = await Repositories.create({
+              github_repo_id: item.id,
+              name: item.name,
+              url: item.url,
+              description: item.description,
+              is_forked: item.fork,
+              is_disabled: item.disabled,
+              is_archived: item.archived,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              parent_repo_id: insertParentRepositories.dataValues.id,
+            })
+            await Users_repositories.create({
+              user_id: usersList[iterator].dataValues.id,
+              repository_id: insertRepos.dataValues.id,
+            })
+          }
         }
       })
+
       await Promise.all(mapData)
       iterator++;
+
     }
     fetchReposAfterTime = moment.utc().format();
   });
+
   res.status(200).json({
     message: "data inserted successfully"
   })
