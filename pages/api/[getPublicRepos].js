@@ -2,7 +2,6 @@ const Sequelize = require("sequelize");
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../models/sequelize");
-const qs = require("qs");
 const Repositories = db.repositories;
 const Parent_repositories = db.parent_repositories;
 
@@ -19,7 +18,6 @@ const getAllPublicRepos = async (req, res) => {
   let offset = req.query.offset;
   let startDate = req.query.startDate;
   let endDate = req.query.endDate;
-
   let findAllClause = {
     order: [["id", "ASC"]],
     include: [{
@@ -62,7 +60,12 @@ const getAllPublicRepos = async (req, res) => {
         where.created_at = {
           [Sequelize.Op.between]: [startDate, endDate]
         }
+      } else if(endDate){
+        where.created_at = {
+          [Sequelize.Op.lt]: endDate,
+        }
       }
+
       return where;
     }
   }
