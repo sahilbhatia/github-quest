@@ -12,13 +12,14 @@ Parent_repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id'
 const getAllPublicRepos = async (req, res) => {
   let where = {};
   let like = req.query.like;
-  let forked = req.query.forked;
-  let archived = req.query.archived;
-  let disabled = req.query.disabled;
+  let forked = req.query.is_forked;
+  let archived = req.query.is_archived;
+  let disabled = req.query.is_disabled;
   let limit = req.query.limit;
   let offset = req.query.offset;
   let startDate = req.query.startDate;
   let endDate = req.query.endDate;
+  console.log(req.query)
   let findAllClause = {
     order: [["id", "ASC"]],
     include: [{
@@ -31,10 +32,11 @@ const getAllPublicRepos = async (req, res) => {
     limit: limit,
     offset: offset,
   }
+
   const getWhereClause = () => {
 
     if (like || forked || archived || disabled || startDate || endDate) {
-      if (like) {
+      if (like != "undefined") {
         where = {
           [Sequelize.Op.or]: {
             name: {
@@ -49,25 +51,25 @@ const getAllPublicRepos = async (req, res) => {
       }
 
       if (archived == "true" || archived == "false") {
-        where.archived = JSON.parse(archived);
+        where.is_archived = JSON.parse(archived);
       }
 
       if (disabled == "true" || disabled == "false") {
         where.is_disabled = JSON.parse(disabled);
       }
 
-      if (startDate && endDate) {
+      if (startDate != "undefined" && endDate != "undefined") {
         where.created_at = {
-          [Sequelize.Op.between]: [startDate, endDate]
+          [Sequelize.Op.between]: [moment(startDate).toISOString(), moment(endDate).toISOString()]
         }
-      } else if (endDate) {
+      } else if (endDate != "undefined") {
         where.created_at = {
-          [Sequelize.Op.lt]: endDate,
+          [Sequelize.Op.lt]: moment(endDate).toISOString(),
         }
-      } else if (startDate) {
-        let endDate = moment().toISOString();
+      } else if (startDate != "undefined") {
+        endDate = moment().toISOString();
         where.created_at = {
-          [Sequelize.Op.between]: [startDate, endDate]
+          [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
         }
       }
 
