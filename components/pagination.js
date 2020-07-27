@@ -29,3 +29,4 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
     </div>
   )
 };
+

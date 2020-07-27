@@ -9,7 +9,7 @@ export default function Index() {
   let [limit, setLimit] = useState(5);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
-  let { data, error } = useSWR(`/api/getPublicRepos?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}`, fetcher);
+  let { data, error } = useSWR(`/api/getPublicRepos?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&like=${filter.name}&startDate=${filter.startDate}&endDate=${filter.endDate}`, fetcher);
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Loading...</div>
 
