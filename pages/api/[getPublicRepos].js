@@ -18,7 +18,7 @@ Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allow
 const getAllPublicRepos = async (req, res) => {
   let where = {};
   let findUserWhereClause = {};
-  let like = req.query.like;
+  let like = req.query.repoName;
   let userName = req.query.userName;
   let forked = req.query.is_forked;
   let archived = req.query.is_archived;
@@ -74,6 +74,7 @@ const getAllPublicRepos = async (req, res) => {
   const getWhereClause = () => {
     if (like || forked || archived || disabled || startDate || endDate) {
       if (like != "undefined") {
+        console.log(like);
         where = {
           [Sequelize.Op.or]: {
             name: {
@@ -109,7 +110,6 @@ const getAllPublicRepos = async (req, res) => {
           [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
         }
       }
-
       return where;
     }
   }
@@ -124,7 +124,6 @@ const getAllPublicRepos = async (req, res) => {
     const repositories = await Repositories.findAll(findAllClause);
     res.status(200).json(repositories);
   }
-
 };
 
 export default getAllPublicRepos;
