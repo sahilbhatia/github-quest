@@ -14,6 +14,7 @@ export default function Index() {
   let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}`, fetcher);
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Loading...</div>
+  console.log(data)
   const onSelectManualReview = (id) => {
     fetch(`/api/updateManualReview/[updateManualReview]?id=${id}`);
     window.location.reload(false);
@@ -27,7 +28,7 @@ export default function Index() {
   const columns = [
     {
       name: 'Owner Name',
-      selector: d => d.users_repositories[0].user.name,
+      selector: d => d.users_repositories[0]?d.users_repositories[0].user.name:"Unknown",
     },
     {
       name: 'Name',

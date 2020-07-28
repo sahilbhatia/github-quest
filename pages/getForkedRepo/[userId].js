@@ -13,16 +13,20 @@ export default function Post() {
     console.log(data);
     const columns = [
         {
+            name: 'Owner Name',
+            selector: d => d.users_repositories[0]?d.users_repositories[0].user.name:"Unknown",
+        },
+        {
             name: 'Name',
             selector: d => <a href={d.url}>{d.name}</a>,
         },
 
         {
-            name: 'child count',
+            name: 'forked child count',
             selector: d => d.parent_of.length,
         },
         {
-            name: 'parent count',
+            name: 'forked count of same parent',
             selector: d => d.child_of.parent_of.length,
         },
         {

@@ -2,8 +2,7 @@ var cron = require("node-cron");
 const request = require("superagent");
 const { headers } = require("../../constants/header");
 const moment = require('moment');
-let fetchReposAfterTime = process.env.INSERT_REPOS_AFTER_TIME;
-
+let fetchReposAfterTime;
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../models/sequelize");
@@ -126,11 +125,14 @@ export default async function insertPublicRepos(req, res) {
                 where: { github_handle: parentRepo.body.parent.owner.login }
               })
 
-              await Users_repositories.create({
-                user_id: userObject.dataValues.id,
-                repository_id: insertParentRepositories.dataValues.id,
-              })
+              if (userObject) {
 
+                await Users_repositories.create({
+                  user_id: userObject.dataValues.id,
+                  repository_id: insertParentRepositories.dataValues.id,
+                })
+
+              }
               const insertRepos = await Repositories.create({
                 github_repo_id: item.id,
                 name: item.name,
@@ -156,12 +158,9 @@ export default async function insertPublicRepos(req, res) {
         await Promise.all(mapData)
         iterator++;
       }
-
       await Fetch_repos_after_time_intervals.create({
         last_time_fetched_at: moment.utc().format(),
       })
-      
-      fetchReposAfterTime = moment.utc().format();
     });
 
     res.status(200).json({
