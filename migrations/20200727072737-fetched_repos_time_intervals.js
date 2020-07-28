@@ -3,7 +3,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable(
-      "parent_repositories",
+      "fetched_Repos_time_intervals",
       {
         id: {
           type: Sequelize.INTEGER,
@@ -11,17 +11,9 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true,
         },
-        github_repo_id: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-        },
-        url: {
-          type: Sequelize.TEXT,
-          allowNull: false,
-        },
-        is_private: {
-          type: Sequelize.BOOLEAN,
-          allowNull: false,
+        last_time_fetched_at: {
+          type: 'TIMESTAMP',
+          defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
         }
       },
       {
@@ -32,6 +24,6 @@ module.exports = {
     );
   },
   down: (queryInterface) => {
-    return queryInterface.dropTable("parent_repositories");
+    return queryInterface.dropTable("fetched_Repos_time_intervals");
   },
 };

@@ -26,7 +26,7 @@ module.exports = {
         },
         description: {
           type: Sequelize.TEXT,
-          allowNull: false,
+          allowNull: true,
         },
         is_forked: {
           type: Sequelize.BOOLEAN,
@@ -43,10 +43,20 @@ module.exports = {
           defaultValue: false,
           allowNull: false,
         },
+        is_suspicious: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          allowNull: false,
+        },
+        is_private: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          allowNull: false,
+        },
         parent_repo_id: {
           type: Sequelize.INTEGER,
           references: {
-            model: "parent_repositories",
+            model: "repositories",
             key: "id",
           },
         },
