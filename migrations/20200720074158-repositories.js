@@ -1,59 +1,80 @@
 "use strict";
 
-exports.up = (db, callback) => {
-  db.createTable(
-    "repositories",
-    {
-      id: {
-        type: "int",
-        notNull: true,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      name: {
-        type: "string",
-        length: 50,
-        notNull: true,
-      },
-      description: {
-        type: "text",
-        notNull: false,
-      },
-      is_forked: {
-        type: "boolean",
-        defaultValue: false,
-        notNull: true,  
-      },
-      is_archived: {
-        type: "boolean",
-        notNull: true,
-        defaultValue: false,
-      },
-      is_disabled: {
-        type: "boolean",
-        notNull: true,
-        defaultValue: false,
-      },
-      parent_id: {
-        type: "int",
-        notNull: false,
-        foreignKey: {
-          name: "repositories_self_join_fk",
-          table: "repositories",
-          mapping: "id",
-          rules: {
-            onDelete: "NO ACTION",
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable(
+      "repositories",
+      {
+        id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          primaryKey: true,
+          autoIncrement: true,
+        },
+        github_repo_id: {
+          type: Sequelize.BIGINT,
+          allowNull: false,
+          unique: true,
+        },
+        name: {
+          type: Sequelize.STRING(50),
+          allowNull: false,
+        },
+        url: {
+          type: Sequelize.TEXT,
+          allowNull: false,
+        },
+        description: {
+          type: Sequelize.TEXT,
+          allowNull: true,
+        },
+        is_forked: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          allowNull: false,
+        },
+        is_archived: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          allowNull: false,
+        },
+        is_disabled: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          allowNull: false,
+        },
+        is_suspicious: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          allowNull: false,
+        },
+        is_private: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
+          allowNull: false,
+        },
+        parent_repo_id: {
+          type: Sequelize.INTEGER,
+          references: {
+            model: "repositories",
+            key: "id",
           },
         },
+        created_at: {
+          type: 'TIMESTAMP',
+        },
+        updated_at: {
+          type: 'TIMESTAMP',
+        },
+      },
+      {
+        timestamp: false,
+        createdAt: false,
+        updatedAt: false,
       }
-    },
-    function (err) {
-      if (err) return callback(err);
-      return callback();
-    }
-  );
-};
-
-exports.down = (db, callback) => {
-  db.dropTable("repositories", callback);
+    );
+  },
+  down: (queryInterface) => {
+    return queryInterface.dropTable("repositories");
+  },
 };
