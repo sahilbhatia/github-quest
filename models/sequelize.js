@@ -23,5 +23,6 @@ db.Sequelize = Sequelize;
 db.users = require("./users.model")(sequelize, Sequelize);
 db.repositories = require("./repositories.model")(sequelize, Sequelize);
 db.users_repositories = require("./users_repositories.model")(sequelize, Sequelize);
+db.fetched_repos_time_intarvals = require("./fetched_repos_time_intervals.model")(sequelize, Sequelize);
 
 module.exports = db;

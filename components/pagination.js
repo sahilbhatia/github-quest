@@ -11,9 +11,9 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
   return (
     <div className="d-flex justify-content-end">
       <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
-        <Dropdown.Item onClick={() => setLimit(5)}>5</Dropdown.Item>
-        <Dropdown.Item onClick={() => setLimit(10)}>10</Dropdown.Item>
-        <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
+        <Dropdown.Item onClick={() => setLimit(5)}>10</Dropdown.Item>
+        <Dropdown.Item onClick={() => setLimit(10)}>15</Dropdown.Item>
+        <Dropdown.Item onClick={() => setLimit(15)}>20</Dropdown.Item>
       </DropdownButton>
       
         {offset == 0 

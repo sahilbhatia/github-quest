@@ -6,7 +6,7 @@ export default function Index({ filter, setFilter }) {
   let repoName;
   const setUserName = () => {
       let data = { ...filter };
-      data.user_name = userName;
+      data.userName = userName;
       setFilter(data);
   };
   const setRepoName = () => {

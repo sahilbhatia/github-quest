@@ -17,7 +17,9 @@ Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allow
 
 const getAllPublicRepos = async (req, res) => {
   let where = {};
-  let repoName = req.query.repoName;
+  let findUserWhereClause = {};
+  let like = req.query.repoName;
+  let userName = req.query.userName;
   let forked = req.query.is_forked;
   let archived = req.query.is_archived;
   let disabled = req.query.is_disabled;
@@ -26,32 +28,57 @@ const getAllPublicRepos = async (req, res) => {
   let startDate = req.query.startDate;
   let endDate = req.query.endDate;
 
+  const getUsersWhereClause = () => {
+    if (userName != "undefined") {
+      findUserWhereClause = {
+        model: Users_repositories,
+        include: {
+          model: Users,
+          where: {
+            [Sequelize.Op.or]: {
+              name: {
+                [Sequelize.Op.iLike]: "%" + userName + "%",
+              },
+            },
+          }
+        },
+      }
+      return findUserWhereClause;
+    } else {
+      findUserWhereClause = {
+        model: Users_repositories,
+        include: {
+          model: Users,
+        },
+      }
+      return findUserWhereClause;
+    }
+  }
+
+  const getIncludeUsersModel = await getUsersWhereClause();
+
   let findAllClause = {
     order: [["id", "ASC"]],
     include: [
+      getIncludeUsersModel
+      ,
       {
-      model: Users_repositories,
-      include: {
-        model: Users,
+        model: Repositories,
+        as: "parent_of"
       },
-    },
-    {
-      model: Repositories,
-      as: "parent_of"
-    },
     ],
     limit: limit,
     offset: offset,
   }
 
   const getWhereClause = () => {
-
-    if (repoName || forked || archived || disabled || startDate || endDate) {
-      if (repoName != "undefined") {
+    if (like || forked || archived || disabled || startDate || endDate) {
+      if (like != "undefined") {
+        console.log(like);
         where = {
           [Sequelize.Op.or]: {
             name: {
-              [Sequelize.Op.iLike]: "%" + repoName + "%",
+              [Sequelize.Op.iLike]: "%" + like + "%",
             },
           },
         };
@@ -89,6 +116,7 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClauseObject = await getWhereClause();
+
   if (getWhereClauseObject) {
     findAllClause.where = getWhereClauseObject
     const repositories = await Repositories.findAll(findAllClause);
@@ -97,6 +125,7 @@ const getAllPublicRepos = async (req, res) => {
     const repositories = await Repositories.findAll(findAllClause);
     res.status(200).json(repositories);
   }
+
 };
 
 export default getAllPublicRepos;

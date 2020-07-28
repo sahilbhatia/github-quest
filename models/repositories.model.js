@@ -1,3 +1,4 @@
+const users_repositories = require("./users_repositories.model");
 module.exports = (sequelize, Sequelize) => {
   const Repositories = sequelize.define(
     "repositories",
@@ -43,6 +44,11 @@ module.exports = (sequelize, Sequelize) => {
       is_suspicious: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
+        allowNull: false,
+      },
+      manual_review: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
         allowNull: false,
       },
       is_private: {

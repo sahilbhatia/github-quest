@@ -8,7 +8,7 @@ Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allow
 
 const getForkedRepos = async (req, res) => {
   let data = await Repositories.findAll({
-    where: { parent_repo_id: 1 },
+    where: { parent_repo_id: req.query.id },
     include: [
       {
         model: Repositories,

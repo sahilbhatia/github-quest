@@ -7,13 +7,23 @@ import Link from "next/link";
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Index() {
-  let [limit, setLimit] = useState(5);
+  let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
-  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}`, fetcher);
+   
+  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}`, fetcher);
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Loading...</div>
-  console.log(data[0])
+  const onSelectManualReview = (id) => {
+    fetch(`/api/updateManualReview/[updateManualReview]?id=${id}`);
+    window.location.reload(false);
+  }
+
+  const onSelectSuspeciousMark = (id) => {
+    fetch(`/api/updateSuspiciousRepos/[updateSuspiciousRepos]?id=${id}`);
+    window.location.reload(false);
+  }
+
   const columns = [
     {
       name: 'Owner Name',
@@ -44,8 +54,12 @@ export default function Index() {
       selector: d => d.is_private ? <>✔</> : <>✘</>,
     },
     {
+      name: 'Manual Review',
+      selector: d => d.manual_review ? <>✔</> : <>✘</>,
+    },
+    {
       name: 'Action',
-      selector: d => !d.is_forked && !d.is_suspicious ? <div className="d-flex"><span className="text-success mx-1">✔</span> <span className="text-danger mx-1">✘</span></div>:<>✘</>,
+      selector: d => !d.is_forked && !d.is_suspicious && d.manual_review? <div className="d-flex"><button onClick={(e)=>{onSelectManualReview(d.id)}} className="text-success mx-1">✔</button> <button onClick={(e)=>{onSelectSuspeciousMark(d.id)}} className="text-danger mx-1">✘</button></div>:<>✘</>,
     },
   ];
   const customStyles = {
@@ -80,7 +94,7 @@ export default function Index() {
     },
   ];
   return (
-    <div>
+    <div style={{minHeight: "100vh"}}>
       <DataTable
         title="Repositories"
         subHeader
