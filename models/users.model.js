@@ -1,3 +1,5 @@
+const models = require("./users_repositories.model");
+
 module.exports = (sequelize, Sequelize) => {
   const Users = sequelize.define(
     "users",
@@ -35,10 +37,5 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
-  Users.associate = (models) => {
-    Users.hasMany(models.users_repositories, {
-      foreignKey: "user_id",
-    });
-  };
   return Users;
 };

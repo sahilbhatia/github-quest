@@ -1,3 +1,5 @@
+//const repositories = require("./repositories.model");
+
 module.exports = (sequelize, Sequelize) => {
   const Parent_Repositories = sequelize.define(
     "parent_repositories",
@@ -27,10 +29,5 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
-  Parent_Repositories.associate = (models) => {
-    Parent_Repositories.hasMany(models.repositories, {
-      foreignKey: "parent_repo_id",
-    });
-  };
   return Parent_Repositories;
 };

@@ -31,13 +31,5 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
-  Users_Repositories.associate = (models) => {
-    Users_Repositories.belongsTo(models.users, {
-      foreignKey: "user_id",
-    });
-    Users_Repositories.belongsTo(models.repositories, {
-      foreignKey: "repository_id",
-    });
-  };
   return Users_Repositories;
 };

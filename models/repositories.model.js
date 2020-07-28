@@ -1,3 +1,4 @@
+const users_repositories = require("./users_repositories.model");
 module.exports = (sequelize, Sequelize) => {
   const Repositories = sequelize.define(
     "repositories",
@@ -23,7 +24,7 @@ module.exports = (sequelize, Sequelize) => {
       },
       description: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       is_forked: {
         type: Sequelize.BOOLEAN,
@@ -40,9 +41,22 @@ module.exports = (sequelize, Sequelize) => {
         defaultValue: false,
         allowNull: false,
       },
+      is_suspicious: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      is_private: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
       parent_repo_id: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        references: {
+          model: "repositories",
+          key: "id",
+        },
       },
       created_at: {
         type: 'TIMESTAMP',
@@ -57,13 +71,5 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
-  Repositories.associate = (models) => {
-    Repositories.hasMany(models.users_repositories, {
-      foreignKey: "repository_id",
-    });
-    Repositories.belongsTo(models.parent_Repositories, {
-      foreignKey: "parent_repo_id",
-    });
-  };
   return Repositories;
 };
