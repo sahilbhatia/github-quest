@@ -1,38 +1,45 @@
 "use strict";
 
-exports.up = (db, callback) => {
-  db.createTable(
-    "users",
-    {
-      id: {
-        type: "int",
-        notNull: true,
-        primaryKey: true,
-        autoIncrement: true,
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable(
+      "users",
+      {
+        id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          primaryKey: true,
+          autoIncrement: true,
+        },
+        name: {
+          type: Sequelize.STRING(50),
+          allowNull: false,
+        },
+        email: {
+          type: Sequelize.STRING(50),
+          allowNull: false,
+        },
+        github_handle: {
+          type: Sequelize.STRING(30),
+          allowNull: false,
+        },
+        created_at: {
+          type: 'TIMESTAMP',
+          defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
+        updated_at: {
+          type: 'TIMESTAMP',
+          defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
       },
-      name: {
-        type: "string",
-        length: 50,
-        notNull: true,
-      },
-      email: {
-        type: "string",
-        length: 50,
-        notNull: true,
-      },
-      github_handle: {
-        type: "string",
-        length: 30,
-        notNull: true,
-      },
-    },
-    function (err) {
-      if (err) return callback(err);
-      return callback();
-    }
-  );
-};
-
-exports.down = (db, callback) => {
-  db.dropTable("users", callback);
+      {
+        timestamp: false,
+        createdAt: false,
+        updatedAt: false,
+      }
+    );
+  },
+  down: (queryInterface) => {
+    return queryInterface.dropTable("users");
+  },
 };
