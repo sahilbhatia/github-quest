@@ -1,18 +1,31 @@
-import { Button, Dropdown, DropdownButton, FormControl, Form } from "react-bootstrap";
+import { Button, Dropdown, DropdownButton, Form } from "react-bootstrap";
+import _ from "lodash";
 import DatePicker from "react-datepicker";
 export default function Index({ filter, setFilter }) {
-  const setUserName = (userName) => {
-    if(userName.length %3 ==0){
+  let searchUserName;
+  let serachRepoName;
+
+  var bounced = _.debounce(function () {
     let data = { ...filter };
-    data.userName = userName;
-    setFilter(data);
+    if (searchUserName) {
+      data.userName = searchUserName;
+      setFilter(data);
+    } else if (serachRepoName) {
+      data.repoName = serachRepoName;
+      setFilter(data);
+    }
+  }, 2000);
+  const setUserName = (userName) => {
+    if (userName.length >= 3) {
+      searchUserName = userName
+      bounced();
     }
   };
+
   const setRepoName = (repoName) => {
-    if(repoName.length %3 == 0){
-    let data = { ...filter };
-    data.repoName = repoName;
-    setFilter(data);
+    if (repoName.length >= 3) {
+      serachRepoName = repoName;
+      bounced();
     }
   };
   const reset = () => {
@@ -52,6 +65,7 @@ export default function Index({ filter, setFilter }) {
           selected={filter.startDate}
           maxDate={new Date()}
           placeholderText="Select date from"
+          className={filter.startDate != undefined ? "border-success" : ""}
         />
         <Form.Label>To :</Form.Label>
         <DatePicker
@@ -59,26 +73,27 @@ export default function Index({ filter, setFilter }) {
           selected={filter.endDate}
           maxDate={new Date()}
           placeholderText="Select date to"
+          className={filter.endDate != undefined ? "border-success" : ""}
         />
       </div>
       <div className="d-flex">
         <div className="mr-2 d-flex">
-          <Form.Control size="text" placeholder="Search By User Name..." defaultValue={filter.userName} onChange={(e => setUserName(e.target.value))} />
+          <Form.Control className={filter.userName != undefined ? "border-success" : ""} size="text" placeholder="Search By User Name..." defaultValue={filter.userName} onChange={(e => setUserName(e.target.value))} />
         </div >
         <div className="mr-2 d-flex">
-          <Form.Control size="text" type="text" placeholder="Search By Repo Name..." defaultValue={filter.repoName} onChange={(e => setRepoName(e.target.value))} />
+          <Form.Control size="text" className={filter.repoName != undefined ? "border-success" : ""} placeholder="Search By Repo Name..." defaultValue={filter.repoName} onChange={(e => setRepoName(e.target.value))} />
         </div >
-        <DropdownButton className="ml-2" variant="dark" title="Forked">
+        <DropdownButton className="ml-2" variant={filter.is_forked != undefined ? "success" : "dark"} title="Forked">
           <Dropdown.Item onClick={(e => forked(true))} >true</Dropdown.Item>
           <Dropdown.Item onClick={(e => forked(false))} >false</Dropdown.Item>
           <Dropdown.Item onClick={(e => forked(null))} >all</Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="ml-2" variant="dark" title="Archived">
+        <DropdownButton className="ml-2" variant={filter.is_archived != undefined ? "success" : "dark"} title="Archived">
           <Dropdown.Item onClick={(e => archived(true))}>true</Dropdown.Item>
           <Dropdown.Item onClick={(e => archived(false))}>false</Dropdown.Item>
           <Dropdown.Item onClick={(e => archived(null))}>all</Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="mx-2" variant="dark" title="Disabled">
+        <DropdownButton className="mx-2" variant={filter.is_disabled != undefined ? "success" : "dark"} title="Disabled">
           <Dropdown.Item onClick={(e => disabled(true))}>true</Dropdown.Item>
           <Dropdown.Item onClick={(e => disabled(false))}>false</Dropdown.Item>
           <Dropdown.Item onClick={(e => disabled(null))}>all</Dropdown.Item>
