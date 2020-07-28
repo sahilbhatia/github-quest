@@ -4,10 +4,15 @@ const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../models/sequelize");
 const Repositories = db.repositories;
-const Parent_repositories = db.parent_repositories;
+const Users_repositories = db.users_repositories;
+const Users = db.users;
 
-Repositories.belongsTo(Parent_repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true } })
-Parent_repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true } })
+Users_repositories.belongsTo(Repositories, { foreignKey: { name: 'repository_id', allowNull: true } });
+Repositories.hasMany(Users_repositories, { foreignKey: { name: 'repository_id', allowNull: true } });
+
+Users_repositories.belongsTo(Users, { foreignKey: { name: 'user_id', allowNull: true } });
+Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: true } });
+
 
 const getAllPublicRepos = async (req, res) => {
   let where = {};
@@ -19,16 +24,15 @@ const getAllPublicRepos = async (req, res) => {
   let offset = req.query.offset;
   let startDate = req.query.startDate;
   let endDate = req.query.endDate;
-  console.log(req.query)
+
   let findAllClause = {
     order: [["id", "ASC"]],
-    include: [{
-      model: Parent_repositories,
-      seperate: true,
+    include: {
+      model: Users_repositories,
       include: {
-        model: Repositories,
+        model: Users,
       },
-    }],
+    },
     limit: limit,
     offset: offset,
   }
@@ -78,7 +82,6 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClauseObject = await getWhereClause();
-
   if (getWhereClauseObject) {
     findAllClause.where = getWhereClauseObject
     const repositories = await Repositories.findAll(findAllClause);
@@ -90,3 +93,4 @@ const getAllPublicRepos = async (req, res) => {
 };
 
 export default getAllPublicRepos;
+
