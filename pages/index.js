@@ -10,7 +10,7 @@ export default function Index() {
   let [limit, setLimit] = useState(5);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
-  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&like=${filter.name}&startDate=${filter.startDate}&endDate=${filter.endDate}`, fetcher);
+  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}`, fetcher);
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Loading...</div>
   console.log(data[0])
@@ -29,7 +29,7 @@ export default function Index() {
     },
     {
       name: 'Forked',
-    selector: d => d.is_forked ?<Link href="/get-forked-repo/[userId]" as={`/get-forked-repo/${d.id}`}><a>{d.parent_of.length}</a></Link>: <>✘</>,
+    selector: d => d.is_forked ?<Link href="/getForkedRepo/[userId]" as={`/getForkedRepo/${d.id}`}><a>{d.parent_of.length}</a></Link>: <>✘</>,
     },
     {
       name: 'Archived',
@@ -45,7 +45,7 @@ export default function Index() {
     },
     {
       name: 'Action',
-      selector: d => !d.is_forked && !d.is_suspicious ? <div className="d-flex"><h3 style={{color:"green"}}>✔</h3> <h3 style={{color:"red"}}>✘</h3></div>:<>✘</>,
+      selector: d => !d.is_forked && !d.is_suspicious ? <div className="d-flex"><span className="text-success mx-1">✔</span> <span className="text-danger mx-1">✘</span></div>:<>✘</>,
     },
   ];
   const customStyles = {
@@ -81,7 +81,6 @@ export default function Index() {
   ];
   return (
     <div>
-      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"></link>
       <DataTable
         title="Repositories"
         subHeader

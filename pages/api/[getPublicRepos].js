@@ -17,7 +17,7 @@ Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allow
 
 const getAllPublicRepos = async (req, res) => {
   let where = {};
-  let like = req.query.like;
+  let repoName = req.query.repoName;
   let forked = req.query.is_forked;
   let archived = req.query.is_archived;
   let disabled = req.query.is_disabled;
@@ -46,12 +46,12 @@ const getAllPublicRepos = async (req, res) => {
 
   const getWhereClause = () => {
 
-    if (like || forked || archived || disabled || startDate || endDate) {
-      if (like != "undefined") {
+    if (repoName || forked || archived || disabled || startDate || endDate) {
+      if (repoName != "undefined") {
         where = {
           [Sequelize.Op.or]: {
             name: {
-              [Sequelize.Op.iLike]: "%" + like + "%",
+              [Sequelize.Op.iLike]: "%" + repoName + "%",
             },
           },
         };
