@@ -13,10 +13,13 @@ Repositories.hasMany(Users_repositories, { foreignKey: { name: 'repository_id', 
 Users_repositories.belongsTo(Users, { foreignKey: { name: 'user_id', allowNull: true } });
 Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: true } });
 
+Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true }, as: "parent_of" });
 
 const getAllPublicRepos = async (req, res) => {
   let where = {};
+  let findUserWhereClause = {};
   let like = req.query.like;
+  let userName = req.query.userName;
   let forked = req.query.is_forked;
   let archived = req.query.is_archived;
   let disabled = req.query.is_disabled;
@@ -25,20 +28,50 @@ const getAllPublicRepos = async (req, res) => {
   let startDate = req.query.startDate;
   let endDate = req.query.endDate;
 
+  const getUsersWhereClause = () => {
+    if (userName != "undefined") {
+      findUserWhereClause = {
+        model: Users_repositories,
+        include: {
+          model: Users,
+          where: {
+            [Sequelize.Op.or]: {
+              name: {
+                [Sequelize.Op.iLike]: "%" + userName + "%",
+              },
+            },
+          }
+        },
+      }
+      return findUserWhereClause;
+    } else {
+      findUserWhereClause = {
+        model: Users_repositories,
+        include: {
+          model: Users,
+        },
+      }
+      return findUserWhereClause;
+    }
+  }
+
+  const getIncludeUsersModel = await getUsersWhereClause();
+
   let findAllClause = {
     order: [["id", "ASC"]],
-    include: {
-      model: Users_repositories,
-      include: {
-        model: Users,
+    include: [
+      getIncludeUsersModel
+      ,
+      {
+        model: Repositories,
+        as: "parent_of"
       },
-    },
+    ],
     limit: limit,
     offset: offset,
   }
 
   const getWhereClause = () => {
-
     if (like || forked || archived || disabled || startDate || endDate) {
       if (like != "undefined") {
         where = {
@@ -82,6 +115,7 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClauseObject = await getWhereClause();
+
   if (getWhereClauseObject) {
     findAllClause.where = getWhereClauseObject
     const repositories = await Repositories.findAll(findAllClause);
@@ -90,6 +124,7 @@ const getAllPublicRepos = async (req, res) => {
     const repositories = await Repositories.findAll(findAllClause);
     res.status(200).json(repositories);
   }
+
 };
 
 export default getAllPublicRepos;
