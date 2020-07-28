@@ -46,6 +46,11 @@ module.exports = (sequelize, Sequelize) => {
         defaultValue: false,
         allowNull: false,
       },
+      manual_review: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: true,
+          allowNull: false,
+      },
       is_private: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
