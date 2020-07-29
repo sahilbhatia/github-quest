@@ -134,4 +134,3 @@ const getAllPublicRepos = async (req, res) => {
 };
 
 export default getAllPublicRepos;
-

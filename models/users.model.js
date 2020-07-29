@@ -22,6 +22,9 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING(30),
         allowNull: false,
       },
+      last_fetched_at: {
+        type: 'TIMESTAMP',
+      },
       created_at: {
         type: 'TIMESTAMP',
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),

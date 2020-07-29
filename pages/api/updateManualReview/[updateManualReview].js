@@ -14,13 +14,21 @@ const updateManualRepos = async (req, res) => {
       });
 
       if (manualRepoReview[1].dataValues.parent_repo_id) {
-        await Repositories.update({ manual_review: false }, {
+        await Repositories.update({
+          manual_review: false,
+          review: "approved",
+          reviewed_at: moment.utc().format(),
+        }, {
           returning: true,
           where: { parent_repo_id: manualRepoReview[1].dataValues.parent_repo_id },
         });
       }
 
-      await Repositories.update({ manual_review: false }, {
+      await Repositories.update({
+        manual_review: false,
+        review: "approved",
+        reviewed_at: moment.utc().format(),
+      }, {
         returning: true,
         where: { parent_repo_id: manualRepoReview[1].dataValues.id },
       });
@@ -37,4 +45,3 @@ const updateManualRepos = async (req, res) => {
 }
 
 export default updateManualRepos;
-

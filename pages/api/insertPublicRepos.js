@@ -15,10 +15,11 @@ export default async function insertPublicRepos(req, res) {
   try {
     await cron.schedule(process.env.INSERT_PUBLIC_REPOS_SCHEDULE, async () => {
 
-      fetchReposAfterTime = await Fetch_repos_after_time_intervals.findAll({
-        limit: 1,
-        order: [["last_time_fetched_at", "DESC"]]
-      })
+      // fetchReposAfterTime = await Fetch_repos_after_time_intervals.findAll({
+      //   limit: 1,
+      //   order: [["last_time_fetched_at", "DESC"]]
+      // })
+
       const usersList = await Users.findAll({
         attributes: ["id", "github_handle"],
         order: [["id", "ASC"]]
@@ -27,9 +28,9 @@ export default async function insertPublicRepos(req, res) {
 
       const getRepoForSpecificUser = async () => {
         let usersRepos;
-        if (fetchReposAfterTime[0]) {
+        if (usersList[iterator].dataValues.last_fetched_at) {
           usersRepos = await request
-            .get("https://api.github.com/users/" + usersList[iterator].dataValues.github_handle + "/repos?since=" + fetchReposAfterTime[0].dataValues.last_time_fetched_at + "")
+            .get("https://api.github.com/users/" + usersList[iterator].dataValues.github_handle + "/repos?since=" + usersList[iterator].dataValues.last_fetched_at + "")
             .set(headers);
           return usersRepos;
 
@@ -62,6 +63,7 @@ export default async function insertPublicRepos(req, res) {
               is_private: item.private,
               created_at: item.created_at,
               updated_at: item.updated_at,
+              review: "pending",
             })
 
             await Users_repositories.create({
@@ -80,7 +82,6 @@ export default async function insertPublicRepos(req, res) {
             })
 
             if (insertParentRepositories) {
-
               const insertRepos = await Repositories.create({
                 github_repo_id: item.id,
                 name: item.name,
@@ -94,6 +95,8 @@ export default async function insertPublicRepos(req, res) {
                 updated_at: item.updated_at,
                 parent_repo_id: insertParentRepositories.dataValues.id,
                 is_suspicious: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? true : false,
+                review: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? "suspicious auto" : "pending",
+                reviewed_at: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? moment.utc().format() : null,
               })
 
               await Users_repositories.create({
@@ -101,7 +104,10 @@ export default async function insertPublicRepos(req, res) {
                 repository_id: insertRepos.dataValues.id,
               })
 
-              await Repositories.update({ is_forked: true }, {
+              await Repositories.update({
+                is_forked: true,
+                review: "pending"
+              }, {
                 returning: true,
                 where: { id: insertParentRepositories.dataValues.id },
               });
@@ -119,6 +125,7 @@ export default async function insertPublicRepos(req, res) {
                 is_forked: true,
                 created_at: parentRepo.body.parent.created_at,
                 updated_at: parentRepo.body.parent.updated_at,
+                review: "pending",
               })
 
               let userObject = await Users.findOne({
@@ -126,13 +133,12 @@ export default async function insertPublicRepos(req, res) {
               })
 
               if (userObject) {
-
                 await Users_repositories.create({
                   user_id: userObject.dataValues.id,
                   repository_id: insertParentRepositories.dataValues.id,
                 })
-
               }
+
               const insertRepos = await Repositories.create({
                 github_repo_id: item.id,
                 name: item.name,
@@ -145,6 +151,8 @@ export default async function insertPublicRepos(req, res) {
                 updated_at: item.updated_at,
                 parent_repo_id: insertParentRepositories.dataValues.id,
                 is_suspicious: insertParentRepositories.dataValues.is_private,
+                review: insertParentRepositories.dataValues.is_private ? "suspicious auto" : "pending",
+                reviewed_at: insertParentRepositories.dataValues.is_private ? moment.utc().format() : null,
               })
 
               await Users_repositories.create({
@@ -156,11 +164,13 @@ export default async function insertPublicRepos(req, res) {
           }
         })
         await Promise.all(mapData)
+        await Users.update({ last_fetched_at: moment.utc().format() }, {
+          returning: true,
+          plain: true,
+          where: { id: usersList[iterator].dataValues.id}
+        });
         iterator++;
       }
-      await Fetch_repos_after_time_intervals.create({
-        last_time_fetched_at: moment.utc().format(),
-      })
     });
 
     res.status(200).json({
@@ -173,4 +183,3 @@ export default async function insertPublicRepos(req, res) {
     })
   }
 }
-

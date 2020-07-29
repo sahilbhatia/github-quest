@@ -62,6 +62,16 @@ export default function Index({ filter, setFilter }) {
     data.is_suspicious = value;
     setFilter(data)
   };
+  const privateRepo = (value) => {
+    let data = { ...filter };
+    data.is_private = value;
+    setFilter(data)
+  };
+  const review = (value) => {
+    let data = { ...filter };
+    data.review = value;
+    setFilter(data)
+  };
   return (
     <div>
       <div className="d-flex justify-content-end mb-2">
@@ -90,27 +100,37 @@ export default function Index({ filter, setFilter }) {
           <Form.Control size="text" className={filter.repoName != undefined ? "border-success" : ""} placeholder="Search By Repo Name..." defaultValue={filter.repoName} onChange={(e => setRepoName(e.target.value))} />
         </div >
         <DropdownButton className="ml-2" variant={filter.is_forked != undefined ? "success" : "dark"} title="Forked">
-          <Dropdown.Item onClick={(e => forked(true))} >true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => forked(false))} >false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => forked(null))} >all</Dropdown.Item>
+          <Dropdown.Item onClick={(e => forked(true))} className={filter.is_forked ? "bg-info" : ""}>true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => forked(false))} className={filter.is_forked ==false ? "bg-info" : ""} >false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => forked(null))} className={filter.is_forked == undefined ? "bg-info" : ""}>all</Dropdown.Item>
         </DropdownButton>
         <DropdownButton className="ml-2" variant={filter.is_archived != undefined ? "success" : "dark"} title="Archived">
-          <Dropdown.Item onClick={(e => archived(true))}>true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => archived(false))}>false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => archived(null))}>all</Dropdown.Item>
+          <Dropdown.Item onClick={(e => archived(true))} className={filter.is_archived ? "bg-info" : ""}>true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => archived(false))} className={filter.is_archived ==false ? "bg-info" : ""}>false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => archived(null))} className={filter.is_archived == undefined ? "bg-info" : ""}>all</Dropdown.Item>
         </DropdownButton>
         <DropdownButton className="mx-2" variant={filter.is_disabled != undefined ? "success" : "dark"} title="Disabled">
-          <Dropdown.Item onClick={(e => disabled(true))}>true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => disabled(false))}>false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => disabled(null))}>all</Dropdown.Item>
+          <Dropdown.Item onClick={(e => disabled(true))} className={filter.is_disabled ? "bg-info" : ""}>true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => disabled(false))} className={filter.is_disabled ==false ? "bg-info" : ""}>false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => disabled(null))} className={filter.is_disabled == undefined ? "bg-info" : ""}>all</Dropdown.Item>
         </DropdownButton>
         <DropdownButton className="mx-2" variant={filter.is_suspicious != undefined ? "success" : "dark"} title="Suspicious">
-          <Dropdown.Item onClick={(e => suspicious(true))}>true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => suspicious(false))}>false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => suspicious(null))}>all</Dropdown.Item>
+          <Dropdown.Item onClick={(e => suspicious(true))} className={filter.is_suspicious ? "bg-info" : ""}>true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => suspicious(false))} className={filter.is_suspicious ==false ? "bg-info" : ""}>false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => suspicious(null))} className={filter.is_suspicious == undefined ? "bg-info" : ""}>all</Dropdown.Item>
+        </DropdownButton>
+        <DropdownButton className="mx-2" variant={filter.is_private != undefined ? "success" : "dark"} title="Private">
+          <Dropdown.Item onClick={(e => privateRepo(true))} className={filter.is_private ? "bg-info" : ""}>true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => privateRepo(false))} className={filter.is_private ==false ? "bg-info" : ""}>false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => privateRepo(null))} className={filter.is_private == undefined ? "bg-info" : ""}>all</Dropdown.Item>
+        </DropdownButton>
+        <DropdownButton className="mx-2" variant={filter.review != undefined ? "success" : "dark"} title="Review Status">
+          <Dropdown.Item onClick={(e => review("suspicious_auto"))} className={filter.review == "suspicious_auto" ? "bg-info" : ""}>suspicious(auto)</Dropdown.Item>
+          <Dropdown.Item onClick={(e => review("suspicious_manual"))} className={filter.review == "suspicious_manual"? "bg-info" : ""}>suspicious(manual)</Dropdown.Item>
+          <Dropdown.Item onClick={(e => review("approved"))} className={filter.review == "approved" ? "bg-info" : ""}>approved</Dropdown.Item>
+          <Dropdown.Item onClick={(e => review("pending"))} className={filter.review == "pending" ? "bg-info" : ""}>pending</Dropdown.Item>
         </DropdownButton>
         <Button className="ml-2" variant="light" onClick={reset}>↺</Button>
       </div>
     </div>)
 };
-

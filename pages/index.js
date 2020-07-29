@@ -12,7 +12,7 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
 
-  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}`, fetcher);
+  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}`, fetcher);
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Loading...</div>
   const onSelectManualReview = (id) => {
@@ -36,7 +36,20 @@ export default function Index() {
     },
     {
       name: 'description',
-      selector: d => d.description == null ? "description not provided" : d.description,
+      selector: d => (
+        <OverlayTrigger
+          placement="top"
+          delay={{ show: 250, hide: 400 }}
+          overlay={
+            <Tooltip>
+              {d.description == null ? "description not provided" : d.description}
+            </Tooltip>
+          }
+        >
+          <span>
+            {d.description == null ? "description not provided" : d.description}
+          </span>
+        </OverlayTrigger>),
     },
     {
       name: 'Forked',
@@ -115,7 +128,7 @@ export default function Index() {
     },
   ];
   return (
-    <div style={{ minHeight: "100vh" }}>
+    <div>
       <DataTable
         title="Repositories"
         subHeader
@@ -133,4 +146,3 @@ export default function Index() {
         data={data} />
     </div>)
 };
-

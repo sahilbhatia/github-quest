@@ -51,6 +51,18 @@ module.exports = (sequelize, Sequelize) => {
         defaultValue: true,
         allowNull: false,
       },
+      review: {
+        type: Sequelize.STRING(50),
+        allowNull: true,
+      },
+      reviewed_at: {
+        type: 'TIMESTAMP',
+        allowNull: true,
+      },
+      reviewed_by:{
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       is_private: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
