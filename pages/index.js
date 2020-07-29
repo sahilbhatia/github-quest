@@ -177,12 +177,15 @@ export default function Index() {
         data={data}
         conditionalRowStyles={conditionalRowStyles}
       />
+      {data.length==0 ?
+      <></>:
       <Pagination
         limit={limit}
         offset={offset}
         setOffset={setOffset}
         setLimit={setLimit}
         data={data} />
+      }
     </div>)
 };
 
