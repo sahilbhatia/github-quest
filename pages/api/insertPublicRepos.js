@@ -93,7 +93,7 @@ export default async function insertPublicRepos(req, res) {
                 created_at: item.created_at,
                 updated_at: item.updated_at,
                 parent_repo_id: insertParentRepositories.dataValues.id,
-                is_suspicious: insertParentRepositories.dataValues.is_private,
+                is_suspicious: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? true : false,
               })
 
               await Users_repositories.create({
@@ -173,3 +173,4 @@ export default async function insertPublicRepos(req, res) {
     })
   }
 }
+
