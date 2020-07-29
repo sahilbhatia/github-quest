@@ -1,7 +1,7 @@
 import { Button, Dropdown, DropdownButton, Form } from "react-bootstrap";
 import _ from "lodash";
 import DatePicker from "react-datepicker";
-export default function Index({ filter, setFilter }) {
+export default function Index({ filter, setFilter, minDate }) {
   let searchUserName;
   let serachRepoName;
 
@@ -42,6 +42,11 @@ export default function Index({ filter, setFilter }) {
     data.endDate = value;
     setFilter(data);
   };
+  const setDateReview = (value) => {
+    let data = { ...filter };
+    data.reviewDate = value;
+    setFilter(data);
+  };
   const forked = (value) => {
     let data = { ...filter };
     data.is_forked = value;
@@ -80,6 +85,7 @@ export default function Index({ filter, setFilter }) {
           onSelect={(e) => setDateFrom(e)}
           selected={filter.startDate}
           maxDate={new Date()}
+          minDate={new Date(minDate)}
           placeholderText="Select date from"
           className={filter.startDate != undefined ? "border-success" : ""}
         />
@@ -87,6 +93,7 @@ export default function Index({ filter, setFilter }) {
         <DatePicker
           onSelect={(e) => setDateTo(e)}
           selected={filter.endDate}
+          minDate={new Date(minDate)}
           maxDate={new Date()}
           placeholderText="Select date to"
           className={filter.endDate != undefined ? "border-success" : ""}
@@ -125,11 +132,19 @@ export default function Index({ filter, setFilter }) {
           <Dropdown.Item onClick={(e => privateRepo(null))} className={filter.is_private == undefined ? "bg-info" : ""}>all</Dropdown.Item>
         </DropdownButton>
         <DropdownButton className="mx-2" variant={filter.review != undefined ? "success" : "dark"} title="Review Status">
-          <Dropdown.Item onClick={(e => review("suspicious_auto"))} className={filter.review == "suspicious_auto" ? "bg-info" : ""}>suspicious(auto)</Dropdown.Item>
-          <Dropdown.Item onClick={(e => review("suspicious_manual"))} className={filter.review == "suspicious_manual"? "bg-info" : ""}>suspicious(manual)</Dropdown.Item>
+          <Dropdown.Item onClick={(e => review("suspicious auto"))} className={filter.review == "suspicious auto" ? "bg-info" : ""}>suspicious(auto)</Dropdown.Item>
+          <Dropdown.Item onClick={(e => review("suspicious manual"))} className={filter.review == "suspicious manual"? "bg-info" : ""}>suspicious(manual)</Dropdown.Item>
           <Dropdown.Item onClick={(e => review("approved"))} className={filter.review == "approved" ? "bg-info" : ""}>approved</Dropdown.Item>
           <Dropdown.Item onClick={(e => review("pending"))} className={filter.review == "pending" ? "bg-info" : ""}>pending</Dropdown.Item>
         </DropdownButton>
+        <DatePicker
+          onSelect={(e) => setDateReview(e)}
+          selected={filter.reviewDate}
+          minDate={new Date(minDate)}
+          maxDate={new Date()}
+          placeholderText="Select reviewed date"
+          className={filter.reviewDate != undefined ? "border-success" : ""}
+        />
         <Button className="ml-2" variant="light" onClick={reset}>↺</Button>
       </div>
     </div>)

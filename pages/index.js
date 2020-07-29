@@ -12,9 +12,11 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
 
-  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}`, fetcher);
+  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}&review=${filter.review}&is_private=${filter.is_private}&reviewDate=${filter.reviewDate}`, fetcher);
   if (error) return <div>Failed to load</div>
   if (!data) return <div>Loading...</div>
+  let minDate=data.date.min;
+  data =data.repositories;
   const onSelectManualReview = (id) => {
     fetch(`/api/updateManualReview/[updateManualReview]?id=${id}`);
     window.location.reload(false);
@@ -68,8 +70,25 @@ export default function Index() {
       selector: d => d.is_private ? <>✔</> : <>✘</>,
     },
     {
+      name: 'Review Status',
+      selector: d => (
+        <OverlayTrigger
+          placement="top"
+          delay={{ show: 250, hide: 400 }}
+          overlay={
+            <Tooltip>
+              {d.review}
+            </Tooltip>
+          }
+        >
+          <span>
+            {d.review}
+          </span>
+        </OverlayTrigger>),
+    },
+    {
       name: 'Action',
-      selector: d => !d.is_forked && !d.is_suspicious && d.manual_review ?
+      selector: d => d.review=="pending" ?
         <div className="d-flex">
           <OverlayTrigger
             placement="top"
@@ -95,11 +114,15 @@ export default function Index() {
           </OverlayTrigger>
         </div> : <>-</>,
     },
+    {
+      name: 'Review At',
+    selector: d=>d.reviewed_at?<>{d.reviewed_at.substring(0,10)}</>:<>-</>,
+    },
   ];
   const customStyles = {
     rows: {
       style: {
-        color: "black",
+        color: "green",
         backgroundColor: "blue",
       },
     },
@@ -120,10 +143,24 @@ export default function Index() {
   };
   const conditionalRowStyles = [
     {
-      when: row => row.is_suspicious,
+      when: row => row.review == "suspicious auto",
       style: {
         backgroundColor: 'red',
         color: 'red',
+      },
+    },
+    {
+      when: row => row.review == "suspicious manual",
+      style: {
+        backgroundColor: 'orange',
+        color: "orange",
+      },
+    },
+    {
+      when: row => row.review=="pending",
+      style: {
+        backgroundColor: 'black',
+        color: 'black',
       },
     },
   ];
@@ -132,7 +169,7 @@ export default function Index() {
       <DataTable
         title="Repositories"
         subHeader
-        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
+        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} />}
         columns={columns}
         customStyles={customStyles}
         data={data}

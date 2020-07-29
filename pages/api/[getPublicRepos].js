@@ -26,9 +26,11 @@ const getAllPublicRepos = async (req, res) => {
   let limit = req.query.limit;
   let offset = req.query.offset;
   let startDate = req.query.startDate;
+  let reviewDate = req.query.reviewDate;
   let endDate = req.query.endDate;
   let suspicious = req.query.is_suspicious;
-
+  let privateRepo = req.query.is_private;
+  let review = req.query.review;
   const getUsersWhereClause = () => {
     if (userName != "undefined") {
       findUserWhereClause = {
@@ -73,9 +75,8 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClause = () => {
-    if (like || forked || archived || disabled || startDate || endDate || suspicious) {
+    if (like || forked || archived || disabled || startDate || endDate || suspicious || privateRepo || review || reviewDate) {
       if (like != "undefined") {
-        console.log(like);
         where = {
           [Sequelize.Op.or]: {
             name: {
@@ -83,6 +84,10 @@ const getAllPublicRepos = async (req, res) => {
             },
           },
         };
+      }
+
+      if (review == "suspicious auto" || review == "suspicious manual" || review == "approved" || review == "pending") {
+        where.review = review;
       }
 
       if (forked == "true" || forked == "false") {
@@ -96,10 +101,14 @@ const getAllPublicRepos = async (req, res) => {
       if (disabled == "true" || disabled == "false") {
         where.is_disabled = JSON.parse(disabled);
       }
-      
-      if(suspicious == "true" || suspicious == "false" ) {
+
+      if (suspicious == "true" || suspicious == "false") {
         where.is_suspicious = JSON.parse(suspicious);
-        }
+      }
+
+      if (privateRepo == "true" || privateRepo == "false") {
+        where.is_private = JSON.parse(privateRepo);
+      }
 
       if (startDate != "undefined" && endDate != "undefined") {
         where.created_at = {
@@ -115,7 +124,14 @@ const getAllPublicRepos = async (req, res) => {
           [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
         }
       }
-
+      if(reviewDate!="undefined"){
+        let date = moment(reviewDate).toISOString();
+        let endDate = moment(date.add(1,"days"));
+        let startDate = moment(date.subtract(1,"days"));
+        where.reviewed_at = {
+          [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
+        }
+      }
       return where;
     }
   }
@@ -125,12 +141,23 @@ const getAllPublicRepos = async (req, res) => {
   if (getWhereClauseObject) {
     findAllClause.where = getWhereClauseObject
     const repositories = await Repositories.findAll(findAllClause);
-    res.status(200).json(repositories);
+    const earliestDate = await Repositories.findAll({
+      attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+    })
+    let data = {};
+    data.repositories = repositories,
+      data.date = earliestDate[0];
+    res.status(200).json(data);
   } else {
     const repositories = await Repositories.findAll(findAllClause);
-    res.status(200).json(repositories);
+    const earliestDate = await Repositories.findAll({
+      attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+    })
+    let data = {};
+    data.repositories = repositories,
+      data.date = earliestDate[0];
+    res.status(200).json(data);
   }
-
 };
 
 export default getAllPublicRepos;

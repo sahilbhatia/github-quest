@@ -2,21 +2,31 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
+const moment = require('moment');
 
 const updateManualRepos = async (req, res) => {
   const repoId = req.query.id;
   try {
     if (repoId != "undefined") {
-      const manualRepoReview = await Repositories.update({ manual_review: false }, {
+      try{
+      const manualRepoReview = await Repositories.update({
+        manual_review: false,
+        review: 'approved',
+        reviewed_at: moment.utc().format(),
+      }, {
         returning: true,
         plain: true,
         where: { id: repoId },
       });
+    } catch(err){
+      console.log(err)
+
+    }
 
       if (manualRepoReview[1].dataValues.parent_repo_id) {
         await Repositories.update({
           manual_review: false,
-          review: "approved",
+          review: 'approved',
           reviewed_at: moment.utc().format(),
         }, {
           returning: true,
@@ -26,7 +36,7 @@ const updateManualRepos = async (req, res) => {
 
       await Repositories.update({
         manual_review: false,
-        review: "approved",
+        review: 'approved',
         reviewed_at: moment.utc().format(),
       }, {
         returning: true,
