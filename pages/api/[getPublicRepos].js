@@ -27,6 +27,7 @@ const getAllPublicRepos = async (req, res) => {
   let offset = req.query.offset;
   let startDate = req.query.startDate;
   let endDate = req.query.endDate;
+  let suspicious = req.query.is_suspicious;
 
   const getUsersWhereClause = () => {
     if (userName != "undefined") {
@@ -72,7 +73,7 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClause = () => {
-    if (like || forked || archived || disabled || startDate || endDate) {
+    if (like || forked || archived || disabled || startDate || endDate || suspicious) {
       if (like != "undefined") {
         console.log(like);
         where = {
@@ -95,6 +96,10 @@ const getAllPublicRepos = async (req, res) => {
       if (disabled == "true" || disabled == "false") {
         where.is_disabled = JSON.parse(disabled);
       }
+      
+      if(suspicious == "true" || suspicious == "false" ) {
+        where.is_suspicious = JSON.parse(suspicious);
+        }
 
       if (startDate != "undefined" && endDate != "undefined") {
         where.created_at = {
@@ -129,3 +134,4 @@ const getAllPublicRepos = async (req, res) => {
 };
 
 export default getAllPublicRepos;
+

@@ -30,6 +30,7 @@ export default function Index({ filter, setFilter }) {
   };
   const reset = () => {
     setFilter({});
+    window.location.reload();
   };
   const setDateFrom = (value) => {
     let data = { ...filter };
@@ -54,6 +55,11 @@ export default function Index({ filter, setFilter }) {
   const disabled = (value) => {
     let data = { ...filter };
     data.is_disabled = value;
+    setFilter(data)
+  };
+  const suspicious = (value) => {
+    let data = { ...filter };
+    data.is_suspicious = value;
     setFilter(data)
   };
   return (
@@ -97,6 +103,11 @@ export default function Index({ filter, setFilter }) {
           <Dropdown.Item onClick={(e => disabled(true))}>true</Dropdown.Item>
           <Dropdown.Item onClick={(e => disabled(false))}>false</Dropdown.Item>
           <Dropdown.Item onClick={(e => disabled(null))}>all</Dropdown.Item>
+        </DropdownButton>
+        <DropdownButton className="mx-2" variant={filter.is_suspicious != undefined ? "success" : "dark"} title="Suspicious">
+          <Dropdown.Item onClick={(e => suspicious(true))}>true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => suspicious(false))}>false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => suspicious(null))}>all</Dropdown.Item>
         </DropdownButton>
         <Button className="ml-2" variant="light" onClick={reset}>↺</Button>
       </div>
