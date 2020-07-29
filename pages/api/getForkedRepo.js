@@ -16,31 +16,37 @@ Users_repositories.belongsTo(Users, { foreignKey: { name: 'user_id', allowNull: 
 Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: true } });
 
 const getForkedRepos = async (req, res) => {
-
-  let data = await Repositories.findAll({
-    where: { parent_repo_id: req.query.id },
-    include: [
-      {
-        model: Repositories,
-        as: "child_of",
-        include: [{
+  try {
+    let data = await Repositories.findAll({
+      where: { parent_repo_id: req.query.id },
+      include: [
+        {
           model: Repositories,
-          as: "parent_of",
-        }]
-      },
-      {
-        model: Repositories,
-        as: "parent_of"
-      },
-      {
-        model: Users_repositories,
-        include: {
-          model: Users,
+          as: "child_of",
+          include: [{
+            model: Repositories,
+            as: "parent_of",
+          }]
         },
-      }
-    ]
-  });
-  res.json(data);
+        {
+          model: Repositories,
+          as: "parent_of"
+        },
+        {
+          model: Users_repositories,
+          include: {
+            model: Users,
+          },
+        }
+      ]
+    });
+    res.json(data);
+  } catch {
+    res.status(500).json({
+      message: "internal server error"
+    })
+  }
 };
 
 export default getForkedRepos;
+

@@ -1,15 +1,16 @@
 import { useRouter } from 'next/router'
 import useSWR from 'swr';
 import DataTable from "react-data-table-component";
-import { useState } from "react";
+import ErrorComponent from "../../components/errorpage"
+import LoadingComponent from "../../components/loaderpage";
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Post() {
   const router = useRouter()
   const { userId } = router.query
   let { data, error } = useSWR(`/api/getForkedRepo?id=${userId}`, fetcher);
-  if (error) return <div>Failed to load</div>
-  if (!data) return <div>Loading...</div>
+  if (error) return <ErrorComponent code={error.status}/>
+  if (!data) return <LoadingComponent/>
   const columns = [
     {
       name: 'Owner Name',
@@ -66,3 +67,4 @@ export default function Post() {
       />
     </div>)
 };
+

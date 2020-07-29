@@ -23,6 +23,7 @@
     "sequelize-cli": "^5.5.1",
     "styled-components": "^5.1.1",
     "superagent": "^5.3.1",
-    "swr": "^0.2.3"
+    "swr": "^0.2.3",
+    "yup": "^0.29.2"
   }
 }

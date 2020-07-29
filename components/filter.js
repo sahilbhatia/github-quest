@@ -1,6 +1,10 @@
 import { Button, Dropdown, DropdownButton, Form } from "react-bootstrap";
 import _ from "lodash";
 import DatePicker from "react-datepicker";
+import styled from "styled-components";
+const MyDatePicker = styled(DatePicker)`
+    width: "10px";
+`;
 export default function Index({ filter, setFilter, minDate }) {
   let searchUserName;
   let serachRepoName;
@@ -136,8 +140,9 @@ export default function Index({ filter, setFilter, minDate }) {
           <Dropdown.Item onClick={(e => review("suspicious manual"))} className={filter.review == "suspicious manual"? "bg-info" : ""}>suspicious(manual)</Dropdown.Item>
           <Dropdown.Item onClick={(e => review("approved"))} className={filter.review == "approved" ? "bg-info" : ""}>approved</Dropdown.Item>
           <Dropdown.Item onClick={(e => review("pending"))} className={filter.review == "pending" ? "bg-info" : ""}>pending</Dropdown.Item>
+          <Dropdown.Item onClick={(e => review(null))} className={filter.review == undefined ? "bg-info" : ""}>all</Dropdown.Item>
         </DropdownButton>
-        <DatePicker
+        <MyDatePicker
           onSelect={(e) => setDateReview(e)}
           selected={filter.reviewDate}
           minDate={new Date(minDate)}
@@ -145,7 +150,8 @@ export default function Index({ filter, setFilter, minDate }) {
           placeholderText="Select reviewed date"
           className={filter.reviewDate != undefined ? "border-success" : ""}
         />
-        <Button className="ml-2" variant="light" onClick={reset}>↺</Button>
+        <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
       </div>
     </div>)
 };
+

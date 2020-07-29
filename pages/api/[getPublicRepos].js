@@ -121,12 +121,13 @@ const getAllPublicRepos = async (req, res) => {
       } else if (startDate != "undefined") {
         endDate = moment().toISOString();
         where.created_at = {
-          [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
+          [Sequelize.Op.between]: moment(startDate).toISOString()
         }
       }
-      if(reviewDate!="undefined"){
-        let endDate = moment(reviewDate).add(1,"days").toISOString();
-        let startDate = moment(reviewDate).subtract(1,"days").toISOString();
+
+      if (reviewDate != "undefined") {
+        let endDate = moment(reviewDate).add(1, "days").toISOString();
+        let startDate = moment(reviewDate).subtract(1, "days").toISOString();
         where.reviewed_at = {
           [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
         }
@@ -138,26 +139,39 @@ const getAllPublicRepos = async (req, res) => {
   const getWhereClauseObject = await getWhereClause();
 
   if (getWhereClauseObject) {
-    findAllClause.where = getWhereClauseObject
-    const repositories = await Repositories.findAll(findAllClause);
-    const earliestDate = await Repositories.findAll({
-      attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
-    })
-    let data = {};
-    data.repositories = repositories,
-      data.date = earliestDate[0];
-    res.status(200).json(data);
+    try {
+      findAllClause.where = getWhereClauseObject
+      const repositories = await Repositories.findAll(findAllClause);
+      const earliestDate = await Repositories.findAll({
+        attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+      })
+      let data = {};
+      data.repositories = repositories,
+        data.date = earliestDate[0];
+      res.status(200).json(data);
+    } catch{
+      res.status(500).json({
+        message: "internal server error"
+      })
+    }
   } else {
-    const repositories = await Repositories.findAll(findAllClause);
-    const earliestDate = await Repositories.findAll({
-      attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
-    })
-    let data = {};
-    data.repositories = repositories,
-      data.date = earliestDate[0];
-    res.status(200).json(data);
+    try {
+      const repositories = await Repositories.findAll(findAllClause);
+      const earliestDate = await Repositories.findAll({
+        attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+      })
+      let data = {};
+      data.repositories = repositories,
+        data.date = earliestDate[0];
+      res.status(200).json(data);
+    } catch {
+      res.status(500).json({
+        message: "internal server error"
+      })
+    }
   }
 };
 
 export default getAllPublicRepos;
+
 

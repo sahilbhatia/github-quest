@@ -5,6 +5,8 @@ import { useState } from "react";
 import Filter from "../components/filter";
 import Pagination from "../components/pagination"
 import Link from "next/link";
+import ErrorComponent from "../components/errorpage";
+import LoadingComponent from "../components/loaderpage";
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Index() {
@@ -13,8 +15,8 @@ export default function Index() {
   let [filter, setFilter] = useState({});
 
   let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}&review=${filter.review}&is_private=${filter.is_private}&reviewDate=${filter.reviewDate}`, fetcher);
-  if (error) return <div>Failed to load</div>
-  if (!data) return <div>Loading...</div>
+  if (error) return <ErrorComponent code={error.status}/>
+  if (!data) return <LoadingComponent/>
   let minDate=data.date.min;
   data =data.repositories;
   const onSelectManualReview = (id) => {
@@ -37,7 +39,7 @@ export default function Index() {
       selector: d => <a href={d.url}>{d.name}</a>,
     },
     {
-      name: 'description',
+      name: 'Description',
       selector: d => (
         <OverlayTrigger
           placement="top"
@@ -99,7 +101,7 @@ export default function Index() {
               </Tooltip>
             }
           >
-            <button onClick={(e) => { onSelectManualReview(d.id) }} className="text-success mx-1">✔</button>
+            <Button size="sm" onClick={(e) => { onSelectManualReview(d.id) }} className="text-success mx-1 bg-white">✔</Button>
           </OverlayTrigger>
           <OverlayTrigger
             placement="top"
@@ -110,12 +112,12 @@ export default function Index() {
              </Tooltip>
             }
           >
-            <button onClick={(e) => { onSelectSuspeciousMark(d.id) }} className="text-danger mx-2">✘</button>
+            <Button size="sm" onClick={(e) => { onSelectSuspeciousMark(d.id) }} className="text-danger mx-2 bg-white">✘</Button>
           </OverlayTrigger>
         </div> : <>-</>,
     },
     {
-      name: 'Review At',
+      name: 'Review On',
     selector: d=>d.reviewed_at?<>{d.reviewed_at.substring(0,10)}</>:<>-</>,
     },
   ];
@@ -123,7 +125,7 @@ export default function Index() {
     rows: {
       style: {
         color: "green",
-        backgroundColor: "blue",
+        backgroundColor: "white",
       },
     },
     headCells: {
@@ -136,7 +138,7 @@ export default function Index() {
     },
     cells: {
       style: {
-        backgroundColor: "whitesmoke",
+        backgroundColor: "",
         fontSize: "16px",
       },
     },
@@ -145,27 +147,27 @@ export default function Index() {
     {
       when: row => row.review == "suspicious auto",
       style: {
-        backgroundColor: 'red',
+        backgroundColor: 'white',
         color: 'red',
       },
     },
     {
       when: row => row.review == "suspicious manual",
       style: {
-        backgroundColor: 'orange',
+        backgroundColor: 'white',
         color: "orange",
       },
     },
     {
       when: row => row.review=="pending",
       style: {
-        backgroundColor: 'black',
+        backgroundColor: 'whitesmoke',
         color: 'black',
       },
     },
   ];
   return (
-    <div>
+    <div style={{height:"100vh"}}>
       <DataTable
         title="Repositories"
         subHeader
@@ -183,3 +185,4 @@ export default function Index() {
         data={data} />
     </div>)
 };
+
