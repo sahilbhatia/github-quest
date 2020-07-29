@@ -125,9 +125,8 @@ const getAllPublicRepos = async (req, res) => {
         }
       }
       if(reviewDate!="undefined"){
-        let date = moment(reviewDate).toISOString();
-        let endDate = moment(date.add(1,"days"));
-        let startDate = moment(date.subtract(1,"days"));
+        let endDate = moment(reviewDate).add(1,"days").toISOString();
+        let startDate = moment(reviewDate).subtract(1,"days").toISOString();
         where.reviewed_at = {
           [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
         }
@@ -161,3 +160,4 @@ const getAllPublicRepos = async (req, res) => {
 };
 
 export default getAllPublicRepos;
+
