@@ -171,7 +171,7 @@ export default async function insertPublicRepos(req, res) {
 
         } else if (result.length === 1 && item.fork == true) {
 
-          insertParentRepositories = await Repositories.findOne({
+          let insertParentRepositories = await Repositories.findOne({
             where: { id: result[0].dataValues.parent_repo_id}
           })
 
