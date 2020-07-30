@@ -112,16 +112,16 @@ const getAllPublicRepos = async (req, res) => {
 
       if (startDate != "undefined" && endDate != "undefined") {
         where.created_at = {
-          [Sequelize.Op.between]: [moment(startDate).toISOString(), moment(endDate).toISOString()]
+          [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
         }
       } else if (endDate != "undefined") {
         where.created_at = {
-          [Sequelize.Op.lt]: moment(endDate).toISOString(),
+          [Sequelize.Op.lt]: new Date(endDate),
         }
       } else if (startDate != "undefined") {
-        endDate = moment().toISOString();
+        const date = new Date();
         where.created_at = {
-          [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
+          [Sequelize.Op.between]: [new Date(startDate), date]
         }
       }
 
@@ -129,7 +129,7 @@ const getAllPublicRepos = async (req, res) => {
         let endDate = moment(reviewDate).add(1, "days").toISOString();
         let startDate = moment(reviewDate).subtract(1, "days").toISOString();
         where.reviewed_at = {
-          [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
+          [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
         }
       }
       return where;
@@ -173,5 +173,4 @@ const getAllPublicRepos = async (req, res) => {
 };
 
 export default getAllPublicRepos;
-
 

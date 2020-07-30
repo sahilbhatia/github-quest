@@ -19,7 +19,7 @@ export default function Index() {
   if (!data) return <LoadingComponent/>
   const minDate=data.date.min;
   data =data.repositories;
-
+  let utc =new Date().getTimezoneOffset;
   const onSelectManualReview = (id) => {
     fetch(`/api/updateManualReview/[updateManualReview]?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
@@ -119,7 +119,7 @@ export default function Index() {
     },
     {
       name: 'Review On',
-    selector: d=>d.reviewed_at?<>{moment(d.reviewed_at).utcOffset("+05:30").format().substring(0,10)}</>:<>-</>,
+    selector: d=>d.reviewed_at?<>{moment(d.reviewed_at).utcOffset(utc).format().substring(0,10)}</>:<>-</>,
     },
   ];
   const customStyles = {
@@ -177,7 +177,7 @@ export default function Index() {
       <DataTable
         title="Repositories"
         subHeader
-        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minimumDate={minDate} />}
+        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} />}
         columns={columns}
         customStyles={customStyles}
         data={data}

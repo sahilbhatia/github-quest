@@ -1,11 +1,7 @@
 import { Button, Dropdown, DropdownButton, Form } from "react-bootstrap";
 import _ from "lodash";
 import DatePicker from "react-datepicker";
-import styled from "styled-components";
-const MyDatePicker = styled(DatePicker)`
-    width: "10px";
-`;
-export default function Index({ filter, setFilter, minimumDate }) {
+export default function Index({ filter, setFilter, minDate }) {
   let searchUserName;
   let serachRepoName;
 
@@ -89,7 +85,7 @@ export default function Index({ filter, setFilter, minimumDate }) {
           onSelect={(e) => setDateFrom(e)}
           selected={filter.startDate}
           maxDate={new Date()}
-          minDate={new Date(minimumDate)}
+          minDate={new Date(minDate)}
           placeholderText="Select date from"
           className={filter.startDate != undefined ? "border-success" : ""}
         />
@@ -97,8 +93,8 @@ export default function Index({ filter, setFilter, minimumDate }) {
         <DatePicker
           onSelect={(e) => setDateTo(e)}
           selected={filter.endDate}
-          minDate={new Date(minimumDate)}
           maxDate={new Date()}
+          minDate={new Date(minDate)}
           placeholderText="Select date to"
           className={filter.endDate != undefined ? "border-success" : ""}
         />
@@ -142,11 +138,11 @@ export default function Index({ filter, setFilter, minimumDate }) {
           <Dropdown.Item onClick={(e => review("pending"))} className={filter.review == "pending" ? "bg-info" : ""}>pending</Dropdown.Item>
           <Dropdown.Item onClick={(e => review(null))} className={filter.review == undefined ? "bg-info" : ""}>all</Dropdown.Item>
         </DropdownButton>
-        <MyDatePicker
+        <DatePicker
           onSelect={(e) => setDateReview(e)}
           selected={filter.reviewDate}
-          minDate={new Date(minimumDate)}
           maxDate={new Date()}
+          minDate={new Date(minDate)}
           placeholderText="Select reviewed date"
           className={filter.reviewDate != undefined ? "border-success" : ""}
         />
