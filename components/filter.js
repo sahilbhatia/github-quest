@@ -154,4 +154,3 @@ export default function Index({ filter, setFilter, minimumDate }) {
       </div>
     </div>)
 };
-

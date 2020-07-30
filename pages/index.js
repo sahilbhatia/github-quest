@@ -123,6 +123,11 @@ export default function Index() {
     },
   ];
   const customStyles = {
+    table: {
+      style: {
+        minHeight: "100vh",
+      },
+    },
     rows: {
       style: {
         color: "green",
@@ -168,7 +173,7 @@ export default function Index() {
     },
   ];
   return (
-    <div style={{height:"100vh"}}>
+    <div>
       <DataTable
         title="Repositories"
         subHeader
@@ -189,4 +194,3 @@ export default function Index() {
       }
     </div>)
 };
-
