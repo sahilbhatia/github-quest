@@ -2,13 +2,12 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
-const moment = require('moment');
 const yup = require("yup");
 
 const updateSuspiciousRepos = async (req, res) => {
   const repoId = req.query.id;
+  const updatedAt = req.query.updatedAt;
   let suspeciousRepo;
-  
   yup.object().shape({
     repoId: yup
       .number()
@@ -27,12 +26,13 @@ const updateSuspiciousRepos = async (req, res) => {
       suspeciousRepo = await Repositories.update({
         is_suspicious: true,
         review: "suspicious manual",
-        reviewed_at: moment.utc().format(),
+        reviewed_at: updatedAt,
       }, {
         returning: true,
         plain: true,
         where: { id: repoId },
       });
+
     } catch{
       res.status(404).json({
         message: "repository with specified id not found"
@@ -44,7 +44,7 @@ const updateSuspiciousRepos = async (req, res) => {
         await Repositories.update({
           is_suspicious: true,
           review: "suspicious manual",
-          reviewed_at: moment.utc().format(),
+          reviewed_at: updatedAt,
         }, {
           returning: true,
           where: { parent_repo_id: suspeciousRepo[1].dataValues.parent_repo_id },
@@ -59,7 +59,7 @@ const updateSuspiciousRepos = async (req, res) => {
       await Repositories.update({
         is_suspicious: true,
         review: "suspicious manual",
-        reviewed_at: moment.utc().format(),
+        reviewed_at: updatedAt,
       }, {
         returning: true,
         where: { parent_repo_id: suspeciousRepo[1].dataValues.id },

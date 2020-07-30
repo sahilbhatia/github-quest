@@ -2,11 +2,11 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
-const moment = require('moment');
 const yup = require("yup");
 
 const updateManualRepos = async (req, res) => {
   const repoId = req.query.id;
+  const updatedAt = req.query.updatedAt;
   let manualRepoReview;
   yup.object().shape({
     repoId: yup
@@ -27,7 +27,7 @@ const updateManualRepos = async (req, res) => {
       manualRepoReview = await Repositories.update({
         manual_review: false,
         review: 'approved',
-        reviewed_at: moment.utc().format(),
+        reviewed_at: updatedAt,
       }, {
         returning: true,
         plain: true,
@@ -44,7 +44,7 @@ const updateManualRepos = async (req, res) => {
         await Repositories.update({
           manual_review: false,
           review: 'approved',
-          reviewed_at: moment.utc().format(),
+          reviewed_at: updatedAt,
         }, {
           returning: true,
           where: { parent_repo_id: manualRepoReview[1].dataValues.parent_repo_id },
@@ -59,7 +59,7 @@ const updateManualRepos = async (req, res) => {
     await Repositories.update({
       manual_review: false,
       review: 'approved',
-      reviewed_at: moment.utc().format(),
+      reviewed_at: updatedAt,
     }, {
       returning: true,
       where: { parent_repo_id: manualRepoReview[1].dataValues.id },
@@ -72,5 +72,3 @@ const updateManualRepos = async (req, res) => {
 }
 
 export default updateManualRepos;
-
-

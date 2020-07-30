@@ -1,30 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+### Github Quest
+
+## Prerequisites
+
+1. Firstly we need users and organizations information in users table as name, email, github_handle.
+2. Require github access token for fetching githunb repos.
 
 ## Getting Started
 
-First, run the development server:
+# Prerequisites for running the server:
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+Need postgres connection.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. For running development server give environment variables of development database and select NODE_ENV as development.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+2. For running production server give environment variables of production database and select NODE_ENV as production.
 
-## Learn More
+# Running the server:
 
-To learn more about Next.js, take a look at the following resources:
+1. run command npm install ("it will install the required dependencies necessary for running the server").
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. run command npx sequelize db:migrate ("this command will migrate all the").
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+3. insert all the users in users table along with their name, email and github_handle.
 
-## Deploy on Vercel
+4. for starting server run command npm run dev or yarn dev.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. for starting cron job call API "http://localhost:3000/api/insertPublicRepos" (" API id /api/insertPublicRepos").
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

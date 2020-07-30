@@ -9,7 +9,6 @@ import ErrorComponent from "../components/errorpage";
 import LoadingComponent from "../components/loaderpage";
 import moment from "moment";
 const fetcher = (url) => fetch(url).then((res) => res.json())
-
 export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
@@ -20,13 +19,14 @@ export default function Index() {
   if (!data) return <LoadingComponent/>
   const minDate=data.date.min;
   data =data.repositories;
+
   const onSelectManualReview = (id) => {
-    fetch(`/api/updateManualReview/[updateManualReview]?id=${id}`);
+    fetch(`/api/updateManualReview/[updateManualReview]?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
   }
 
   const onSelectSuspeciousMark = (id) => {
-    fetch(`/api/updateSuspiciousRepos/[updateSuspiciousRepos]?id=${id}`);
+    fetch(`/api/updateSuspiciousRepos/[updateSuspiciousRepos?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
   }
 
