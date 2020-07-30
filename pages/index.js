@@ -7,6 +7,7 @@ import Pagination from "../components/pagination"
 import Link from "next/link";
 import ErrorComponent from "../components/errorpage";
 import LoadingComponent from "../components/loaderpage";
+import moment from "moment";
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Index() {
@@ -14,7 +15,7 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
  
-  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}&review=${filter.review}&is_private=${filter.is_private}&reviewDate=${filter.reviewDate}`, fetcher);
+  let { data, error} = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}&review=${filter.review}&is_private=${filter.is_private}&reviewDate=${filter.reviewDate}`, fetcher);
   if (error) return <ErrorComponent code={error.status}/>
   if (!data) return <LoadingComponent/>
   const minDate=data.date.min;
@@ -118,7 +119,7 @@ export default function Index() {
     },
     {
       name: 'Review On',
-    selector: d=>d.reviewed_at?<>{d.reviewed_at.substring(0,10)}</>:<>-</>,
+    selector: d=>d.reviewed_at?<>{moment(d.reviewed_at).utcOffset("+05:30").format().substring(0,10)}</>:<>-</>,
     },
   ];
   const customStyles = {

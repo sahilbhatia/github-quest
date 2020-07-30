@@ -77,5 +77,3 @@ const updateSuspiciousRepos = async (req, res) => {
 }
 
 export default updateSuspiciousRepos;
-
-
