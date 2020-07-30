@@ -8,14 +8,15 @@ import Link from "next/link";
 import ErrorComponent from "../components/errorpage";
 import LoadingComponent from "../components/loaderpage";
 import moment from "moment";
-const fetcher = (url) => fetch(url).then((res) => res.json())
+let code;
+const fetcher = (url) => fetch(url).then((res) => { code=res.status ; return res.json()})
 export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
  
-  let { data, error} = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}&review=${filter.review}&is_private=${filter.is_private}&reviewDate=${filter.reviewDate}`, fetcher);
-  if (error) return <ErrorComponent code={error.status}/>
+  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}&review=${filter.review}&is_private=${filter.is_private}&reviewDate=${filter.reviewDate}`, fetcher);
+  if (error || code==400 || code==404 || code==500) return <ErrorComponent code={code}/>
   if (!data) return <LoadingComponent/>
   const minDate=data.date.min;
   data =data.repositories;
