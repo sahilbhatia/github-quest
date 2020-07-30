@@ -121,7 +121,7 @@ const getAllPublicRepos = async (req, res) => {
       } else if (startDate != "undefined") {
         endDate = moment().toISOString();
         where.created_at = {
-          [Sequelize.Op.between]: moment(startDate).toISOString()
+          [Sequelize.Op.between]: [moment(startDate).toISOString(), endDate]
         }
       }
 

@@ -5,7 +5,7 @@ import styled from "styled-components";
 const MyDatePicker = styled(DatePicker)`
     width: "10px";
 `;
-export default function Index({ filter, setFilter, minDate }) {
+export default function Index({ filter, setFilter, minimumDate }) {
   let searchUserName;
   let serachRepoName;
 
@@ -89,7 +89,7 @@ export default function Index({ filter, setFilter, minDate }) {
           onSelect={(e) => setDateFrom(e)}
           selected={filter.startDate}
           maxDate={new Date()}
-          minDate={new Date(minDate)}
+          minDate={new Date(minimumDate)}
           placeholderText="Select date from"
           className={filter.startDate != undefined ? "border-success" : ""}
         />
@@ -97,7 +97,7 @@ export default function Index({ filter, setFilter, minDate }) {
         <DatePicker
           onSelect={(e) => setDateTo(e)}
           selected={filter.endDate}
-          minDate={new Date(minDate)}
+          minDate={new Date(minimumDate)}
           maxDate={new Date()}
           placeholderText="Select date to"
           className={filter.endDate != undefined ? "border-success" : ""}
@@ -145,7 +145,7 @@ export default function Index({ filter, setFilter, minDate }) {
         <MyDatePicker
           onSelect={(e) => setDateReview(e)}
           selected={filter.reviewDate}
-          minDate={new Date(minDate)}
+          minDate={new Date(minimumDate)}
           maxDate={new Date()}
           placeholderText="Select reviewed date"
           className={filter.reviewDate != undefined ? "border-success" : ""}
