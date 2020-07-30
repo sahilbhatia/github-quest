@@ -85,7 +85,7 @@ export default async function insertPublicRepos(req, res) {
               updated_at: item.updated_at,
               parent_repo_id: insertParentRepositories.dataValues.id,
               is_suspicious: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? true : false,
-              review: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? "suspicious auto" : null,
+              review: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? "suspicious auto" : "no action",
               reviewed_at: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? moment.utc().format() : null,
             })
 
@@ -141,7 +141,7 @@ export default async function insertPublicRepos(req, res) {
               updated_at: item.updated_at,
               parent_repo_id: insertParentRepositories.dataValues.id,
               is_suspicious: insertParentRepositories.dataValues.is_private,
-              review: insertParentRepositories.dataValues.is_private ? "suspicious auto" : null,
+              review: insertParentRepositories.dataValues.is_private ? "suspicious auto" : "no action",
               reviewed_at: insertParentRepositories.dataValues.is_private ? moment.utc().format() : null,
             })
 
@@ -174,6 +174,10 @@ export default async function insertPublicRepos(req, res) {
           let insertParentRepositories = await Repositories.findOne({
             where: { id: result[0].dataValues.parent_repo_id}
           })
+          
+          let parentOfAnyRepo = await Repositories.findOne({
+            where: { parent_repo_id: result[0].dataValues.id}
+          })
 
           await Repositories.update({
             name: item.name,
@@ -182,11 +186,11 @@ export default async function insertPublicRepos(req, res) {
             is_disabled: item.disabled,
             is_archived: item.archived,
             is_private: item.private,
-            is_forked: item.fork,
+            is_forked: parentOfAnyRepo ? item.fork : false,
             created_at: item.created_at,
             updated_at: item.updated_at,
             is_suspicious: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? true : false,
-            review: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? "suspicious auto" : null,
+            review: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? "suspicious auto" : "no action",
             reviewed_at: insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious ? moment.utc().format() : null,
           }, {
             returning: true,
