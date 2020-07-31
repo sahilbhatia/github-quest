@@ -16,7 +16,7 @@ module.exports = (sequelize, Sequelize) => {
       },
       name: {
         type: Sequelize.STRING(50),
-        allowNull: false,
+        allowNull: true,
       },
       url: {
         type: Sequelize.TEXT,
@@ -75,6 +75,10 @@ module.exports = (sequelize, Sequelize) => {
           key: "id",
         },
       },
+      error_details: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
       created_at: {
         type: 'TIMESTAMP',
       },
@@ -90,3 +94,4 @@ module.exports = (sequelize, Sequelize) => {
   );
   return Repositories;
 };
+

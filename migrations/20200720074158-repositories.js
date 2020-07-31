@@ -18,7 +18,7 @@ module.exports = {
         },
         name: {
           type: Sequelize.STRING(50),
-          allowNull: false,
+          allowNull: true,
         },
         url: {
           type: Sequelize.TEXT,
@@ -76,6 +76,10 @@ module.exports = {
             model: "repositories",
             key: "id",
           },
+        },
+        error_details: {
+          type: Sequelize.TEXT,
+          allowNull: true,
         },
         created_at: {
           type: 'TIMESTAMP',
