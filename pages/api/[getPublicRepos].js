@@ -18,21 +18,23 @@ Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allow
 const getAllPublicRepos = async (req, res) => {
   let where = {};
   let findUserWhereClause = {};
-  let like = req.query.repoName;
-  let userName = req.query.userName;
-  let forked = req.query.is_forked;
-  let archived = req.query.is_archived;
-  let disabled = req.query.is_disabled;
-  let limit = req.query.limit;
-  let offset = req.query.offset;
-  let startDate = req.query.startDate;
-  let reviewDate = req.query.reviewDate;
-  let endDate = req.query.endDate;
-  let suspicious = req.query.is_suspicious;
-  let privateRepo = req.query.is_private;
-  let review = req.query.review;
+  let {
+    repoName,
+    userName,
+    is_forked,
+    is_archived,
+    is_disabled,
+    limit,
+    offset,
+    startDate,
+    reviewDate,
+    endDate,
+    is_suspicious,
+    is_private,
+    review
+  } = req.query;
   const getUsersWhereClause = () => {
-    if (userName != "undefined") {
+    if (userName != undefined) {
       findUserWhereClause = {
         model: Users_repositories,
         include: {
@@ -75,57 +77,54 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClause = () => {
-    if (like || forked || archived || disabled || startDate || endDate || suspicious || privateRepo || review || reviewDate) {
-      if (like != "undefined") {
+    if (repoName || is_forked || is_archived || is_disabled || startDate || endDate || is_suspicious || is_private || review || reviewDate) {
+      if (repoName != undefined) {
         where = {
           [Sequelize.Op.or]: {
             name: {
-              [Sequelize.Op.iLike]: "%" + like + "%",
+              [Sequelize.Op.iLike]: "%" + repoName + "%",
             },
           },
         };
       }
-
-      if (review == "suspicious auto" || review == "suspicious manual" || review == "approved" || review == "pending") {
+      if (review != "undefined") {
         where.review = review;
       }
-
-      if (forked == "true" || forked == "false") {
-        where.is_forked = JSON.parse(forked);
+      if (is_forked == "true" || is_forked == "false") {
+        where.is_forked = is_forked;
       }
 
-      if (archived == "true" || archived == "false") {
-        where.is_archived = JSON.parse(archived);
+      if (is_archived == "true" || is_archived == "false") {
+        where.is_archived = is_archived;
       }
 
-      if (disabled == "true" || disabled == "false") {
-        where.is_disabled = JSON.parse(disabled);
+      if (is_disabled == "true" || is_disabled == "false") {
+        where.is_disabled = is_disabled;
       }
 
-      if (suspicious == "true" || suspicious == "false") {
-        where.is_suspicious = JSON.parse(suspicious);
+      if (is_suspicious == "true" || is_suspicious == "false") {
+        where.is_suspicious = is_suspicious;
       }
 
-      if (privateRepo == "true" || privateRepo == "false") {
-        where.is_private = JSON.parse(privateRepo);
+      if (is_private == "true" || is_private == "false") {
+        where.is_private = is_private;
       }
-
-      if (startDate != "undefined" && endDate != "undefined") {
+      if (startDate != undefined && endDate != undefined) {
         where.created_at = {
           [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
         }
-      } else if (endDate != "undefined") {
+      } else if (endDate != undefined) {
         where.created_at = {
           [Sequelize.Op.lt]: new Date(endDate),
         }
-      } else if (startDate != "undefined") {
+      } else if (startDate != undefined) {
         const date = new Date();
         where.created_at = {
           [Sequelize.Op.between]: [new Date(startDate), date]
         }
       }
 
-      if (reviewDate != "undefined") {
+      if (reviewDate != undefined) {
         let endDate = moment(reviewDate).add(1, "days").toISOString();
         let startDate = moment(reviewDate).subtract(1, "days").toISOString();
         where.reviewed_at = {
@@ -149,7 +148,7 @@ const getAllPublicRepos = async (req, res) => {
       data.repositories = repositories,
         data.date = earliestDate[0];
       res.status(200).json(data);
-    } catch{
+    } catch {
       res.status(500).json({
         message: "internal server error"
       })
@@ -173,4 +172,3 @@ const getAllPublicRepos = async (req, res) => {
 };
 
 export default getAllPublicRepos;
-

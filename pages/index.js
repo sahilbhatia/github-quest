@@ -9,28 +9,31 @@ import ErrorComponent from "../components/errorpage";
 import LoadingComponent from "../components/loaderpage";
 import moment from "moment";
 let code;
-const fetcher = (url) => fetch(url).then((res) => { code=res.status ; return res.json()})
+const fetcher = (url) => fetch(url).then((res) => { code = res.status; return res.json() })
 export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
- 
-  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}&is_forked=${filter.is_forked}&is_archived=${filter.is_archived}&is_disabled=${filter.is_disabled}&repoName=${filter.repoName}&startDate=${filter.startDate}&endDate=${filter.endDate}&userName=${filter.userName}&is_suspicious=${filter.is_suspicious}&review=${filter.review}&is_private=${filter.is_private}&reviewDate=${filter.reviewDate}`, fetcher);
-  if (error || code==400 || code==404 || code==500) return <ErrorComponent code={code}/>
-  if (!data) return <LoadingComponent/>
-  const minDate=data.date.min;
-  data =data.repositories;
-  let utc =new Date().getTimezoneOffset;
+
+  const getQueryString = (filterObject) => {
+    let filterString = "";
+    Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
+    return filterString;
+  }
+  let { data, error } = useSWR(`/api/[getPublicRepos]?limit=${limit}&offset=${offset}${getQueryString(filter)}`, fetcher);
+  if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
+  if (!data) return <LoadingComponent />
+  const minDate = data.date.min;
+  data = data.repositories;
+  let utc = new Date().getTimezoneOffset;
   const onSelectManualReview = (id) => {
     fetch(`/api/updateManualReview/[updateManualReview]?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
   }
-
   const onSelectSuspeciousMark = (id) => {
     fetch(`/api/updateSuspiciousRepos/[updateSuspiciousRepos?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
   }
-
   const columns = [
     {
       name: 'Owner Name',
@@ -92,7 +95,7 @@ export default function Index() {
     },
     {
       name: 'Action',
-      selector: d => d.review=="pending" ?
+      selector: d => d.review == "pending" ?
         <div className="d-flex">
           <OverlayTrigger
             placement="top"
@@ -120,13 +123,13 @@ export default function Index() {
     },
     {
       name: 'Review On',
-    selector: d=>d.reviewed_at?<>{moment(d.reviewed_at).utcOffset(utc).format().substring(0,10)}</>:<>-</>,
+      selector: d => d.reviewed_at ? <>{moment(d.reviewed_at).utcOffset(utc).format().substring(0, 10)}</> : <>-</>,
     },
   ];
   const customStyles = {
     table: {
       style: {
-        minHeight: "100vh",
+        minHeight: "25vh",
       },
     },
     rows: {
@@ -166,7 +169,7 @@ export default function Index() {
       },
     },
     {
-      when: row => row.review=="pending",
+      when: row => row.review == "pending",
       style: {
         backgroundColor: 'whitesmoke',
         color: 'black',
@@ -184,14 +187,14 @@ export default function Index() {
         data={data}
         conditionalRowStyles={conditionalRowStyles}
       />
-      {data.length==0 ?
-      <></>:
-      <Pagination
-        limit={limit}
-        offset={offset}
-        setOffset={setOffset}
-        setLimit={setLimit}
-        data={data} />
+      {data.length == 0 ?
+        <></> :
+        <Pagination
+          limit={limit}
+          offset={offset}
+          setOffset={setOffset}
+          setLimit={setLimit}
+          data={data} />
       }
     </div>)
 };
