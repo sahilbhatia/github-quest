@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router'
 import useSWR from 'swr';
 import DataTable from "react-data-table-component";
+import { Button } from "react-bootstrap";
 import ErrorComponent from "../../components/errorpage"
 import LoadingComponent from "../../components/loaderpage";
 let code;
@@ -24,11 +25,11 @@ export default function Post() {
 
     {
       name: 'forked child count',
-      selector: d => d.parent_of.length,
+      selector: d => d.children.length,
     },
     {
       name: 'forked count of same parent',
-      selector: d => d.child_of.parent_of.length,
+      selector: d => d.parent.children.length,
     },
     {
       name: 'Suspicious',
@@ -66,6 +67,6 @@ export default function Post() {
         data={data}
         highlightOnHover
       />
+      <Button href="/" className="m-3 bg-dark">Back</Button>
     </div>)
 };
-

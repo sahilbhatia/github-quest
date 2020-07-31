@@ -5,8 +5,8 @@ const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
 
-Repositories.belongsTo(Repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true }, as: "child_of" })
-Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true }, as: "parent_of" })
+Repositories.belongsTo(Repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true }, as: "parent" })
+Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true }, as: "children" })
 
 
 Users_repositories.belongsTo(Repositories, { foreignKey: { name: 'repository_id', allowNull: true } });
@@ -22,15 +22,15 @@ const getForkedRepos = async (req, res) => {
       include: [
         {
           model: Repositories,
-          as: "child_of",
+          as: "parent",
           include: [{
             model: Repositories,
-            as: "parent_of",
+            as: "children",
           }]
         },
         {
           model: Repositories,
-          as: "parent_of"
+          as: "children"
         },
         {
           model: Users_repositories,
