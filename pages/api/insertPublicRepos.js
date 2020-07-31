@@ -25,11 +25,13 @@ export default async function insertPublicRepos(req, res) {
           usersRepos = await request
             .get("https://api.github.com/users/" + usersList[iterator].dataValues.github_handle + "/repos?since=" + usersList[iterator].dataValues.last_fetched_at + "")
             .set(headers);
-          return usersRepos;
-        } catch (err) {
+          if (usersRepos) {
+            return usersRepos;
+          } else {
+            return null;
+          }
+        } catch {
           return null;
-          // console.log(usersList[iterator].dataValues.github_handle)
-          // console.log(err)
         }
 
       } else {
@@ -42,14 +44,13 @@ export default async function insertPublicRepos(req, res) {
           } else {
             return null;
           }
-        } catch (err) {
+        } catch {
           return null;
         }
       }
     }
 
     while (iterator < usersList.length) {
-      console.log(usersList[iterator].dataValues.github_handle)
       if (usersList[iterator].dataValues.github_handle) {
         const data = await getRepoForSpecificUser();
         if (data) {
@@ -58,7 +59,7 @@ export default async function insertPublicRepos(req, res) {
               where: { github_repo_id: item.id },
               order: [["id", "ASC"]]
             });
-            console.log(result.length)
+
             if (result.length === 0 && item.fork === false) {
               try {
                 const insertRepos = await Repositories.create({
@@ -78,9 +79,8 @@ export default async function insertPublicRepos(req, res) {
                   user_id: usersList[iterator].dataValues.id,
                   repository_id: insertRepos.dataValues.id,
                 })
-              } catch (err) {
-                console.log("+++++++++++++++++++++++++++++++++++++ error at first insertion")
-                console.log(err)
+              } catch {
+                return;
               }
             } else if (result.length === 0 && item.fork == true) {
 
@@ -150,18 +150,17 @@ export default async function insertPublicRepos(req, res) {
                                     user_id: userObject.dataValues.id,
                                     repository_id: insertParentRepositories.dataValues.id,
                                   })
-                                } catch (err) {
-                                  console.log(err)
+                                } catch {
+                                  return;
                                 }
                               }
-                            } catch (err) {
-                              console.log("+++++++++++++++++++++first suspicious")
-                              console.log(err)
+                            } catch {
+                              return;
                             }
                           })
                           return;
-                        } catch (err) {
-                          console.log(err)
+                        } catch {
+                          return;
                         }
                       } else {
                         return;
@@ -170,17 +169,15 @@ export default async function insertPublicRepos(req, res) {
 
                     await insertSuspiciousChildRepos();
 
-                    await Repositories.update({
+                    const abc = await Repositories.update({
                       is_forked: true,
                       review: "pending"
                     }, {
                       returning: true,
                       where: { id: insertParentRepositories.dataValues.id },
                     });
-                  } catch (err) {
-                    console.log(item.url)
-                    console.log("error at repo update parent")
-                    console.log(err)
+                  } catch {
+                    return;
                   }
                 } else {
                   try {
@@ -209,8 +206,8 @@ export default async function insertPublicRepos(req, res) {
                           user_id: userObject.dataValues.id,
                           repository_id: insertParentRepositories.dataValues.id,
                         })
-                      } catch (err) {
-                        console.log(err)
+                      } catch {
+                        return;
                       }
                     }
 
@@ -239,7 +236,6 @@ export default async function insertPublicRepos(req, res) {
                     const insertSuspiciousChildRepos = async () => {
                       if (insertParentRepositories.dataValues.is_private || insertParentRepositories.dataValues.is_suspicious) {
                         try {
-                          console.log("+++++++++++++++++++++insert")
                           const childRepo = await request
                             .get(`https://api.github.com/repos/${usersList[iterator].dataValues.github_handle}/${item.name}/forks`)
                             .set(headers);
@@ -270,27 +266,25 @@ export default async function insertPublicRepos(req, res) {
                                     user_id: userObject.dataValues.id,
                                     repository_id: insertParentRepositories.dataValues.id,
                                   })
-                                } catch (err) {
-                                  console.log(err)
+                                } catch {
+                                  return;
                                 }
                               }
-                            } catch (err) {
-                              console.log("error at suspicious+++++++++++++++++++++++++")
-                              console.log(err)
+                            } catch {
+                              return;
                             }
                           })
                           return;
-                        } catch (err) {
-                          console.log(err)
+                        } catch {
+                          return;
                         }
                       } else {
                         return;
                       }
                     }
                     await insertSuspiciousChildRepos();
-                  } catch (err) {
-                    console.log("error at new parent and child++++++++++++++++++")
-                    console.log(err)
+                  } catch {
+                    return;
                   }
                 }
 
@@ -311,15 +305,6 @@ export default async function insertPublicRepos(req, res) {
                   is_suspicious: false,
                   review: "pending",
                 })
-
-                //console.log(parentRepo)
-                console.log("++++++++++++++++++++++++++++++++++++++++++++")
-                console.log(insertRepos)
-                // console.log(err.response)
-                console.log("++++++++++++++++++++++++++++++++++++++++++++")
-
-                console.log("++++++++++++++++++++++++++++++++++++++++ eroor ar parent insertion")
-                console.log(err.response.text)
               }
             } else if (result.length === 1 && item.fork == false) {
               try {
@@ -331,7 +316,6 @@ export default async function insertPublicRepos(req, res) {
                   is_disabled: item.disabled,
                   is_archived: item.archived,
                   is_private: item.private,
-                  is_forked: item.fork,
                   created_at: item.created_at,
                   updated_at: item.updated_at,
                   review: "pending",
@@ -340,9 +324,8 @@ export default async function insertPublicRepos(req, res) {
                   where: { github_repo_id: result[0].dataValues.github_repo_id },
                 })
 
-              } catch (err) {
-                console.log("error at length 1 fork false+++++++++++++++++++++")
-                console.log(err)
+              } catch {
+                return;
               }
 
             } else if (result.length === 1 && item.fork == true) {
@@ -383,7 +366,6 @@ export default async function insertPublicRepos(req, res) {
                     }
                   }
                 }
-
                 let insertParentRepositories = await get_parentRepo_data();
 
                 let parentOfAnyRepo = await Repositories.findOne({
@@ -407,10 +389,8 @@ export default async function insertPublicRepos(req, res) {
                   returning: true,
                   where: { github_repo_id: result[0].dataValues.github_repo_id },
                 })
-              } catch (err) {
-                console.log("error at length 1 fork true++++++++++++++++++")
-                console.log(result[0])
-                console.log(err)
+              } catch {
+                return;
               }
             }
           })
@@ -421,8 +401,7 @@ export default async function insertPublicRepos(req, res) {
               plain: true,
               where: { id: usersList[iterator].dataValues.id }
             });
-          } catch (err) {
-            console.log(err)
+          } catch {
           }
         }
       }
@@ -430,11 +409,12 @@ export default async function insertPublicRepos(req, res) {
     }
   }
 
-  // cron.schedule(process.env.INSERT_PUBLIC_REPOS_SCHEDULE, async () => {
-  // insertRepos();
-  // });
-  await insertRepos();
+  cron.schedule(process.env.INSERT_PUBLIC_REPOS_SCHEDULE, async () => {
+    insertRepos();
+  });
+
+  insertRepos();
   res.status(200).json({
-    message: "cron Job Activated successfully"
+    message: "cron Job Activated successfully for inserting repositories"
   })
-}
+};

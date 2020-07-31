@@ -9,19 +9,14 @@ const Roles = db.roles;
 export default async function insertUsers(req, res) {
 
   const insertUsersFunction = async () => {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED;
     const intranetUsersList = await request
       .get("https://stage-intranet.joshsoftware.com/api/v1/users")
       .set({
         "Content-Type": "application/json",
         "Accept": "application/json"
       });
-
     const listOfUsers = await JSON.parse(intranetUsersList.text);
-
-    console.log(listOfUsers.users.length)
     const insertUsersList = await listOfUsers.users.map(async (item) => {
-      console.log(item)
       const find_user = await Users.findOne({
         where: {
           email: item.email,
@@ -48,18 +43,23 @@ export default async function insertUsers(req, res) {
             return null;
           }
         }
-        const github_handle = await get_github_handle();
-        const role = await Roles.findOne({
-          where: {
-            role: item.role,
-          }
-        })
-        await Users.create({
-          name: item.name ? item.name : "unknown",
-          role_id: role.dataValues.id,
-          email: item.email,
-          github_handle: github_handle,
-        })
+        try {
+          const github_handle = await get_github_handle();
+          const role = await Roles.findOne({
+            where: {
+              role: item.role,
+            }
+          })
+
+          await Users.create({
+            name: item.name ? item.name : "unknown",
+            role_id: role.dataValues.id,
+            email: item.email,
+            github_handle: github_handle,
+          })
+        } catch {
+          return
+        }
       } else if (find_user && item.public_profile) {
         try {
           const get_github_handle = () => {
@@ -82,7 +82,6 @@ export default async function insertUsers(req, res) {
               return null;
             }
           }
-
           const github_handle = await get_github_handle();
           if (find_user.dataValues.github_handle != github_handle) {
             await Users.update({
@@ -92,22 +91,20 @@ export default async function insertUsers(req, res) {
               returning: true,
               where: { email: item.email },
             })
-
           }
-        } catch (err) {
-          console.log(err)
+        } catch {
+          return;
         }
       }
     });
 
     await Promise.all(insertUsersList)
-
   }
-  // cron.schedule(process.env.INSERT_PUBLIC_REPOS_SCHEDULE, async () => {
-  //   insertUsersFunction();
-  // });
-  await insertUsersFunction();
+   cron.schedule(process.env.INSERT_USERS_FROM_INTRANET, async () => {
+     insertUsersFunction();
+   });
+ insertUsersFunction();
   res.status(200).json({
-    message: "cron Job Activated successfully for insert users"
+    message: "cron Job Activated successfully for inserting users"
   })
-}
+};

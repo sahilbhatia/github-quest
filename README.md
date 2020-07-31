@@ -2,8 +2,7 @@
 
 ## Prerequisites
 
-1. Firstly we need users and organizations information in users table as name, email, github_handle.
-2. Require github access token for fetching githunb repos.
+1. Require github access token for fetching githunb repos.
 
 ## Getting Started
 
@@ -11,20 +10,25 @@
 
 Need postgres connection.
 
-1. For running development server give environment variables of development database and select NODE_ENV as development.
+Environment variables are required to run server refer .env.sample file for respective environment variables.
 
-2. For running production server give environment variables of production database and select NODE_ENV as production.
+1. For running development server give environment variables of development database and select NODE_ENV=development.
+
+2. For running production server give environment variables of production database and select NODE_ENV=production.
 
 # Running the server:
 
 1. run command npm install ("it will install the required dependencies necessary for running the server").
 
-2. run command npx sequelize db:migrate ("this command will migrate all the").
+2. run command npx sequelize db:create ("this command create database with the name given in .env file").
+3. run command npx sequelize db:migrate ("this command will migrate all the database").
 
-3. insert all the users in users table along with their name, email and github_handle.
+4. run command npx sequelize db:seed:all ("this command is for seeding roles into database").
 
-4. for starting server run command npm run dev or yarn dev.
+5. for starting server run command npm run dev or yarn dev.
 
-5. for starting cron job call API "http://localhost:3000/api/insertPublicRepos" (" API id /api/insertPublicRepos").
+6. insert all the users in users table by calling API "http://localhost:3000/api/insertUsers" ("this API will activate a cron job for fetching users from intranet and insert them into database").
 
-6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+7. for starting cron job call API "http://localhost:3000/api/insertPublicRepos" ("this API will activate cron job for fetching repos from github with corresponding users and store them into database").
+
+8. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
