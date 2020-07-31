@@ -169,7 +169,7 @@ export default async function insertPublicRepos(req, res) {
 
                     await insertSuspiciousChildRepos();
 
-                    const abc = await Repositories.update({
+                    await Repositories.update({
                       is_forked: true,
                       review: "pending"
                     }, {
@@ -304,6 +304,10 @@ export default async function insertPublicRepos(req, res) {
                   parent_repo_id: null,
                   is_suspicious: false,
                   review: "pending",
+                })
+                await Users_repositories.create({
+                  user_id: usersList[iterator].dataValues.id,
+                  repository_id: insertRepos.dataValues.id,
                 })
               }
             } else if (result.length === 1 && item.fork == false) {
