@@ -31,7 +31,8 @@ const getAllPublicRepos = async (req, res) => {
     endDate,
     is_suspicious,
     is_private,
-    review
+    review,
+    error_details
   } = req.query;
   const getUsersWhereClause = () => {
     if (userName != undefined) {
@@ -77,7 +78,7 @@ const getAllPublicRepos = async (req, res) => {
   }
 
   const getWhereClause = () => {
-    if (repoName || is_forked || is_archived || is_disabled || startDate || endDate || is_suspicious || is_private || review || reviewDate) {
+    if (repoName || is_forked || is_archived || is_disabled || startDate || endDate || is_suspicious || is_private || review || reviewDate || error_details) {
       if (repoName != undefined) {
         where = {
           [Sequelize.Op.or]: {
@@ -87,7 +88,7 @@ const getAllPublicRepos = async (req, res) => {
           },
         };
       }
-      if (review != "undefined") {
+      if (review != undefined && review != "undefined") {
         where.review = review;
       }
       if (is_forked == "true" || is_forked == "false") {
@@ -109,6 +110,7 @@ const getAllPublicRepos = async (req, res) => {
       if (is_private == "true" || is_private == "false") {
         where.is_private = is_private;
       }
+
       if (startDate != undefined && endDate != undefined) {
         where.created_at = {
           [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
@@ -129,6 +131,18 @@ const getAllPublicRepos = async (req, res) => {
         let startDate = moment(reviewDate).subtract(1, "days").toISOString();
         where.reviewed_at = {
           [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
+        }
+      }
+
+      if (error_details == "true" || error_details == "false") {
+        if (error_details == "true") {
+          where.error_details = {
+            [Sequelize.Op.ne]: null
+          }
+        } else if (error_details == "false") {
+          where.error_details = {
+            [Sequelize.Op.eq]: null
+          }
         }
       }
       return where;

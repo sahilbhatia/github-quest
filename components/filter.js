@@ -77,34 +77,45 @@ export default function Index({ filter, setFilter, minDate }) {
     data.review = value;
     setFilter(data)
   };
+  const errorStatus = (value) => {
+    let data = { ...filter };
+    data.error_details = value;
+    setFilter(data)
+  };
   return (
     <div>
       <div className="d-flex justify-content-end mb-2">
-        <Form.Label>From :</Form.Label>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
           selected={filter.startDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
-          placeholderText="Select date from"
-          className={filter.startDate != undefined ? "border-success" : ""}
+          placeholderText="Select search date from"
+          className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
         />
-        <Form.Label>To :</Form.Label>
         <DatePicker
           onSelect={(e) => setDateTo(e)}
           selected={filter.endDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
-          placeholderText="Select date to"
-          className={filter.endDate != undefined ? "border-success" : ""}
+          placeholderText="Select search date to"
+          className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
+        />
+        <DatePicker
+          onSelect={(e) => setDateReview(e)}
+          selected={filter.reviewDate}
+          maxDate={new Date()}
+          minDate={new Date(minDate)}
+          placeholderText="Select reviewed date"
+          className={`${filter.reviewDate != undefined ? "border-success" : ""} mx-1`}
         />
       </div>
       <div className="d-flex">
         <div className="mr-2 d-flex">
-          <Form.Control className={filter.userName != undefined ? "border-success" : ""} size="text" placeholder="Search By User Name..." defaultValue={filter.userName} onChange={(e => setUserName(e.target.value))} />
+          <Form.Control className={filter.userName != undefined ? "border-success" : ""} size="text" placeholder="User Name..." defaultValue={filter.userName} onChange={(e => setUserName(e.target.value))} />
         </div >
         <div className="mr-2 d-flex">
-          <Form.Control size="text" className={filter.repoName != undefined ? "border-success" : ""} placeholder="Search By Repo Name..." defaultValue={filter.repoName} onChange={(e => setRepoName(e.target.value))} />
+          <Form.Control size="text" className={filter.repoName != undefined ? "border-success" : ""} placeholder="Repo Name..." defaultValue={filter.repoName} onChange={(e => setRepoName(e.target.value))} />
         </div >
         <DropdownButton className="ml-2" variant={filter.is_forked != undefined ? "success" : "dark"} title="Forked">
           <Dropdown.Item onClick={(e => forked(true))} className={filter.is_forked ? "bg-info" : ""}>true</Dropdown.Item>
@@ -136,17 +147,14 @@ export default function Index({ filter, setFilter, minDate }) {
           <Dropdown.Item onClick={(e => review("suspicious manual"))} className={filter.review == "suspicious manual" ? "bg-info" : ""}>suspicious(manual)</Dropdown.Item>
           <Dropdown.Item onClick={(e => review("approved"))} className={filter.review == "approved" ? "bg-info" : ""}>approved</Dropdown.Item>
           <Dropdown.Item onClick={(e => review("pending"))} className={filter.review == "pending" ? "bg-info" : ""}>pending</Dropdown.Item>
-          <Dropdown.Item onClick={(e => review("no review"))} className={filter.review == "no review" ? "bg-info" : ""}>no review</Dropdown.Item>
+          <Dropdown.Item onClick={(e => review("no action"))} className={filter.review == "no action" ? "bg-info" : ""}>no action</Dropdown.Item>
           <Dropdown.Item onClick={(e => review(undefined))} className={filter.review == undefined ? "bg-info" : ""}>all</Dropdown.Item>
         </DropdownButton>
-        <DatePicker
-          onSelect={(e) => setDateReview(e)}
-          selected={filter.reviewDate}
-          maxDate={new Date()}
-          minDate={new Date(minDate)}
-          placeholderText="Select reviewed date"
-          className={filter.reviewDate != undefined ? "border-success" : ""}
-        />
+        <DropdownButton className="mx-2" variant={filter.error_details != undefined ? "success" : "dark"} title="Error Status">
+          <Dropdown.Item onClick={(e => errorStatus(true))} className={filter.error_details ? "bg-info" : ""}>true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => errorStatus(false))} className={filter.error_details == false ? "bg-info" : ""}>false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => errorStatus(undefined))} className={filter.error_details == undefined ? "bg-info" : ""}>all</Dropdown.Item>
+        </DropdownButton>
         <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
       </div>
     </div>)

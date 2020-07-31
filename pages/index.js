@@ -41,13 +41,26 @@ export default function Index() {
     },
     {
       name: 'Name',
-      selector: d => <a href={d.url}>{d.name}</a>,
+      selector: d => <a href={d.url}>
+        <OverlayTrigger
+          placement="top"
+          delay={{ show: 250, hide: 400 }}
+          overlay={
+            <Tooltip>
+              {d.name}
+            </Tooltip>
+          }
+        >
+          <span>
+            {d.name}
+          </span>
+        </OverlayTrigger></a>,
     },
     {
       name: 'Description',
       selector: d => (
         <OverlayTrigger
-          placement="top"
+          placement="left"
           delay={{ show: 250, hide: 400 }}
           overlay={
             <Tooltip>
@@ -129,7 +142,7 @@ export default function Index() {
   const customStyles = {
     table: {
       style: {
-        minHeight: "25vh",
+        minHeight: "40vh",
       },
     },
     rows: {
@@ -173,6 +186,13 @@ export default function Index() {
       style: {
         backgroundColor: 'whitesmoke',
         color: 'black',
+      },
+    },
+    {
+      when: row => row.review == "no action",
+      style: {
+        backgroundColor: 'white',
+        color: 'purple',
       },
     },
   ];
