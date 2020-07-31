@@ -214,7 +214,8 @@ export default function Index() {
           offset={offset}
           setOffset={setOffset}
           setLimit={setLimit}
-          data={data} />
+          data={data}
+        />
       }
     </div>)
 };
