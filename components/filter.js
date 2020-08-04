@@ -175,20 +175,26 @@ export default function Index({ filter, setFilter, minDate }) {
         />
       </div>
       <div className="d-flex">
+        <div style={{width:"150px"}} className="mx-2">
       <AsyncSelect
             loadOptions={promiseOptions}
             name="select username"
-            placeholder="select username"
+            placeholder="username..."
             defaultInputValue={filter.userName}
             onChange={setUserName}
+            className="w-100"
           />
+          </div>
+          <div style={{width:"150px"}}>
           <AsyncSelect
             loadOptions={promiseOptionsRepos}
             name="select repository"
-            placeholder="select repository"
+            placeholder="repository..."
             defaultInputValue={filter.repoName}
             onChange={setRepoName}
+            className="w-100"
           />
+          </div>
         <DropdownButton className="ml-2" variant={setColor(filter.is_forked)} title="Forked">
           <Dropdown.Item onClick={(e => forked(true))} className="bg-success">true</Dropdown.Item>
           <Dropdown.Item onClick={(e => forked(false))} className="bg-danger" >false</Dropdown.Item>
