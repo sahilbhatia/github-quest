@@ -24,8 +24,10 @@ export default function Index() {
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const minDate = data.date.min;
-  data = data.repositories;
-  let utc = new Date().getTimezoneOffset;
+  data = data.repositories; 
+  let utcTimeOffset = new Date().getTimezoneOffset();
+  let utc = utcTimeOffset * (-2);
+
   const onSelectManualReview = (id) => {
     fetch(`/api/updateManualReview/[updateManualReview]?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
@@ -37,7 +39,20 @@ export default function Index() {
   const columns = [
     {
       name: 'Owner Name',
-      selector: d => d.users_repositories[0] ? d.users_repositories[0].user.name : "Unknown",
+      selector: d => d.users_repositories[0] ? <OverlayTrigger
+      placement="top"
+      delay={{ show: 250, hide: 400 }}
+      overlay={
+        <Tooltip>
+          {d.users_repositories[0].user.name}
+        </Tooltip>
+      }
+    >
+      <span>
+        {d.users_repositories[0].user.name}
+      </span>
+    </OverlayTrigger> : "Unknown",
+    "maxWidth": "40px"
     },
     {
       name: 'Name',
@@ -55,6 +70,7 @@ export default function Index() {
             {d.name}
           </span>
         </OverlayTrigger></a>,
+        "maxWidth": "40px"
     },
     {
       name: 'Description',
@@ -72,22 +88,27 @@ export default function Index() {
             {d.description == null ? "description not provided" : d.description}
           </span>
         </OverlayTrigger>),
+        "maxWidth": "300px"
     },
     {
       name: 'Forked',
       selector: d => d.is_forked ? <Link href="/getForkedRepo/[userId]" as={`/getForkedRepo/${d.id}`}><a>{d.parent_of.length}</a></Link> : <>✘</>,
+      "maxWidth": "10px"
     },
     {
       name: 'Archived',
       selector: d => d.is_archived ? <>✔</> : <>✘</>,
+      "maxWidth": "10px"
     },
     {
       name: 'Disabled',
       selector: d => d.is_disabled ? <>✔</> : <>✘</>,
+      "maxWidth": "10px"
     },
     {
       name: 'Private',
       selector: d => d.is_private ? <>✔</> : <>✘</>,
+      "maxWidth": "10px"
     },
     {
       name: 'Review Status',
@@ -105,6 +126,7 @@ export default function Index() {
             {d.review}
           </span>
         </OverlayTrigger>),
+        "maxWidth": "40px"
     },
     {
       name: 'Action',
@@ -133,10 +155,12 @@ export default function Index() {
             <Button size="sm" onClick={(e) => { onSelectSuspeciousMark(d.id) }} className="text-danger mx-2 bg-white">✘</Button>
           </OverlayTrigger>
         </div> : <>-</>,
+        "maxWidth": "120px"
     },
     {
       name: 'Review On',
       selector: d => d.reviewed_at ? <>{moment(d.reviewed_at).utcOffset(utc).format().substring(0, 10)}</> : <>-</>,
+      "maxWidth": "200px",
     },
   ];
   const customStyles = {
