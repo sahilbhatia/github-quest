@@ -51,7 +51,7 @@ export default function Index() {
         {d.users_repositories[0].user.name}
       </span>
     </OverlayTrigger> : "Unknown",
-    "maxWidth": "40px"
+    "maxWidth": "150px"
     },
     {
       name: 'Name',
@@ -69,7 +69,7 @@ export default function Index() {
             {d.name}
           </span>
         </OverlayTrigger></a>,
-        "maxWidth": "40px"
+        "maxWidth": "150px"
     },
     {
       name: 'Description',
@@ -87,7 +87,7 @@ export default function Index() {
             {d.description == null ? "description not provided" : d.description}
           </span>
         </OverlayTrigger>),
-        "maxWidth": "300px"
+        "maxWidth": "260px"
     },
     {
       name: 'Forked',
@@ -159,7 +159,7 @@ export default function Index() {
     {
       name: 'Review On',
       selector: d => d.reviewed_at ? <>{new Date(moment(d.reviewed_at).utcOffset(utc)).toDateString().substring(4,15)}</> : <>-</>,
-      "maxWidth": "200px",
+      "maxWidth": "150px",
     },
   ];
   const customStyles = {
