@@ -209,14 +209,21 @@ export default function Index() {
       when: row => row.review == "pending",
       style: {
         backgroundColor: 'whitesmoke',
-        color: 'black',
+        color: 'blue',
       },
     },
     {
       when: row => row.review == "no action",
       style: {
         backgroundColor: 'white',
-        color: 'purple',
+        color: 'grey',
+      },
+    },
+    {
+      when: row => row.review == "approved",
+      style: {
+        backgroundColor: 'white',
+        color: 'green',
       },
     },
   ];
