@@ -1,10 +1,38 @@
 import { Button, Dropdown, DropdownButton, Form } from "react-bootstrap";
 import _ from "lodash";
+import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
-
+import { useState } from "react";
+let limit =10;
+let offset=0;
 export default function Index({ filter, setFilter, minDate }) {
   let searchUserName;
   let serachRepoName;
+  let [name, setName] = useState(null);
+  let [repositoryName, setRepositoryName] = useState(null);
+  let usersList = [];
+  let repositoryList = [];
+  let value;
+  let usersData = fetch(`/api/findUser/[findUser]?limit=${limit}&offset=${offset}&userName=${name}`)
+  let reposData = fetch(`/api/findRepository/[findRepository]?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}`)
+  
+  usersData.then((response) => { return response.json() }).then((res) => {
+    res.map((user) =>
+      usersList.push({
+        value: user.name,
+        label: user.name,
+      })
+    );
+  })
+
+  reposData.then((response) => { return response.json() }).then((res) => {
+    res.map((repo) =>
+    repositoryList.push({
+        value: repo.name,
+        label: repo.name,
+      })
+    );
+  })
 
   var bounced = _.debounce(function () {
     let data = { ...filter };
@@ -17,18 +45,41 @@ export default function Index({ filter, setFilter, minDate }) {
     }
   }, 2000);
   const setUserName = (userName) => {
-    if (userName.length >= 3) {
-      searchUserName = userName
-      bounced();
-    }
+    let data = { ...filter };
+    data.userName = userName.value;
+    setFilter(data);
+  };
+  const filterOptions = (inputValue) => {
+    return usersList.filter((i) =>
+      i.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
   };
 
-  const setRepoName = (repoName) => {
-    if (repoName.length >= 3) {
-      serachRepoName = repoName;
-      bounced();
-    }
+  const promiseOptions = (inputValue, callback) => {
+    setName(inputValue)
+    setTimeout(() => {
+      callback(filterOptions(inputValue));
+    }, 1000);
   };
+
+  const filterOptionsRepos = (inputValue) => {
+    return repositoryList.filter((i) =>
+      i.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  };
+
+  const promiseOptionsRepos = (inputValue, callback) => {
+    setRepositoryName(inputValue)
+    setTimeout(() => {
+      callback(filterOptionsRepos(inputValue));
+    }, 1000);
+  };
+  const setRepoName = (repoName) => {
+    let data = { ...filter };
+    data.repoName = repoName.value;
+    setFilter(data);
+  };
+
   const reset = () => {
     setFilter({});
     window.location.reload();
@@ -124,12 +175,20 @@ export default function Index({ filter, setFilter, minDate }) {
         />
       </div>
       <div className="d-flex">
-        <div className="mr-2 d-flex">
-          <Form.Control className={filter.userName != undefined ? "border-success" : ""} size="text" placeholder="User Name..." defaultValue={filter.userName} onChange={(e => setUserName(e.target.value))} />
-        </div >
-        <div className="mr-2 d-flex">
-          <Form.Control size="text" className={filter.repoName != undefined ? "border-success" : ""} placeholder="Repo Name..." defaultValue={filter.repoName} onChange={(e => setRepoName(e.target.value))} />
-        </div >
+      <AsyncSelect
+            loadOptions={promiseOptions}
+            name="select username"
+            placeholder="select username"
+            defaultInputValue={filter.userName}
+            onChange={setUserName}
+          />
+          <AsyncSelect
+            loadOptions={promiseOptionsRepos}
+            name="select repository"
+            placeholder="select repository"
+            defaultInputValue={filter.repoName}
+            onChange={setRepoName}
+          />
         <DropdownButton className="ml-2" variant={setColor(filter.is_forked)} title="Forked">
           <Dropdown.Item onClick={(e => forked(true))} className="bg-success">true</Dropdown.Item>
           <Dropdown.Item onClick={(e => forked(false))} className="bg-danger" >false</Dropdown.Item>
