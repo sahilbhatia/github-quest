@@ -1,18 +1,14 @@
-import { Button, Dropdown, DropdownButton, Form } from "react-bootstrap";
-import _ from "lodash";
+import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 let limit =10;
 let offset=0;
 export default function Index({ filter, setFilter, minDate }) {
-  let searchUserName;
-  let serachRepoName;
   let [name, setName] = useState(null);
   let [repositoryName, setRepositoryName] = useState(null);
   let usersList = [];
   let repositoryList = [];
-  let value;
   let usersData = fetch(`/api/findUser/[findUser]?limit=${limit}&offset=${offset}&userName=${name}`)
   let reposData = fetch(`/api/findRepository/[findRepository]?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}`)
   
@@ -34,16 +30,6 @@ export default function Index({ filter, setFilter, minDate }) {
     );
   })
 
-  var bounced = _.debounce(function () {
-    let data = { ...filter };
-    if (searchUserName) {
-      data.userName = searchUserName;
-      setFilter(data);
-    } else if (serachRepoName) {
-      data.repoName = serachRepoName;
-      setFilter(data);
-    }
-  }, 2000);
   const setUserName = (userName) => {
     let data = { ...filter };
     data.userName = userName.value;
