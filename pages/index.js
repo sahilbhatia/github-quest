@@ -27,7 +27,6 @@ export default function Index() {
   data = data.repositories; 
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * (-2);
-
   const onSelectManualReview = (id) => {
     fetch(`/api/updateManualReview/[updateManualReview]?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
@@ -159,7 +158,7 @@ export default function Index() {
     },
     {
       name: 'Review On',
-      selector: d => d.reviewed_at ? <>{moment(d.reviewed_at).utcOffset(utc).format().substring(0, 10)}</> : <>-</>,
+      selector: d => d.reviewed_at ? <>{new Date(moment(d.reviewed_at).utcOffset(utc)).toDateString().substring(4,15)}</> : <>-</>,
       "maxWidth": "200px",
     },
   ];
