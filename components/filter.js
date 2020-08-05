@@ -2,6 +2,7 @@ import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
+import moment from "moment";
 let limit =10;
 let offset=0;
 export default function Index({ filter, setFilter, minDate }) {
@@ -82,7 +83,7 @@ export default function Index({ filter, setFilter, minDate }) {
   };
   const setDateReview = (value) => {
     let data = { ...filter };
-    data.reviewDate = value;
+    data.reviewDate =moment(value).toISOString();
     setFilter(data);
   };
   const forked = (value) => {
@@ -153,7 +154,7 @@ export default function Index({ filter, setFilter, minDate }) {
         />
         <DatePicker
           onSelect={(e) => setDateReview(e)}
-          selected={filter.reviewDate}
+          selected={filter.reviewDate?new Date(filter.reviewDate):""}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select reviewed date"

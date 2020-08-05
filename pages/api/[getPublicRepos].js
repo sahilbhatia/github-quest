@@ -127,10 +127,10 @@ const getAllPublicRepos = async (req, res) => {
       }
 
       if (reviewDate != undefined) {
-        let endDate = moment(reviewDate).add(1, "days").toISOString();
-        let startDate = moment(reviewDate).subtract(1, "days").toISOString();
+        let endDate = moment(reviewDate).add(24, "hours").toISOString();
+        let startDate =reviewDate;
         where.reviewed_at = {
-          [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
+          [Sequelize.Op.between]: [startDate, endDate]
         }
       }
 
@@ -162,7 +162,8 @@ const getAllPublicRepos = async (req, res) => {
       data.repositories = repositories,
         data.date = earliestDate[0];
       res.status(200).json(data);
-    } catch {
+    } catch (err){
+      console.log(err)
       res.status(500).json({
         message: "internal server error"
       })
