@@ -1,5 +1,3 @@
-const models = require("./users_repositories.model");
-
 module.exports = (sequelize, Sequelize) => {
   const Users = sequelize.define(
     "users",
