@@ -162,8 +162,7 @@ const getAllPublicRepos = async (req, res) => {
       data.repositories = repositories,
         data.date = earliestDate[0];
       res.status(200).json(data);
-    } catch (err){
-      console.log(err)
+    } catch {
       res.status(500).json({
         message: "internal server error"
       })
