@@ -5,6 +5,7 @@ dbConn.sequelize;
 const db = require("../../models/sequelize");
 const Users = db.users;
 const Projects = db.projects;
+const Repositories = db.repositories;
 const Users_projects = db.users_projects;
 
 export default async function insertProjects(req, res) {
@@ -23,9 +24,13 @@ export default async function insertProjects(req, res) {
       if (item.repositories[0]) {
         const createdProject = await Projects.create({
           name: item.name ? item.name : "unknown",
+          org_project_id: item.id
+        })
+       
+        const repositories = await Repositories.create({
           repository_url: item.repositories[0].url != 0 ? item.repositories[0].url : null,
           host: item.repositories[0].host ? item.repositories[0].host : null,
-          org_project_id: item.id
+          project_id: createdProject.id
         })
 
         if (item.active_users[0]) {
@@ -75,7 +80,6 @@ export default async function insertProjects(req, res) {
             }
           });
           await Promise.all(insertActiveUsers)
-
         }
       }
     });
