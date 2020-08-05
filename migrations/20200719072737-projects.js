@@ -19,14 +19,6 @@ module.exports = {
           type: Sequelize.STRING(70),
           allowNull: false,
         },
-        repository_url: {
-          type: Sequelize.TEXT,
-          allowNull: true,
-        },
-        host: {
-          type: Sequelize.STRING(70),
-          allowNull: true,
-        },
         is_active: {
           type: Sequelize.BOOLEAN,
           defaultValue: false,
