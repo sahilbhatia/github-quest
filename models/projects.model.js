@@ -26,6 +26,11 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING(70),
         allowNull: true,
       },
+      is_active: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
       created_at: {
         type: 'TIMESTAMP',
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
