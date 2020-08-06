@@ -3,7 +3,7 @@ dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Users = db.users;
 
-export default async function insertUsers(req, res) {
+export default async function updateUsers(req, res) {
   try {
     const getUpdateUser = () => {
       let updateObject = {};
