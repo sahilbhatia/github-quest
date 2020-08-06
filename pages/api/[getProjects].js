@@ -1,3 +1,5 @@
+import moment from "moment";
+
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const Sequelize = require("sequelize")
@@ -19,7 +21,6 @@ Projects.hasMany(Repositories, { foreignKey: { name: 'project_id', allowNull: tr
 
 
 const getProjects = async (req, res) => {
-  console.log(req.query)
   try {
     let {
       projectName,
@@ -56,13 +57,22 @@ const getProjects = async (req, res) => {
           where.is_active = is_active
         }
 
+        if (is_active != undefined) {
+          if (is_active != "undefined") {
+            where.is_active = is_active
+          }
+        }
+
         if (startDate != undefined && endDate != undefined) {
+          const endDateFormat = moment(endDate).add(1, "days")
           where.created_at = {
-            [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
+            [Sequelize.Op.between]: [new Date(startDate), new Date(endDateFormat)]
           }
         } else if (endDate != undefined) {
+
+          const endDateFormat = moment(endDate).add(1, "days")
           where.created_at = {
-            [Sequelize.Op.lt]: new Date(endDate),
+            [Sequelize.Op.lt]: new Date(endDateFormat),
           }
         } else if (startDate != undefined) {
           const date = new Date();
@@ -70,6 +80,7 @@ const getProjects = async (req, res) => {
             [Sequelize.Op.between]: [new Date(startDate), date]
           }
         }
+
         return where;
       } else {
         return null;
@@ -81,19 +92,9 @@ const getProjects = async (req, res) => {
     if (whereClauseData) {
       findAllClause.where = whereClauseData;
       let data = await Projects.findAll(findAllClause);
-      if (data.length == 0) {
-        res.status(404).json({
-          message: "list not found for given id"
-        });
-      };
       res.status(200).json(data);
     } else {
       let data = await Projects.findAll(findAllClause);
-      if (data.length == 0) {
-        res.status(404).json({
-          message: "list not found for given id"
-        });
-      };
 
       res.status(200).json(data);
     }
