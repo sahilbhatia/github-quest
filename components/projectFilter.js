@@ -29,9 +29,9 @@ export default function Index({ filter, setFilter }) {
       callback(filterOptionsProjects(inputValue));
     }, 1000);
   };
-  const setProject = (repoName) => {
+  const setProject = (projectName) => {
     let data = { ...filter };
-    data.repoName = repoName.value;
+    data.projectName = projectName.value;
     setFilter(data);
   };
 
@@ -83,14 +83,14 @@ export default function Index({ filter, setFilter }) {
         </DropdownButton>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
-          selected={filter.startDate}
+         //selected={filter.startDate}
           maxDate={new Date()}
           placeholderText="Select search date from"
           className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateTo(e)}
-          selected={filter.endDate}
+         // selected={filter.endDate}
           maxDate={new Date()}
           placeholderText="Select search date to"
           className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
