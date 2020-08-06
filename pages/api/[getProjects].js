@@ -25,9 +25,8 @@ const getProjects = async (req, res) => {
       projectName,
       startDate,
       endDate,
+      is_active,
     } = req.query;
-    console.log(projectName)
-    console.log(startDate)
     let where = {};
     let findAllClause = {};
     findAllClause = {
@@ -47,10 +46,14 @@ const getProjects = async (req, res) => {
     }
 
     const getWhereClause = () => {
-      if (projectName || startDate || endDate) {
+      if (projectName || startDate || endDate || is_active) {
 
         if (projectName != undefined) {
           where.name = projectName
+        }
+        
+        if (is_active != undefined) {
+          where.is_active = is_active
         }
 
         if (startDate != undefined && endDate != undefined) {
