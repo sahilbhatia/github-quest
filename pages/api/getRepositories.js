@@ -13,12 +13,7 @@ Projects.hasMany(Repositories, { foreignKey: { name: 'project_id', allowNull: tr
 const getUsers = async (req, res) => {
   try {
     let data = await Repositories.findAll({
-      include: [
-        {
-          model: Projects,
-        },
-      ],
-      where : {project_id:3},
+      where : {project_id:req.query.projectId},
     });
     if (data.length == 0) {
       res.status(404).json({

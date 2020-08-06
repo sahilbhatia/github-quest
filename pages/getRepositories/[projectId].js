@@ -14,14 +14,8 @@ export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   const router = useRouter()
-  const { users } = router.query;
-  let  response;
-  if(users!="users"){
-    response = useSWR(`/api/getUsers?project_id=${users}`, fetcher);
-  } else {
-    response = useSWR(`/api/getUsers?limit=${limit}&offset=${offset}`, fetcher);
-  }
-  let { error, data } = response;
+  const { projectId } = router.query;
+    let { error, data } = useSWR(`/api/getRepositories?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
   //let [filter, setFilter] = useState({});
 
     // const getQueryString = (filterObject) => {
