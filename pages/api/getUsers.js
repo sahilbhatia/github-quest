@@ -1,3 +1,5 @@
+import { users_projects, users } from "../../models/sequelize";
+
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const Sequelize = require("sequelize")
@@ -21,16 +23,24 @@ const getUsers = async (req, res) => {
       username,
       github_handle,
     } = req.query;
-
+    let data = await Users.findAll({
+      include :[{
+        model:users_projects,
+        attributes :["id"],
+        where: {project_id: projectId},
+        include :{
+          model: Users,
+          attributes :["id"],
+          include: {
+            model: users_projects,
+          }
+        }
+      },
+    ],
+      
+    });
+    res.status(200).json(data);
     let where = {};
-
-    let includeUsersProjects = {
-      model: Users_projects,
-      include: {
-        model: Projects
-      }
-    }
-
     const getWhereClauseProject = () => {
 
       if (projectId != undefined) {
@@ -42,9 +52,7 @@ const getUsers = async (req, res) => {
       else {
         return includeUsersProjects;
       }
-
     }
-
     const getWhereClauseForProject = getWhereClauseProject();
 
     let findAllData = {
@@ -73,7 +81,7 @@ const getUsers = async (req, res) => {
       let data = await Users.findAll(findAllData);
       res.status(200).json(data);
     }
-  } catch {
+  } catch{
     res.status(500).json({
       message: "internal server error"
     })

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import { useState } from "react";
-//import Filter from "../components/projectFilter";
+import Filter from "../../components/userFilter";
 import Pagination from "../../components/pagination"
 import Link from "next/link";
 import ErrorComponent from "../../components/errorpage";
@@ -15,14 +15,13 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   const router = useRouter()
   const { projectId } = router.query;
-    let { error, data } = useSWR(`/api/getUsers?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
-  //let [filter, setFilter] = useState({});
-
-    // const getQueryString = (filterObject) => {
-    //   let filterString = "";
-    //   Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
-    //   return filterString;
-   // }
+  const getQueryString = (filterObject) => {
+    let filterString = "";
+    Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
+    return filterString;
+ }
+  let [filter, setFilter] = useState({});
+  let { error, data } = useSWR(`/api/getUsers?limit=${limit}&offset=${offset}&projectId=${projectId}${getQueryString(filter)}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const columns = [
@@ -43,6 +42,18 @@ export default function Index() {
           </span>
         </OverlayTrigger></div>
     },
+    {
+      name: "Github Handel",
+      selector : "github_handle"
+    },
+    {
+      name: "Email",
+      selector : "email"
+    },
+    {
+      name: "Projects",
+      selector: d => d.users_projects.length !=0 ? d.users_projects[0].user.users_projects.length : <>✘</>,
+    },
   ];
   const customStyles = {
     table: {
@@ -52,7 +63,7 @@ export default function Index() {
     },
     rows: {
       style: {
-        color: "green",
+        color: "blue",
         backgroundColor: "white",
       },
     },
@@ -73,9 +84,9 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title="Projects"
+        title="Users"
         subHeader
-        // subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
+        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
         columns={columns}
         customStyles={customStyles}
         data={data}
