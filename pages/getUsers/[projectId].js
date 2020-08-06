@@ -1,25 +1,28 @@
 import useSWR from 'swr';
+import { useRouter } from 'next/router';
 import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import { useState } from "react";
-import Filter from "../components/projectFilter";
-import Pagination from "../components/pagination"
+//import Filter from "../components/projectFilter";
+import Pagination from "../../components/pagination"
 import Link from "next/link";
-import ErrorComponent from "../components/errorpage";
-import LoadingComponent from "../components/loaderpage";
+import ErrorComponent from "../../components/errorpage";
+import LoadingComponent from "../../components/loaderpage";
 let code;
 const fetcher = (url) => fetch(url).then((res) => { code = res.status; return res.json() })
 export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
-  let [filter, setFilter] = useState({});
+  const router = useRouter()
+  const { projectId } = router.query;
+    let { error, data } = useSWR(`/api/getUsers?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
+  //let [filter, setFilter] = useState({});
 
-    const getQueryString = (filterObject) => {
-      let filterString = "";
-      Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
-      return filterString;
-    }
-  let { data, error } = useSWR(`/api/[getProjects]?limit=${limit}&offset=${offset}${getQueryString(filter)}`, fetcher);
+    // const getQueryString = (filterObject) => {
+    //   let filterString = "";
+    //   Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
+    //   return filterString;
+   // }
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const columns = [
@@ -40,18 +43,6 @@ export default function Index() {
           </span>
         </OverlayTrigger></div>
     },
-    {
-      name: "Active Users",
-      selector: d => d.users_projects.length !=0 ?<Link href="/getUsers/[projectId]" as={`/getUsers/${d.id}`}><a>{d.users_projects.length}</a></Link> : <>✘</>,
-    },
-    {
-      name: "Repositories",
-      selector: d => d.repositories.length !=0 ?<Link href="/getRepositories/[projectId]" as={`/getRepositories/${d.id}`}><a>{d.repositories.length}</a></Link> : <>✘</>
-    },
-    {
-      name: "Active",
-      selector: d => d.is_active ? <span className="text-success">✔</span> : <span className="text-danger">✘</span>
-    },
   ];
   const customStyles = {
     table: {
@@ -61,7 +52,7 @@ export default function Index() {
     },
     rows: {
       style: {
-        color: "black",
+        color: "green",
         backgroundColor: "white",
       },
     },
@@ -84,7 +75,7 @@ export default function Index() {
       <DataTable
         title="Projects"
         subHeader
-        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
+        // subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
         columns={columns}
         customStyles={customStyles}
         data={data}

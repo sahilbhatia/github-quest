@@ -52,6 +52,10 @@ const getProjects = async (req, res) => {
         if (projectName != undefined) {
           where.name = projectName
         }
+        
+        if (is_active != undefined) {
+          where.is_active = is_active
+        }
 
         if (is_active != undefined) {
           if (is_active != "undefined") {
