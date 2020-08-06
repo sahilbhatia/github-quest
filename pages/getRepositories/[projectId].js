@@ -15,33 +15,24 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   const router = useRouter()
   const { projectId } = router.query;
-    let { error, data } = useSWR(`/api/getRepositories?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
-  //let [filter, setFilter] = useState({});
+  let { error, data } = useSWR(`/api/getRepositories?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
+  // let [filter, setFilter] = useState({});
 
-    // const getQueryString = (filterObject) => {
-    //   let filterString = "";
-    //   Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
-    //   return filterString;
-   // }
+  // const getQueryString = (filterObject) => {
+  //   let filterString = "";
+  //   Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
+  //   return filterString;
+  // }
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const columns = [
     {
-      name: 'Name',
-      selector: d => <div>
-        <OverlayTrigger
-          placement="top"
-          delay={{ show: 250, hide: 400 }}
-          overlay={
-            <Tooltip>
-              {d.name}
-            </Tooltip>
-          }
-        >
-          <span>
-            {d.name}
-          </span>
-        </OverlayTrigger></div>
+      name: 'Host',
+      selector: d => d.host != null ? d.host : "host not provided"
+    },
+    {
+      name: 'Host',
+      selector: d => d.repository_url != null ? d.repository_url : "url not provided"
     },
   ];
   const customStyles = {
@@ -52,7 +43,7 @@ export default function Index() {
     },
     rows: {
       style: {
-        color: "green",
+        color: "purple",
         backgroundColor: "white",
       },
     },
@@ -73,9 +64,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title="Projects"
-        subHeader
-        // subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
+        title="Repositories"
         columns={columns}
         customStyles={customStyles}
         data={data}
