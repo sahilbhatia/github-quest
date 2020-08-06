@@ -83,16 +83,16 @@ export default function Index({ filter, setFilter }) {
         </DropdownButton>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
-         //selected={filter.startDate}
+           selected={filter.startDate ? new Date(filter.startDate) : undefined} 
           maxDate={new Date()}
-          placeholderText="Select search date from"
+          placeholderText="Select from"
           className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateTo(e)}
-         // selected={filter.endDate}
+          selected={filter.endDate ? new Date(filter.endDate) : undefined}
           maxDate={new Date()}
-          placeholderText="Select search date to"
+          placeholderText="Select to"
           className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
         />
         <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
