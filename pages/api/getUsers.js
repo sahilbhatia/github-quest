@@ -16,23 +16,63 @@ Users.hasMany(Users_projects, { foreignKey: { name: 'user_id', allowNull: true }
 
 const getUsers = async (req, res) => {
   try {
-    let data = await Users.findAll({
+    let {
+      projectId,
+      username,
+      github_handle,
+    } = req.query;
+
+    let where = {};
+
+    let includeUsersProjects = {
+      model: Users_projects,
+      include: {
+        model: Projects
+      }
+    }
+
+    const getWhereClauseProject = () => {
+
+      if (projectId != undefined) {
+        includeUsersProjects.where = {
+          project_id: projectId
+        }
+        return includeUsersProjects;
+      }
+      else {
+        return includeUsersProjects;
+      }
+
+    }
+
+    const getWhereClauseForProject = getWhereClauseProject();
+
+    let findAllData = {
       include: [
-        {
-          model: Users_projects,
-          where : {project_id:3},
-          include: {
-              model:Projects
-          }
-        },
+        getWhereClauseForProject
       ]
-    });
-    if (data.length == 0) {
-      res.status(404).json({
-        message: "list not found for given id"
-      });
-    };
-    res.status(200).json(data);
+    }
+
+    const getWhereClauseObjectUsers = () => {
+      if (username || github_handle) {
+        if (username != undefined) {
+          where.name = username;
+        }
+        if (github_handle != undefined) {
+          where.github_handle = github_handle;
+        }
+        return where;
+      }
+    }
+    const getwhereClauseObject = getWhereClauseObjectUsers();
+    if (getwhereClauseObject) {
+      findAllData.where = getwhereClauseObject
+      let data = await Users.findAll(findAllData);
+      res.status(200).json(data);
+    } else {
+      let data = await Users.findAll(findAllData);
+      res.status(200).json(data);
+    }
   } catch {
     res.status(500).json({
       message: "internal server error"
