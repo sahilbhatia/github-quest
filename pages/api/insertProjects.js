@@ -20,71 +20,88 @@ export default async function insertProjects(req, res) {
     const listOfProjects = await JSON.parse(intranetProjects.text);
 
     const insertUsersList = await listOfProjects.projects.map(async (item) => {
-
-      if (item.repositories[0]) {
-        const createdProject = await Projects.create({
-          name: item.name ? item.name : "unknown",
+      const findProject = await Projects.findOne({
+        where: {
           org_project_id: item.id
-        })
-       
-        const repositories = await Repositories.create({
-          repository_url: item.repositories[0].url != 0 ? item.repositories[0].url : null,
-          host: item.repositories[0].host ? item.repositories[0].host : null,
-          project_id: createdProject.id
-        })
-
-        if (item.active_users[0]) {
-
-          const insertActiveUsers = await item.active_users.map(async (item) => {
-            try {
-              const User = await Users.findOne({
-                where: {
-                  org_user_id: item.id,
-                }
-              })
-              await Users_projects.create({
-                user_id: User.id,
-                project_id: createdProject.id,
-              })
-            } catch  {
-              return;
-            }
-
-          });
-          await Promise.all(insertActiveUsers)
         }
-      } else {
-        const createdProject = await Projects.create({
-          name: item.name ? item.name : "unknown",
-          repository_url: null,
-          host: null,
-          org_project_id: item.id
-        })
+      })
+      if (!findProject) {
 
-        if (item.active_users[0]) {
+        if (item.repositories[0]) {
 
-          const insertActiveUsers = await item.active_users.map(async (item) => {
-            try {
-              User = await Users.findOne({
-                where: {
-                  org_user_id: item.id,
-                }
-              })
+          const createdProject = await Projects.create({
+            name: item.name ? item.name : "unknown",
+            org_project_id: item.id
+          })
 
-              await Users_projects.create({
-                user_id: User.id,
-                project_id: createdProject.id,
-              })
-            } catch {
-              return
-            }
+          await item.repositories.map(async (item) => {
+            await Repositories.create({
+              repository_url: item.url ? item.url : null,
+              host: item.host ? item.host : null,
+              project_id: createdProject.id
+            })
           });
-          await Promise.all(insertActiveUsers)
+
+          if (item.active_users[0]) {
+            const insertActiveUsers = await item.active_users.map(async (item) => {
+              try {
+                const User = await Users.findOne({
+                  where: {
+                    org_user_id: item.id,
+                  }
+                })
+                await Users_projects.create({
+                  user_id: User.id,
+                  project_id: createdProject.id,
+                })
+              } catch  {
+                return;
+              }
+            });
+            await Promise.all(insertActiveUsers)
+          }
+        } else {
+          const createdProject = await Projects.create({
+            name: item.name ? item.name : "unknown",
+            org_project_id: item.id
+          })
+          const repositories = await Repositories.create({
+            repository_url: null,
+            host: null,
+            project_id: createdProject.id
+          })
+
+          if (item.active_users[0]) {
+
+            const insertActiveUsers = await item.active_users.map(async (item) => {
+              try {
+                User = await Users.findOne({
+                  where: {
+                    org_user_id: item.id,
+                  }
+                })
+
+                await Users_projects.create({
+                  user_id: User.id,
+                  project_id: createdProject.id,
+                })
+              } catch {
+                return
+              }
+            });
+            await Promise.all(insertActiveUsers)
+          }
         }
       }
     });
     await Promise.all(insertUsersList)
-  } catch {
-    return;
+    res.status(200).json({
+      message: "projects inserted successfully"
+    })
+  } catch(err) {
+    console.log(err)
+    res.status(500).json({
+      message: "internal server error"
+    })
   }
 }
