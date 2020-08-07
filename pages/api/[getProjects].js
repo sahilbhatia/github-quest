@@ -23,6 +23,7 @@ Projects.hasMany(Repositories, { foreignKey: { name: 'project_id', allowNull: tr
 const getProjects = async (req, res) => {
   try {
     let {
+      userName,
       projectName,
       startDate,
       endDate,
@@ -30,13 +31,27 @@ const getProjects = async (req, res) => {
     } = req.query;
     let where = {};
     let findAllClause = {};
+    let whereClauseForUserName = {
+      model: Users,
+    };
+
+    const getUserNameFilter = () => {
+      if (userName != undefined) {
+        whereClauseForUserName.where = {
+          name: userName
+        }
+        return whereClauseForUserName;
+      } else {
+        return whereClauseForUserName;
+      }
+    }
+    const getUserName = getUserNameFilter();
+
     findAllClause = {
       include: [
         {
           model: Users_projects,
-          include: {
-            model: Users,
-          },
+          include: getUserName,
         },
         {
           model: Repositories,
