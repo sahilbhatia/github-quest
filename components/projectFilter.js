@@ -7,6 +7,9 @@ export default function Index({ filter, setFilter }) {
   let [projectName, setProjectName] = useState(null);
   let projectList = [];
   let projectData = fetch(`/api/findProject/[findProject]?projectName=${projectName}`)
+  let [userName, setuserName] = useState(null);
+  let userList = [];
+  let userData = fetch(`/api/findUser/[findUser]?userName=${userName}`)
 
   projectData.then((response) => { return response.json() }).then((res) => {
     res.map((project) =>
@@ -16,6 +19,15 @@ export default function Index({ filter, setFilter }) {
       })
     );
   })
+
+  userData.then((response) => { return response.json() }).then((res) => {
+    res.map((user) =>
+      userList.push({
+        value: user.name,
+        label: user.name,
+      })
+    );
+  }) 
 
   const filterOptionsProjects = (inputValue) => {
     return projectList.filter((i) =>
@@ -32,6 +44,24 @@ export default function Index({ filter, setFilter }) {
   const setProject = (projectName) => {
     let data = { ...filter };
     data.projectName = projectName.value;
+    setFilter(data);
+  };
+
+  const filterOptionsUsers = (inputValue) => {
+    return userList.filter((i) =>
+      i.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  };
+
+  const promiseOptionsUsers = (inputValue, callback) => {
+    setuserName(inputValue)
+    setTimeout(() => {
+      callback(filterOptionsUsers(inputValue));
+    }, 1000);
+  };
+  const setUser = (userName) => {
+    let data = { ...filter };
+    data.userName = userName.value;
     setFilter(data);
   };
 
@@ -69,10 +99,20 @@ export default function Index({ filter, setFilter }) {
         <div style={{ width: "150px" }}>
           <AsyncSelect
             loadOptions={promiseOptionsProjects}
-            name="select repository"
-            placeholder="repository..."
+            name="select project"
+            placeholder="project..."
             defaultInputValue={filter.projectName}
             onChange={setProject}
+            className="w-100"
+          />
+        </div>
+        <div style={{ width: "150px" }}>
+          <AsyncSelect
+            loadOptions={promiseOptionsUsers}
+            name="select User"
+            placeholder="Users..."
+            defaultInputValue={filter.userName}
+            onChange={setUser}
             className="w-100"
           />
         </div>
