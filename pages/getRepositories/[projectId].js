@@ -61,23 +61,16 @@ export default function Index() {
       },
     },
   };
+  const title =(
+  <div className="text-right text-info w-100"><h1>Repositories</h1></div>
+  )
   return (
     <div>
       <DataTable
-        title="Repositories"
+        title={title}
         columns={columns}
         customStyles={customStyles}
         data={data}
       />
-      {data.length == 0 ?
-        <></> :
-        <Pagination
-          limit={limit}
-          offset={offset}
-          setOffset={setOffset}
-          setLimit={setLimit}
-          data={data}
-        />
-      }
     </div>)
 };
