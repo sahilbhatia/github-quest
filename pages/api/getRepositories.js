@@ -15,11 +15,6 @@ const getUsers = async (req, res) => {
     let data = await Repositories.findAll({
       where : {project_id:req.query.projectId},
     });
-    if (data.length == 0) {
-      res.status(404).json({
-        message: "list not found for given id"
-      });
-    };
     res.status(200).json(data);
   } catch {
     res.status(500).json({

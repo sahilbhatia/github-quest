@@ -34,7 +34,6 @@ const getProjects = async (req, res) => {
     let whereClauseForUserName = {
       model: Users,
     };
-
     const getUserNameFilter = () => {
       if (userName != undefined) {
         whereClauseForUserName.where = {
@@ -42,6 +41,7 @@ const getProjects = async (req, res) => {
         }
         return whereClauseForUserName;
       } else {
+
         return whereClauseForUserName;
       }
     }

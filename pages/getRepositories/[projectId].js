@@ -16,13 +16,13 @@ export default function Index() {
   const router = useRouter()
   const { projectId } = router.query;
   let { error, data } = useSWR(`/api/getRepositories?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
-  // let [filter, setFilter] = useState({});
+  let [filter, setFilter] = useState({});
 
-  // const getQueryString = (filterObject) => {
-  //   let filterString = "";
-  //   Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
-  //   return filterString;
-  // }
+  const getQueryString = (filterObject) => {
+    let filterString = "";
+    Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
+    return filterString;
+  }
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const columns = [

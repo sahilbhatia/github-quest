@@ -18,28 +18,12 @@ const getUsers = async (req, res) => {
   try {
     let {
       projectId,
-      username,
+      userName,
       github_handle,
     } = req.query;
-    let data = await Users.findAll({
-      include :[{
-        model:users_projects,
-        attributes :["id"],
-        where: {project_id: projectId},
-        include :{
-          model: Users,
-          attributes :["id"],
-          include: {
-            model: users_projects,
-          }
-        }
-      },
-    ],
-      
-    });
-    res.status(200).json(data);
-    let where = {};
 
+    let where = {};
+    
     let includeUsersProjects = {
       model: users_projects,
       attributes: ["id"],
@@ -74,9 +58,9 @@ const getUsers = async (req, res) => {
     }
 
     const getWhereClauseObjectUsers = () => {
-      if (username || github_handle) {
-        if (username != undefined) {
-          where.name = username;
+      if (userName || github_handle) {
+        if (userName != undefined) {
+          where.name = userName;
         }
         if (github_handle != undefined) {
           where.github_handle = github_handle;
@@ -88,7 +72,6 @@ const getUsers = async (req, res) => {
     if (getwhereClauseObject) {
       findAllData.where = getwhereClauseObject
       let data = await Users.findAll(findAllData);
-
       res.status(200).json(data);
     } else {
       let data = await Users.findAll(findAllData);

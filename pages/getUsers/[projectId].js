@@ -19,7 +19,7 @@ export default function Index() {
     let filterString = "";
     Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
     return filterString;
- }
+  }
   let [filter, setFilter] = useState({});
   let { error, data } = useSWR(`/api/getUsers?limit=${limit}&offset=${offset}&projectId=${projectId}${getQueryString(filter)}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
@@ -43,16 +43,16 @@ export default function Index() {
         </OverlayTrigger></div>
     },
     {
-      name: "Github Handel",
-      selector : "github_handle"
+      name: "Github Handle",
+      selector: "github_handle"
     },
     {
       name: "Email",
-      selector : "email"
+      selector: "email"
     },
     {
       name: "Projects",
-      selector: d => d.users_projects.length !=0 ? d.users_projects[0].user.users_projects.length : <>✘</>,
+      selector: d => d.users_projects.length != 0 ? d.users_projects[0].user.users_projects.length : <>✘</>,
     },
   ];
   const customStyles = {
@@ -84,9 +84,9 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title="Users"
         subHeader
         subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
+        title="Users"
         columns={columns}
         customStyles={customStyles}
         data={data}
