@@ -116,11 +116,6 @@ export default function Index({ filter, setFilter }) {
             className="w-100"
           />
         </div>
-        <DropdownButton className="ml-2" variant={setColor(filter.is_active)} title="active">
-          <Dropdown.Item onClick={(e => active(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => active(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => active(undefined))} className="bg-dark text-white">all</Dropdown.Item>
-        </DropdownButton>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
            selected={filter.startDate ? new Date(filter.startDate) : undefined} 
@@ -135,6 +130,11 @@ export default function Index({ filter, setFilter }) {
           placeholderText="Select to"
           className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
         />
+        <DropdownButton className="ml-2" variant={setColor(filter.is_active)} title="active">
+          <Dropdown.Item onClick={(e => active(true))} className="bg-success">true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => active(false))} className="bg-danger">false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => active(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        </DropdownButton>
         <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
       </div>
     </div>)
