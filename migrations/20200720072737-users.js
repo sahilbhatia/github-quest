@@ -11,6 +11,10 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true,
         },
+        org_user_id: {
+          type: Sequelize.STRING(50),
+          allowNull: false,
+        },          
         name: {
           type: Sequelize.STRING(50),
           allowNull: false,
