@@ -3,7 +3,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable(
-      "users",
+      "projects",
       {
         id: {
           type: Sequelize.INTEGER,
@@ -11,32 +11,18 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true,
         },
+        org_project_id: {
+          type: Sequelize.STRING(50),
+          allowNull: false,
+        },
         name: {
-          type: Sequelize.STRING(50),
+          type: Sequelize.STRING(70),
           allowNull: false,
         },
-        email: {
-          type: Sequelize.STRING(50),
+        is_active: {
+          type: Sequelize.BOOLEAN,
+          defaultValue: false,
           allowNull: false,
-        },
-        github_handle: {
-          type: Sequelize.STRING(50),
-          allowNull: true,
-        },
-        org_user_id: {
-          type: Sequelize.STRING(50),
-          allowNull: false,
-        },
-        role_id: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-          references: {
-            model: "roles",
-            key: "id",
-          },
-        },
-        last_fetched_at: {
-          type: 'TIMESTAMP',
         },
         created_at: {
           type: 'TIMESTAMP',
@@ -55,6 +41,6 @@ module.exports = {
     );
   },
   down: (queryInterface) => {
-    return queryInterface.dropTable("users");
+    return queryInterface.dropTable("projects");
   },
 };

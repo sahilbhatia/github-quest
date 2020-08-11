@@ -1,9 +1,7 @@
-"use strict";
 
-module.exports = {
-  up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable(
-      "users",
+module.exports = (sequelize, Sequelize) => {
+    const projectRepositories = sequelize.define(
+      "projects_repositories",
       {
         id: {
           type: Sequelize.INTEGER,
@@ -11,32 +9,21 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true,
         },
-        name: {
-          type: Sequelize.STRING(50),
-          allowNull: false,
-        },
-        email: {
-          type: Sequelize.STRING(50),
-          allowNull: false,
-        },
-        github_handle: {
-          type: Sequelize.STRING(50),
+        repository_url: {
+          type: Sequelize.TEXT,
           allowNull: true,
         },
-        org_user_id: {
-          type: Sequelize.STRING(50),
-          allowNull: false,
+        host: {
+          type: Sequelize.STRING(70),
+          allowNull: true,
         },
-        role_id: {
+        project_id: {
           type: Sequelize.INTEGER,
           allowNull: false,
           references: {
-            model: "roles",
+            model: "projects",
             key: "id",
           },
-        },
-        last_fetched_at: {
-          type: 'TIMESTAMP',
         },
         created_at: {
           type: 'TIMESTAMP',
@@ -53,8 +40,6 @@ module.exports = {
         updatedAt: false,
       }
     );
-  },
-  down: (queryInterface) => {
-    return queryInterface.dropTable("users");
-  },
-};
+    return projectRepositories;
+  };
+  

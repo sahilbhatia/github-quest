@@ -1,6 +1,8 @@
+
+
 module.exports = (sequelize, Sequelize) => {
-  const Users = sequelize.define(
-    "users",
+  const Projects = sequelize.define(
+    "projects",
     {
       id: {
         type: Sequelize.INTEGER,
@@ -8,32 +10,18 @@ module.exports = (sequelize, Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      org_project_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
       name: {
-        type: Sequelize.STRING(50),
+        type: Sequelize.STRING(70),
         allowNull: false,
       },
-      email: {
-        type: Sequelize.STRING(50),
+      is_active: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
         allowNull: false,
-      },
-      github_handle: {
-        type: Sequelize.STRING(50),
-        allowNull: true,
-      },
-      org_user_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      role_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "roles",
-          key: "id",
-        },
-      },
-      last_fetched_at: {
-        type: 'TIMESTAMP',
       },
       created_at: {
         type: 'TIMESTAMP',
@@ -50,5 +38,5 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
-  return Users;
+  return Projects;
 };

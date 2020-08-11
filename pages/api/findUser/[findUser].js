@@ -3,18 +3,16 @@ dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Users = db.users;
 const Sequelize = require("sequelize");
-const findUsers = async (req, res) => {
+const findUser = async (req, res) => {
   const userName = req.query.userName;
-  const usersList = await Users.findAll({
+  const userList = await Users.findAll({
     where: {
-      [Sequelize.Op.or]: {
         name: {
           [Sequelize.Op.iLike]: "%" + userName + "%",
         },
-      },
     }
   })
-  res.status(200).json(usersList);
+  res.status(200).json(userList);
 }
 
-export default findUsers;
+export default findUser;

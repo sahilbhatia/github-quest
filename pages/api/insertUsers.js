@@ -50,14 +50,15 @@ export default async function insertUsers(req, res) {
               role: item.role,
             }
           })
-         await Users.create({
+
+          await Users.create({
             name: item.name ? item.name : "unknown",
             role_id: role.dataValues.id,
             email: item.email,
             github_handle: github_handle,
             org_user_id: item.id
-          });
-        } catch(err) {
+          })
+        } catch {
           return
         }
       } else if (find_user && item.public_profile) {
