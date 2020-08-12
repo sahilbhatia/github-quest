@@ -43,7 +43,7 @@ export default function Index() {
     },
     {
       name: "Repositories",
-      selector: d => d.users_repositories.length != 0 ? <Link href="/getRepositories/[userId]" as={`/Repositories/${d.id}`}><a>{d.users_repositories.length}</a></Link>  : <>✘</>,
+      selector: d => d.users_repositories.length != 0 ? <Link href="/getPublicRepositories/[userId]" as={`/getPublicRepositories/${d.id}`}><a>{d.users_repositories.length}</a></Link>  : <>✘</>,
     },
   ];
   const customStyles = {
