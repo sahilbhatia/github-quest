@@ -19,7 +19,7 @@ const getUsers = async (req, res) => {
     let {
       projectId,
       userName,
-      github_handle,
+      githubHandle,
     } = req.query;
 
     let where = {};
@@ -62,8 +62,8 @@ const getUsers = async (req, res) => {
         if (userName != undefined) {
           where.name = userName;
         }
-        if (github_handle != undefined) {
-          where.github_handle = github_handle;
+        if (githubHandle != undefined) {
+          where.github_handle = githubHandle;
         }
         return where;
       }

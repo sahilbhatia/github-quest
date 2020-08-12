@@ -16,7 +16,6 @@ export default async function insertProjects(req, res) {
         "Content-Type": "application/json",
         "Accept": "application/json"
       });
-
     const listOfProjects = await JSON.parse(intranetProjects.text);
 
     const insertUsersList = await listOfProjects.projects.map(async (item) => {

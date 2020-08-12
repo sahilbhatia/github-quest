@@ -7,7 +7,9 @@ export default function Index({ filter, setFilter }) {
   let [userName, setuserName] = useState(null);
   let userList = [];
   let userData = fetch(`/api/findUser/[findUser]?userName=${userName}`)
-
+  let [githubHandle, setgithubHandle] = useState(null);
+  let githubHandleList = [];
+  let githubHandleData = fetch(`/api/findUser/[findUser]?githubHandle=${githubHandle}`)
   userData.then((response) => { return response.json() }).then((res) => {
     res.map((user) =>
       userList.push({
@@ -35,20 +37,38 @@ export default function Index({ filter, setFilter }) {
     setFilter(data);
   };
 
+  githubHandleData.then((response) => { return response.json() }).then((res) => {
+    res.map((user) =>
+    githubHandleList.push({
+        value: user.github_handle,
+        label: user.github_handle,
+      })
+    );
+  })
+
+  const filterOptionsGithubHandle = (inputValue) => {
+    return githubHandleList.filter((i) =>
+      i.label.includes(inputValue)
+    );
+  };
+
+  const promiseOptionsGithubHandle = (inputValue, callback) => {
+    setgithubHandle(inputValue)
+    setTimeout(() => {
+      callback(filterOptionsGithubHandle(inputValue));
+    }, 1000);
+  };
+  const setGithubHandle = (githubHandle) => {
+    let data = { ...filter };
+    data.githubHandle = githubHandle.value;
+    setFilter(data);
+  };
+
   const reset = () => {
     setFilter({});
     window.location.reload();
   };
-  const setDateFrom = (value) => {
-    let data = { ...filter };
-    data.startDate = moment(value).toISOString();
-    setFilter(data);
-  };
-  const setDateTo = (value) => {
-    let data = { ...filter };
-    data.endDate = moment(value).toISOString();
-    setFilter(data);
-  };
+  
 
   return (
     <div>
@@ -60,6 +80,16 @@ export default function Index({ filter, setFilter }) {
             placeholder="Users..."
             defaultInputValue={filter.userName}
             onChange={setUser}
+            className="w-100"
+          />
+        </div>
+        <div style={{ width: "150px" }}>
+          <AsyncSelect
+            loadOptions={promiseOptionsGithubHandle}
+            name="select github handel"
+            placeholder="github handel..."
+            defaultInputValue={filter.githubHandle}
+            onChange={setGithubHandle}
             className="w-100"
           />
         </div>
