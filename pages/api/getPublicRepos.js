@@ -32,9 +32,22 @@ const getAllPublicRepos = async (req, res) => {
     is_suspicious,
     is_private,
     review,
-    error_details
+    error_details,
+    userId
   } = req.query;
   const getUsersWhereClause = () => {
+    if(userId!=undefined){
+      findUserWhereClause = {
+        model: Users_repositories,
+        include: {
+          model: Users,
+          where: {
+            id: userId
+          }
+        },
+      }
+      return findUserWhereClause;
+    }
     if (userName != undefined) {
       findUserWhereClause = {
         model: Users_repositories,

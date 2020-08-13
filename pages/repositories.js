@@ -229,7 +229,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title="Repositories"
+        title={<div className="d-flex justify-content-end text-primary"><h1>Repositories</h1></div>}
         subHeader
         subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} />}
         columns={columns}

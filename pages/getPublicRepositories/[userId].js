@@ -22,7 +22,7 @@ export default function Index() {
     Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
     return filterString;
   }
-  let { data, error } = useSWR(`/api/getPublicRepoByUserId?limit=${limit}&offset=${offset}&userId=${userId}${getQueryString(filter)}`, fetcher);
+  let { data, error } = useSWR(`/api/getPublicRepos?limit=${limit}&offset=${offset}&userId=${userId}${getQueryString(filter)}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const minDate = data.date.min;
@@ -37,6 +37,7 @@ export default function Index() {
     fetch(`/api/updateSuspiciousRepos/[updateSuspiciousRepos?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
   }
+
   const columns = [
     {
       name: 'Name',
@@ -210,10 +211,11 @@ export default function Index() {
       },
     },
   ];
+
   return (
     <div>
       <DataTable
-        title={<div className="text-right">Repositories</div>}
+        title={<div className="text-right">Repositories </div>}
         subHeader
         subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} />}
         columns={columns}

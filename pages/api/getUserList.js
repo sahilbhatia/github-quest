@@ -24,7 +24,7 @@ Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: tr
 
 const getUsers = async (req, res) => {
   try {
-    let { limit, offset, userName } =req.query;
+    let { limit, offset, userName, githubHandle } =req.query;
     let where = {
       name :{
         [Sequelize.Op.ne]: "unknown",
@@ -33,6 +33,11 @@ const getUsers = async (req, res) => {
     if(userName!=undefined){
       where.name={
         [Sequelize.Op.eq]: userName, 
+      }
+    }
+    if(githubHandle!=undefined){
+      where.github_handle={
+        [Sequelize.Op.eq]: githubHandle, 
       }
     }
     

@@ -7,20 +7,9 @@ let limit =10;
 let offset=0;
 export default function Index({ filter, setFilter, minDate }) {
   let [repositoryName, setRepositoryName] = useState(null);
-  let usersList = [];
   let repositoryList = [];
-  let usersData = fetch(`/api/findUser/[findUser]?limit=${limit}&offset=${offset}&userName=${name}`)
   let reposData = fetch(`/api/findRepository/[findRepository]?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}`)
   
-  usersData.then((response) => { return response.json() }).then((res) => {
-    res.map((user) =>
-      usersList.push({
-        value: user.name,
-        label: user.name,
-      })
-    );
-  })
-
   reposData.then((response) => { return response.json() }).then((res) => {
     res.map((repo) =>
     repositoryList.push({
