@@ -5,6 +5,16 @@ const Users = db.users;
 
 export default async function updateUsers(req, res) {
   try {
+    const Data=await Users.findOne({
+      where: {
+        org_user_id: req.query.id,
+      }
+    })
+    if(!Data){
+      res.status(404).json({
+        message: "User not found",
+      })
+    } else {
     const getUpdateUser = () => {
       let updateObject = {};
       if (req.body.email) {
@@ -34,7 +44,7 @@ export default async function updateUsers(req, res) {
     res.status(200).json({
       message: "user updated successfuly",
     })
-
+  }
   } catch {
     res.status(500).json({
       message: "internal server error",

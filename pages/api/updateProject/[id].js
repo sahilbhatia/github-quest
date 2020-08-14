@@ -4,20 +4,30 @@ const db = require("../../../models/sequelize");
 const Users = db.users;
 const Projects = db.projects;
 const Users_projects = db.users_projects;
-const Repositories = db.repositories;
+const ProjectRepositories = db.projects_repositories;
 
 export default async function updateProject(req, res) {
   try {
+    const Data=await Projects.findOne({
+      where: {
+        org_project_id: req.query.id,
+      }
+    })
+    if(!Data){
+      res.status(404).json({
+        message: "project not found",
+      })
+    } else {
     const getUpdateRepos = async (projectId) => {
       let differentProject = false;
-      const RepoCount = await Repositories.findAll({
+      const RepoCount = await ProjectRepositories.findAll({
         where: {
           project_id: projectId
         }
       })
       await req.body.repositories.map(async (item) => {
 
-        const projectData = await Repositories.findOne({
+        const projectData = await ProjectRepositories.findOne({
           where: {
             repository_url: item.url,
             host: item.host,
@@ -93,13 +103,13 @@ export default async function updateProject(req, res) {
     if (req.body.repositories[0]) {
       const returnFlag = await getUpdateRepos(projectData.id);
       if (returnFlag) {
-        await Repositories.destroy({
+        await ProjectRepositories.destroy({
           where: {
             project_id: projectData.id
           }
         })
         await req.body.repositories.map(async (item) => {
-          await Repositories.create({
+          await ProjectRepositories.create({
             repository_url: item.url ? item.url : null,
             host: item.host ? item.host : null,
             project_id: projectData.id
@@ -108,7 +118,7 @@ export default async function updateProject(req, res) {
       }
     }
     else {
-      await Repositories.destroy({
+      await ProjectRepositories.destroy({
         where: {
           project_id: projectData.id
         }
@@ -150,9 +160,9 @@ export default async function updateProject(req, res) {
       })
     }
     res.status(200).json({
-      message: "user updated successfuly",
+      message: "project updated successfuly",
     })
-
+  }
   } catch {
     res.status(500).json({
       message: "internal server error",
