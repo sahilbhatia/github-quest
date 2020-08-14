@@ -45,9 +45,6 @@ const getUsers = async (req, res) => {
     let findAllData = {
       include: [
         includeUsersProjects,
-        // {
-        //    model: repositories,
-        // }
       ]
     }
 
@@ -69,8 +66,7 @@ const getUsers = async (req, res) => {
       let data = await Users.findOne(findAllData);
       res.status(200).json(data);
     }
-  } catch (err) {
-    console.log(err)
+  } catch {
     res.status(500).json({
       message: "internal server error"
     })

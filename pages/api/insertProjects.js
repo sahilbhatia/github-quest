@@ -97,8 +97,7 @@ export default async function insertProjects(req, res) {
     res.status(200).json({
       message: "projects inserted successfully"
     })
-  } catch(err) {
-    console.log(err)
+  } catch {
     res.status(500).json({
       message: "internal server error"
     })

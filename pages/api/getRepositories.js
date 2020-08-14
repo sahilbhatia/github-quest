@@ -1,10 +1,8 @@
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
-const Sequelize = require("sequelize")
 const db = require("../../models/sequelize");
 const Projects = db.projects;
-const Users_projects = db.users_projects;
-const Users = db.users;
+
 const Projects_Repositories = db.projects_repositories;
 
 Projects_Repositories.belongsTo(Projects, { foreignKey: { name: 'project_id', allowNull: true } });
