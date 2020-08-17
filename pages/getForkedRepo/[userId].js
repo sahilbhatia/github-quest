@@ -67,6 +67,6 @@ export default function Post() {
         data={data}
         highlightOnHover
       />
-      <Button href="/" className="m-3 bg-dark">Back</Button>
+      <Button href="/repositories" className="m-3 bg-dark">Back</Button>
     </div>)
 };
