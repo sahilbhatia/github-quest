@@ -8,11 +8,9 @@ const findRepos = async (req, res) => {
   const repositoryName = req.query.repositoryName;
   const repoList = await Repositories.findAll({
     where: {
-      [Sequelize.Op.or]: {
         name: {
           [Sequelize.Op.iLike]: "%" + repositoryName + "%",
         },
-      },
     }
   })
   res.status(200).json(repoList);
