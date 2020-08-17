@@ -4,6 +4,7 @@ const db = require("../../models/sequelize");
 const Users = db.users;
 const UsersProjects = db.users_projects;
 const Projects = db.projects;
+const ProjectsRepositories = db.projects_repositories;
 export default async function insertUsers(req, res) {
 
   try {
@@ -174,8 +175,123 @@ export default async function insertUsers(req, res) {
               })
             })
         }
+
+      //add project manager 
+      case "Manager Added":
+        const project = await Projects.findOne({
+          where: { org_project_id: data.project_id }
+        })
+        if (!project) {
+          res.status(404).json({
+            message: "project not found"
+          })
+        } else {
+          const user = await Users.findOne({
+            where: { org_user_id: data.user_id }
+          })
+          if (!user) {
+            res.status(404).json({
+              message: "user not found"
+            })
+          } else {
+            let projectData = { project_manager: user.id }
+            Projects.update(projectData, {
+              where: { org_project_id: data.project_id }
+            })
+              .then((res) => {
+                res.status(200).json({
+                  message: "added project manager successfully"
+                })
+              })
+          }
+        }
+
+      //remove project manager
+      case "Manager Removed":
+        const project = await Projects.findOne({
+          where: { org_project_id: data.project_id }
+        })
+        if (!project) {
+          res.status(404).json({
+            message: "project not found"
+          })
+        } else {
+          const user = await Users.findOne({
+            where: { org_user_id: data.user_id }
+          })
+          if (!user) {
+            res.status(404).json({
+              message: "user not found"
+            })
+          } else {
+            let projectData = { project_manager: null }
+            Projects.update(projectData, {
+              where: { org_project_id: data.project_id }
+            })
+              .then((res) => {
+                res.status(200).json({
+                  message: "remove project manager successfully"
+                })
+              })
+          }
+        }
+
+      //Repository is Removed from Project
+      case "Repository Removed":
+        const project = await Projects.findOne({
+          where: { org_project_id: data.project_id }
+        })
+        if (!project) {
+          res.status(404).json({
+            message: "project not found"
+          })
+        } else {
+          const repo = await ProjectsRepositories.findOne({
+            where: { repository_url: data.repository_url }
+          })
+          if (!repo) {
+            res.status(404).json({
+              message: "repository not found"
+            })
+          } else {
+            ProjectsRepositories.destroy({
+              where: { project_id: data.project_id, repository_url: data.repository_url }
+            })
+              .then((res) => {
+                res.status(200).json({
+                  message: "repository removed successfully"
+                })
+              })
+          }
+        }
+
+      //Repository is Added to Project
+      case "Repository Added":
+        const project = await Projects.findOne({
+          where: { org_project_id: data.project_id }
+        })
+        if (!project) {
+          res.status(404).json({
+            message: "project not found"
+          })
+        } else {
+          const repoDetails = {
+            repository_url: data.repository_url,
+            host: data.Repository_details.host,
+            project_id: data.project_id
+          }
+          ProjectsRepositories.create(repoDetails)
+            .then((res) => {
+              res.status(201).json({
+                message: "repository removed successfully"
+              })
+            })
+        }
+
       default:
-        break;
+        res.status(500).json({
+          message: "internal server error"
+        })
 
     }
   } catch{
