@@ -7,7 +7,6 @@ const Users = db.users;
 const Roles = db.roles;
 
 export default async function insertUsers(req, res) {
-
   const insertUsersFunction = async () => {
     const intranetUsersList = await request
       .get("https://stage-intranet.joshsoftware.com/api/v1/users")
@@ -59,7 +58,7 @@ export default async function insertUsers(req, res) {
             org_user_id: item.id
           })
         } catch {
-          return
+         return;
         }
       } else if (find_user && item.public_profile) {
         try {
@@ -94,7 +93,7 @@ export default async function insertUsers(req, res) {
             })
           }
         } catch {
-          return;
+          return
         }
       }
     });

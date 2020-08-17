@@ -24,6 +24,15 @@ module.exports = {
           defaultValue: false,
           allowNull: false,
         },
+        project_manager: {
+          type: Sequelize.INTEGER,
+          defaultValue: null,
+          allowNull: true,
+          references: {
+            model: "users",
+            key: "id",
+          },
+        },
         created_at: {
           type: 'TIMESTAMP',
           defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),

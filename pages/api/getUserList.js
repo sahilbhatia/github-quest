@@ -56,8 +56,7 @@ const getUsers = async (req, res) => {
         offset:offset,
       });
     res.json(data);
-  } catch (err) {
-    console.log(err);
+  } catch  {
     res.status(500).json({
       message: "internal server error",
       err:err
