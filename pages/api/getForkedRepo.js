@@ -40,12 +40,13 @@ const getForkedRepos = async (req, res) => {
         }
       ]
     });
-    if(data.length==0){
+    if (data.length == 0) {
       res.status(404).json({
         message: "list not found for given id"
       });
-    };
-    res.status(200).json(data);
+    } else {
+      res.status(200).json(data);
+    }
   } catch {
     res.status(500).json({
       message: "internal server error"
