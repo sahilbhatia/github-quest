@@ -149,6 +149,31 @@ export default async function insertUsers(req, res) {
               })
             })
         }
+
+      //project deleted 
+      case "Project Deleted":
+        const project = await Projects.findOne({
+          where: { org_project_id: data.project_id }
+        })
+        if (!project) {
+          res.status(404).json({
+            message: "project not found"
+          })
+        } else {
+          await UsersProjects.destroy({
+            where: {
+              project_id: project.id
+            }
+          })
+          Projects.destroy(projectData, {
+            where: { org_project_id: data.project_id }
+          })
+            .then((res) => {
+              res.status(200).json({
+                message: "project deleted successfully"
+              })
+            })
+        }
       default:
         break;
 
