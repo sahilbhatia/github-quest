@@ -11,7 +11,7 @@ export default function Index({ filter, setFilter, minDate }) {
   let usersList = [];
   let repositoryList = [];
   let usersData = fetch(`/api/findUser/[findUser]?limit=${limit}&offset=${offset}&userName=${name}`)
-  let reposData = fetch(`/api/findRepository/[findRepository]?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}`)
+  let reposData = fetch(`/api/findRepository/[findRepository]?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}&userName=${filter.userName}`)
   
   usersData.then((response) => { return response.json() }).then((res) => {
     res.map((user) =>
