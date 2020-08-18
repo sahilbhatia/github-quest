@@ -82,7 +82,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title="Projects"
+        title={<div className="text-right text-primary"><h1>Projects</h1></div>}
         subHeader
         subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
         columns={columns}

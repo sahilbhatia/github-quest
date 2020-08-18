@@ -38,7 +38,7 @@ export default function Index() {
     },
     {
       name: "Github Handle",
-      selector: "github_handle"
+      selector:  d=>d.github_handle ? d.github_handle : "not provided"
     },
     {
       name: "Email",
