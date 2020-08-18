@@ -61,7 +61,7 @@ export default function Post() {
   return (
     <div>
       <DataTable
-        title="forked repos"
+        title={<div className="d-flex justify-content-end text-primary"><h2>forked repositories</h2></div>}
         columns={columns}
         customStyles={customStyles}
         data={data}

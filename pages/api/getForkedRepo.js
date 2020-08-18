@@ -17,7 +17,6 @@ Users_repositories.belongsTo(Users, { foreignKey: { name: 'user_id', allowNull: 
 Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: true } });
 
 const getForkedRepos = async (req, res) => {
-  
      yup.object().shape({
       repoId: yup
         .number()
@@ -25,9 +24,8 @@ const getForkedRepos = async (req, res) => {
     }).validate({
       repoId: req.query.id
     }, { abortEarly: false })
-      .then(async()=>{
-        try {
-          let data = await Repositories.findAll({
+      .then(()=>{
+        Repositories.findAll({
             where: { parent_repo_id: req.query.id },
             include: [
               {
@@ -49,7 +47,7 @@ const getForkedRepos = async (req, res) => {
                 },
               }
             ]
-          });
+          }).then((data)=>{
           if (data.length == 0) {
             res.status(404).json({
               message: "list not found for given id"
@@ -57,19 +55,16 @@ const getForkedRepos = async (req, res) => {
           } else {
             res.status(200).json(data);
           }
-        } catch {
+          }).catch(()=> {
           res.status(500).json({
             message: "internal server error"
-          })
-        }
+          });
       })
       .catch(() => {
         res.status(400).json({
           message: "repo Id must be number"
         })
       });
-    
-};
-
+    });
+  }
 export default getForkedRepos;
-
