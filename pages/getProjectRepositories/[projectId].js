@@ -57,7 +57,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title="Repositories"
+        title={<div className="text-right text-primary"><h3>Project Repositories</h3></div>}
         columns={columns}
         customStyles={customStyles}
         data={data}

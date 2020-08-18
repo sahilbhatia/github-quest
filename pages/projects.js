@@ -46,7 +46,7 @@ export default function Index() {
     },
     {
       name: "Repositories",
-      selector: d => d.projects_repositories.length !=0 ?<Link href="/getRepositories/[projectId]" as={`/getRepositories/${d.id}`}><a>{d.projects_repositories.length}</a></Link> : <>✘</>
+      selector: d => d.projects_repositories.length !=0 ?<Link href="/getProjectRepositories/[projectId]" as={`/getProjectRepositories/${d.id}`}><a>{d.projects_repositories.length}</a></Link> : <>✘</>
     },
     {
       name: "Active",
