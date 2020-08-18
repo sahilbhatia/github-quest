@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import { useState } from "react";
-import Filter from "../../components/userFilter";
 import Pagination from "../../components/pagination"
 import Link from "next/link";
 import ErrorComponent from "../../components/errorpage";
@@ -15,13 +14,8 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   const router = useRouter()
   const { projectId } = router.query;
-  const getQueryString = (filterObject) => {
-    let filterString = "";
-    Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
-    return filterString;
-  }
-  let [filter, setFilter] = useState({});
-  let { error, data } = useSWR(`/api/getUsers?limit=${limit}&offset=${offset}&projectId=${projectId}${getQueryString(filter)}`, fetcher);
+
+  let { error, data } = useSWR(`/api/getUsersOfProject?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const columns = [
@@ -84,9 +78,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        // subHeader
-        // subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
-        title={<div className="text-right"><h3>Users</h3></div>}
+        title={<div className="text-right text-primary"><h3>Users</h3></div>}
         columns={columns}
         customStyles={customStyles}
         data={data}
