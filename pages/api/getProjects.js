@@ -22,6 +22,7 @@ Projects.hasMany(Project_Repositories, { foreignKey: { name: 'project_id', allow
 
 const getProjects = async (req, res) => {
   try {
+    let findUserWhereClause = {};
     let {
       userName,
       projectName,
@@ -31,28 +32,34 @@ const getProjects = async (req, res) => {
     } = req.query;
     let where = {};
     let findAllClause = {};
-    let whereClauseForUserName = {
-      model: Users,
-    };
     const getUserNameFilter = () => {
       if (userName != undefined) {
-        whereClauseForUserName.where = {
-          name: userName
+        findUserWhereClause = {
+          model: Users_projects,
+          include: {
+            model: Users,
+            where: {
+                name: userName
+            }
+          },
         }
-        return whereClauseForUserName;
+        return findUserWhereClause;
       } else {
-
-        return whereClauseForUserName;
+        findUserWhereClause = {
+          model: Users_projects,
+          include: {
+            model: Users,
+          },
+        }
+        return findUserWhereClause;
       }
     }
+
     const getUserName = getUserNameFilter();
 
     findAllClause = {
       include: [
-        {
-          model: Users_projects,
-          include: getUserName,
-        },
+          getUserName,
         {
           model: Project_Repositories,
         }
@@ -108,7 +115,8 @@ const getProjects = async (req, res) => {
 
       res.status(200).json(data);
     }
-  } catch {
+  } catch (err){
+    console.log(err)
     res.status(500).json({
       message: "internal server error"
     })

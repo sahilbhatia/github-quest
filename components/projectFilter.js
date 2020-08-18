@@ -106,7 +106,7 @@ export default function Index({ filter, setFilter }) {
             className="w-100"
           />
         </div>
-        {/* <div style={{ width: "150px" }}>
+        <div style={{ width: "150px" }}>
           <AsyncSelect
             loadOptions={promiseOptionsUsers}
             name="select User"
@@ -115,7 +115,7 @@ export default function Index({ filter, setFilter }) {
             onChange={setUser}
             className="w-100"
           />
-        </div> */}
+        </div>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
            selected={filter.startDate ? new Date(filter.startDate) : undefined} 
