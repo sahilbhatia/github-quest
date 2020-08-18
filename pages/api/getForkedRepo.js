@@ -17,7 +17,7 @@ Users_repositories.belongsTo(Users, { foreignKey: { name: 'user_id', allowNull: 
 Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: true } });
 
 const getForkedRepos = async (req, res) => {
-     yup.object().shape({
+    await yup.object().shape({
       repoId: yup
         .number()
         .required({ repoId: "required" }),

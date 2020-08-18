@@ -10,7 +10,7 @@ const fetcher = (url) => fetch(url).then((res) => { code = res.status; return re
 export default function Index() {
     const router = useRouter()
     const { userId } = router.query;
-  let { data, error } = useSWR(`/api/getProjectsOfUser?userId=${userId}`, fetcher);
+  let { data, error } = useSWR(`/api/getProjectsOfUser?&userId=${userId}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   let name =data.name;

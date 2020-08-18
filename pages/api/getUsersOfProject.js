@@ -16,8 +16,8 @@ Users.hasMany(Users_projects, { foreignKey: { name: 'user_id', allowNull: true }
 
 const getUsers = async (req, res) => {
 
-  let { projectId } = req.query;
-  yup.object().shape({
+  let { projectId ,limit, offset} = req.query;
+  await yup.object().shape({
     projectId: yup
       .number()
       .required({ repoId: "required" }),
@@ -46,7 +46,9 @@ const getUsers = async (req, res) => {
                   model: users_projects,
                 }
               }
-            }
+            },
+            limit: limit,
+            offset: offset
           });
           res.status(200).json(data)
         }

@@ -1,5 +1,5 @@
 import { users_projects, users, projects_repositories } from "../../models/sequelize";
-
+const yup = require("yup");
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const Sequelize = require("sequelize")
@@ -20,57 +20,52 @@ Projects_Repositories.belongsTo(Projects, { foreignKey: { name: 'project_id', al
 Projects.hasMany(Projects_Repositories, { foreignKey: { name: 'project_id', allowNull: true } });
 
 const getUsers = async (req, res) => {
-  try {
-    let {
-      userId,
-    } = req.query;
-
-    let where = {};
-
-    let includeUsersProjects = {
-      model: users_projects,
-      attributes: ["id"],
-      include: [
-        {
-          model: Projects,
-          
-          include:[
-            {model: Users_projects},
-            { model: Projects_Repositories }]
-            
+  let { userId } = req.query;
+  await yup.object().shape({
+    userId: yup
+      .number()
+      .required({ repoId: "required" }),
+  }).validate({
+    userId: userId
+  }, { abortEarly: false })
+    .then(async () => {
+      try {
+        const user = await Users.findOne({
+          where: { id: userId }
+        });
+        if (!user) {
+          res.status(404).json({
+            message: "user id not found"
+          })
+        } else {
+          let data = await Users.findOne({
+            where: { id: userId },
+            include: {
+              model: users_projects,
+              attributes: ["id"],
+              include: [
+                {
+                  model: Projects,
+                  include: [
+                    { model: Users_projects },
+                    { model: Projects_Repositories }],
+                }
+              ],
+            },
+          });
+          res.status(200).json(data)
         }
-      ]
-    };
-
-    let findAllData = {
-      include: [
-        includeUsersProjects,
-      ]
-    }
-
-    const getWhereClauseObjectUsers = () => {
-      if (userId) {
-        if (userId != undefined) {
-          where.id = userId;
-        }
-        return where;
+      } catch {
+        res.status(500).json({
+          message: "internal server error"
+        })
       }
-    }
-    const getwhereClauseObject = getWhereClauseObjectUsers();
-    if (getwhereClauseObject) {
-      findAllData.where = getwhereClauseObject
-      let data = await Users.findOne(findAllData);
-
-      res.status(200).json(data);
-    } else {
-      let data = await Users.findOne(findAllData);
-      res.status(200).json(data);
-    }
-  } catch {
-    res.status(500).json({
-      message: "internal server error"
     })
-  }
+    .catch(() => {
+      res.status(400).json({
+        message: "repo Id must be number"
+      })
+    });
 };
 
 export default getUsers;
