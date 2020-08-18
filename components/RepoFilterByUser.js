@@ -3,12 +3,10 @@ import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 import moment from "moment";
-let limit =10;
-let offset=0;
-export default function Index({ filter, setFilter, minDate }) {
+export default function Index({ filter, setFilter, minDate, userId }) {
   let [repositoryName, setRepositoryName] = useState(null);
   let repositoryList = [];
-  let reposData = fetch(`/api/findRepository/[findRepository]?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}`)
+  let reposData = fetch(`/api/findRepository/[findRepository]?userId=${userId}&repositoryName=${repositoryName}`)
   
   reposData.then((response) => { return response.json() }).then((res) => {
     res.map((repo) =>

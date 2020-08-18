@@ -217,7 +217,7 @@ export default function Index() {
       <DataTable
         title={<div className="text-right">Repositories </div>}
         subHeader
-        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} />}
+        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} userId={userId} />}
         columns={columns}
         customStyles={customStyles}
         data={data}
