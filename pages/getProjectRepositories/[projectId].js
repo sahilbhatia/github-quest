@@ -16,6 +16,8 @@ export default function Index() {
   let { error, data } = useSWR(`/api/getProjectRepositories?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
+  let projectName=data.projectName;
+  data=data.repositories;
   const columns = [
     {
       name: 'Host',
@@ -50,7 +52,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title={<div className="text-right text-primary"><h3>Project Repositories</h3></div>}
+        title={<div className="text-right text-primary"><h3>Repositories of project <a className="text-success">{projectName}</a></h3></div>}
         columns={columns}
         customStyles={customStyles}
         data={data}

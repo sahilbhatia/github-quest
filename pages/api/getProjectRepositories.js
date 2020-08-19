@@ -28,11 +28,15 @@ const getProjectRepository = async (req, res) => {
             message: "project id not found"
           })
         } else {
-          let data = await Projects_Repositories.findAll({
+          let repos = await Projects_Repositories.findAll({
             where: { project_id: req.query.projectId },
             limit: limit,
             offset: offset
           });
+          let data={};
+          const project=await Projects.findOne({where:{id:projectId}});
+          data.repositories=repos;
+          data.projectName=project.name;
           res.status(200).json(data);
         }
       } catch {

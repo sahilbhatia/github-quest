@@ -76,7 +76,7 @@ export default function Index() {
       <DataTable
         subHeader
         subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate}/>}
-        title={<div className="text-right"><h1>Users</h1></div>}
+        title={<div className="text-right text-primary"><h1>Users</h1></div>}
         columns={columns}
         customStyles={customStyles}
         data={data}
