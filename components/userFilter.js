@@ -68,6 +68,17 @@ export default function Index({ filter, setFilter }) {
     setFilter({});
     window.location.reload();
   };
+
+  const setDateFrom = (value) => {
+    let data = { ...filter };
+    data.startDate = value;
+    setFilter(data);
+  };
+  const setDateTo = (value) => {
+    let data = { ...filter };
+    data.endDate = value;
+    setFilter(data);
+  };
   
 
   return (
@@ -93,6 +104,22 @@ export default function Index({ filter, setFilter }) {
             className="w-100"
           />
         </div>
+        <DatePicker
+          onSelect={(e) => setDateFrom(e)}
+          selected={filter.startDate}
+          maxDate={new Date()}
+          //minDate={new Date(minDate)}
+          placeholderText="Select search date from"
+          className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
+        />
+        <DatePicker
+          onSelect={(e) => setDateTo(e)}
+          selected={filter.endDate}
+          maxDate={new Date()}
+          //minDate={new Date(minDate)}
+          placeholderText="Select search date to"
+          className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
+        />
         <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
       </div>
     </div>)

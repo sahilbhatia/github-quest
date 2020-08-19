@@ -50,11 +50,6 @@ export default function Index() {
     },
   ];
   const customStyles = {
-    table: {
-      style: {
-        minHeight: "40vh",
-      },
-    },
     rows: {
       style: {
         color: "blue",
@@ -93,5 +88,6 @@ export default function Index() {
           data={data}
         />
       }
+      <Button href="/projects" className="m-3 bg-dark">Back</Button>
     </div>)
 };

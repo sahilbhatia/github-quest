@@ -99,5 +99,6 @@ export default function Index() {
           data={data}
         />
       }
+      <Button href="/" className="m-3 bg-dark">Back</Button>
     </div>)
 };

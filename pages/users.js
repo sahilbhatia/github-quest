@@ -1,5 +1,4 @@
 import useSWR from 'swr';
-import { useRouter } from 'next/router';
 import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import { useState } from "react";
@@ -13,8 +12,6 @@ const fetcher = (url) => fetch(url).then((res) => { code = res.status; return re
 export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
-  const router = useRouter()
-  const { projectId } = router.query;
   const getQueryString = (filterObject) => {
     let filterString = "";
     Object.keys(filterObject).map(key => { filterString += "&" + key + "=" + filterObject[key] });
@@ -92,5 +89,6 @@ export default function Index() {
           data={data}
         />
       }
+      <Button href="/" className="m-3 bg-dark">Back</Button>
     </div>)
 };

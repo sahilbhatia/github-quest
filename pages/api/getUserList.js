@@ -24,7 +24,7 @@ Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: tr
 
 const getUsers = async (req, res) => {
   try {
-    let { limit, offset, userName, githubHandle } =req.query;
+    let { limit, offset, userName, githubHandle, startDate, endDate } =req.query;
     let where = {
       name :{
         [Sequelize.Op.ne]: "unknown",
@@ -40,7 +40,20 @@ const getUsers = async (req, res) => {
         [Sequelize.Op.eq]: githubHandle, 
       }
     }
-    
+    if (startDate != undefined && endDate != undefined) {
+      where.created_at = {
+        [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
+      }
+    } else if (endDate != undefined) {
+      where.created_at = {
+        [Sequelize.Op.lt]: new Date(endDate),
+      }
+    } else if (startDate != undefined) {
+      const date = new Date();
+      where.created_at = {
+        [Sequelize.Op.between]: [new Date(startDate), date]
+      }
+    }
     const data = await
       Users.findAll({
         where,

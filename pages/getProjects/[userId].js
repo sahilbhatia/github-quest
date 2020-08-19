@@ -39,7 +39,7 @@ export default function Index() {
     },
     {
       name: "Repositories",
-      selector: d => d.project.projects_repositories.length !=0 ?<Link href="/getRepositories/[projectId]" as={`/getRepositories/${d.project.id}`}><a>{d.project.projects_repositories.length}</a></Link> : <>✘</>
+      selector: d => d.project.projects_repositories.length !=0 ?<Link href="/getProjectRepositories/[projectId]" as={`/getProjectRepositories/${d.project.id}`}><a>{d.project.projects_repositories.length}</a></Link> : <>✘</>
     },
     {
       name: "Active",
@@ -47,11 +47,6 @@ export default function Index() {
     },
   ];
   const customStyles = {
-    table: {
-      style: {
-        minHeight: "40vh",
-      },
-    },
     rows: {
       style: {
         color: "black",
@@ -80,5 +75,6 @@ export default function Index() {
         customStyles={customStyles}
         data={data}
       />
+      <Button href="/users" className="m-3 bg-dark">Back</Button>
     </div>)
 };

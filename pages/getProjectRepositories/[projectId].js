@@ -1,10 +1,9 @@
 import useSWR from 'swr';
 import { useRouter } from 'next/router';
 import DataTable from "react-data-table-component";
-import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import { useState } from "react";
-import Pagination from "../../components/pagination"
-import Link from "next/link";
+import { Button } from "react-bootstrap";
+import Pagination from "../../components/pagination";
 import ErrorComponent from "../../components/errorpage";
 import LoadingComponent from "../../components/loaderpage";
 let code;
@@ -28,11 +27,6 @@ export default function Index() {
     },
   ];
   const customStyles = {
-    table: {
-      style: {
-        minHeight: "40vh",
-      },
-    },
     rows: {
       style: {
         color: "purple",
@@ -71,5 +65,6 @@ export default function Index() {
           data={data}
         />
       }
+      <Button href="/projects" className="m-3 bg-dark">Back</Button>
     </div>)
 };
