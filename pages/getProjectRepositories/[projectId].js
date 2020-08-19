@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import { useState } from "react";
-//import Filter from "../components/projectFilter";
 import Pagination from "../../components/pagination"
 import Link from "next/link";
 import ErrorComponent from "../../components/errorpage";
