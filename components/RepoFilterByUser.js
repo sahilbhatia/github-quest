@@ -6,7 +6,7 @@ import moment from "moment";
 export default function Index({ filter, setFilter, minDate, userId }) {
   let [repositoryName, setRepositoryName] = useState(null);
   let repositoryList = [];
-  let reposData = fetch(`/api/findRepository/[findRepository]?userId=${userId}&repositoryName=${repositoryName}`)
+  let reposData = fetch(`/api/findRepository?userId=${userId}&repositoryName=${repositoryName}`)
   
   reposData.then((response) => { return response.json() }).then((res) => {
     res.map((repo) =>

@@ -1,6 +1,6 @@
-const dbConn = require("../../../models/sequelize");
+const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
-const db = require("../../../models/sequelize");
+const db = require("../../models/sequelize");
 const Projects = db.projects;
 const Sequelize = require("sequelize");
 const findProject = async (req, res) => {

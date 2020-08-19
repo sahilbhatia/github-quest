@@ -28,11 +28,11 @@ export default function Index() {
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * (-2);
   const onSelectManualReview = (id) => {
-    fetch(`/api/updateManualReview/[updateManualReview]?id=${id}&updatedAt=${moment().toISOString()}`);
+    fetch(`/api/updateManualReview?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
   }
   const onSelectSuspeciousMark = (id) => {
-    fetch(`/api/updateSuspiciousRepos/[updateSuspiciousRepos?id=${id}&updatedAt=${moment().toISOString()}`);
+    fetch(`/api/updateSuspiciousRepos?id=${id}&updatedAt=${moment().toISOString()}`);
     window.location.reload(false);
   }
   const columns = [

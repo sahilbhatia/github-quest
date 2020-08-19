@@ -6,10 +6,10 @@ import moment from "moment";
 export default function Index({ filter, setFilter }) {
   let [userName, setuserName] = useState(null);
   let userList = [];
-  let userData = fetch(`/api/findUser/[findUser]?userName=${userName}`)
+  let userData = fetch(`/api/findUser?userName=${userName}`)
   let [githubHandle, setgithubHandle] = useState(null);
   let githubHandleList = [];
-  let githubHandleData = fetch(`/api/findUser/[findUser]?githubHandle=${githubHandle}`)
+  let githubHandleData = fetch(`/api/findUser?githubHandle=${githubHandle}`)
   userData.then((response) => { return response.json() }).then((res) => {
     res.map((user) =>
       userList.push({

@@ -6,7 +6,7 @@ import moment from "moment";
 export default function Index({ filter, setFilter }) {
   let [projectName, setProjectName] = useState(null);
   let projectList = [];
-  let projectData = fetch(`/api/findProject/[findProject]?projectName=${projectName}`);
+  let projectData = fetch(`/api/findProject?projectName=${projectName}`);
   projectData.then((response) => { return response.json() }).then((res) => {
     res.map((project) =>
       projectList.push({

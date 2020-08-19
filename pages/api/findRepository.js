@@ -1,6 +1,6 @@
-const dbConn = require("../../../models/sequelize");
+const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
-const db = require("../../../models/sequelize");
+const db = require("../../models/sequelize");
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;

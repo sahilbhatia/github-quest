@@ -287,12 +287,10 @@ export default async function insertUsers(req, res) {
               })
             })
         }
-
       default:
         res.status(500).json({
           message: "internal server error"
         })
-
     }
   } catch{
     res.status(500).json({
