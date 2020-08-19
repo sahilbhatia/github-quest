@@ -26,6 +26,7 @@ export default function Index() {
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
   const minDate = data.date.min;
+  const userName= data.userName;
   data = data.repositories; 
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * (-2);
@@ -215,7 +216,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title={<div className="text-right"> Repositories </div>}
+        title={<div className="text-right text-primary"><h1>Repositories of {userName}</h1> </div>}
         subHeader
         subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} userId={userId} />}
         columns={columns}
