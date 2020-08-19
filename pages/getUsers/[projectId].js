@@ -18,6 +18,8 @@ export default function Index() {
   let { error, data } = useSWR(`/api/getUsersOfProject?limit=${limit}&offset=${offset}&projectId=${projectId}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
+  const projectName = data.projectName;
+  data=data.users;
   const columns = [
     {
       name: 'Name',
@@ -73,7 +75,7 @@ export default function Index() {
   return (
     <div>
       <DataTable
-        title={<div className="text-right text-primary"><h3>Users</h3></div>}
+        title={<div className="text-right text-primary"><h3>Users of project <a className="text-success">{projectName}</a></h3></div>}
         columns={columns}
         customStyles={customStyles}
         data={data}

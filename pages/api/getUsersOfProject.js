@@ -34,7 +34,7 @@ const getUsers = async (req, res) => {
             message: "project id not found"
           })
         } else {
-          let data = await Users.findAll({
+          let users = await Users.findAll({
             include: {
               model: users_projects,
               attributes: ["id"],
@@ -50,6 +50,10 @@ const getUsers = async (req, res) => {
             limit: limit,
             offset: offset
           });
+          let data={};
+          const project=await Projects.findOne({where:{id:projectId}});
+          data.users=users;
+          data.projectName=project.name;
           res.status(200).json(data)
         }
       } catch {
