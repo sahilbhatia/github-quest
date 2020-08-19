@@ -3,7 +3,7 @@ import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 import moment from "moment";
-export default function Index({ filter, setFilter }) {
+export default function Index({ filter, setFilter, minDate }) {
   let [projectName, setProjectName] = useState(null);
   let projectList = [];
   let projectData = fetch(`/api/findProject?projectName=${projectName}`);
@@ -79,6 +79,7 @@ export default function Index({ filter, setFilter }) {
           onSelect={(e) => setDateFrom(e)}
            selected={filter.startDate ? new Date(filter.startDate) : undefined} 
           maxDate={new Date()}
+          minDate={new Date(minDate)}
           placeholderText="Select from"
           className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
         />
@@ -86,6 +87,7 @@ export default function Index({ filter, setFilter }) {
           onSelect={(e) => setDateTo(e)}
           selected={filter.endDate ? new Date(filter.endDate) : undefined}
           maxDate={new Date()}
+          minDate={new Date(minDate)}
           placeholderText="Select to"
           className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
         />

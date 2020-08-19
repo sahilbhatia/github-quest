@@ -3,7 +3,7 @@ import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 import moment from "moment";
-export default function Index({ filter, setFilter }) {
+export default function Index({ filter, setFilter, minDate }) {
   let [userName, setuserName] = useState(null);
   let userList = [];
   let userData = fetch(`/api/findUser?userName=${userName}`)
@@ -108,7 +108,7 @@ export default function Index({ filter, setFilter }) {
           onSelect={(e) => setDateFrom(e)}
           selected={filter.startDate}
           maxDate={new Date()}
-          //minDate={new Date(minDate)}
+          minDate={new Date(minDate)}
           placeholderText="Select search date from"
           className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
         />
@@ -116,7 +116,7 @@ export default function Index({ filter, setFilter }) {
           onSelect={(e) => setDateTo(e)}
           selected={filter.endDate}
           maxDate={new Date()}
-          //minDate={new Date(minDate)}
+          minDate={new Date(minDate)}
           placeholderText="Select search date to"
           className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
         />

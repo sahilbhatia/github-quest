@@ -22,6 +22,8 @@ export default function Index() {
   let { data, error } = useSWR(`/api/getProjects?limit=${limit}&offset=${offset}${getQueryString(filter)}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500) return <ErrorComponent code={code} />
   if (!data) return <LoadingComponent />
+  const minDate = data.date.min;
+  data = data.projects;
   const columns = [
     {
       name: 'Name',
@@ -84,7 +86,7 @@ export default function Index() {
       <DataTable
         title={<div className="text-right text-primary"><h1>Projects</h1></div>}
         subHeader
-        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} />}
+        subHeaderComponent={<Filter filter={filter} setFilter={setFilter} minDate={minDate} />}
         columns={columns}
         customStyles={customStyles}
         data={data}

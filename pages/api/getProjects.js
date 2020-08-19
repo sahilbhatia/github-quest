@@ -108,15 +108,26 @@ const getProjects = async (req, res) => {
 
     if (whereClauseData) {
       findAllClause.where = whereClauseData;
-      let data = await Projects.findAll(findAllClause);
+      let projectData = await Projects.findAll(findAllClause);
+      const earliestDate = await Projects.findAll({
+        attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+      })
+      let data = {};
+      data.projects = projectData,
+      data.date = earliestDate[0];
       res.status(200).json(data);
     } else {
-      let data = await Projects.findAll(findAllClause);
+      let projectData = await Projects.findAll(findAllClause);
 
+      const earliestDate = await Projects.findAll({
+        attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+      })
+      let data = {};
+      data.projects = projectData,
+      data.date = earliestDate[0];
       res.status(200).json(data);
     }
-  } catch (err){
-    console.log(err)
+  } catch {
     res.status(500).json({
       message: "internal server error"
     })

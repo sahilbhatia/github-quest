@@ -54,7 +54,7 @@ const getUsers = async (req, res) => {
         [Sequelize.Op.between]: [new Date(startDate), date]
       }
     }
-    const data = await
+    const usersData = await
       Users.findAll({
         where,
         include: [
@@ -68,7 +68,13 @@ const getUsers = async (req, res) => {
         limit:limit,
         offset:offset,
       });
-    res.json(data);
+      const earliestDate = await Users.findAll({
+        attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+      })
+      let data = {};
+      data.users = usersData,
+        data.date = earliestDate[0];
+      res.status(200).json(data);
   } catch  {
     res.status(500).json({
       message: "internal server error",
