@@ -173,48 +173,92 @@ export default async function insertUsers(req, res) {
         break;
       //change project status to active 
       case "Project Active":
-        const projectActive = await Projects.findOne({
-          where: { org_project_id: data.project_id }
-        })
-        if (!projectActive) {
-          res.status(404).json({
-            message: "project not found"
-          })
-        } else {
-          let projectData = { is_active: true }
-          Projects.update(projectData, {
-            where: { org_project_id: data.project_id }
-          })
-            .then((res) => {
-              res.status(200).json({
-                message: "project activated successfully"
+        await yup.object().shape({
+          project_id: yup.string().required({ project_id: "required" }),
+        }).validate({
+          project_id: data.project_id
+        }, { abortEarly: false })
+          .then(async () => {
+            try {
+              const projectActive = await Projects.findOne({
+                where: { org_project_id: data.project_id }
               })
+              if (!projectActive) {
+                res.status(404).json({
+                  message: "project not found"
+                })
+              } else {
+                let projectData = { is_active: true }
+                await Projects.update(projectData, {
+                  where: { org_project_id: data.project_id }
+                })
+                  .then(() => {
+                    res.status(200).json({
+                      message: "project activated successfully"
+                    })
+                  })
+              }
+            } catch {
+              res.status(500).json({
+                message: "internal server error"
+              })
+            }
+          })
+          .catch((err) => {
+            res.status(400).json({
+              message: { err },
             })
-        }
+          });
+        break;
 
       //change project status to inactive 
       case "Project Inactive":
-        const projectInactive = await Projects.findOne({
-          where: { org_project_id: data.project_id }
-        })
-        if (!projectInactive) {
-          res.status(404).json({
-            message: "project not found"
-          })
-        } else {
-          let projectData = { is_active: false }
-          Projects.update(projectData, {
-            where: { org_project_id: data.project_id }
-          })
-            .then((res) => {
-              res.status(200).json({
-                message: "project Inactivated successfully"
+        await yup.object().shape({
+          project_id: yup.string().required({ project_id: "required" }),
+        }).validate({
+          project_id: data.project_id
+        }, { abortEarly: false })
+          .then(async () => {
+            try {
+              const projectInactive = await Projects.findOne({
+                where: { org_project_id: data.project_id }
               })
+              if (!projectInactive) {
+                res.status(404).json({
+                  message: "project not found"
+                })
+              } else {
+                let projectData = { is_active: false }
+                await Projects.update(projectData, {
+                  where: { org_project_id: data.project_id }
+                })
+                  .then(() => {
+                    res.status(200).json({
+                      message: "project Inactivated successfully"
+                    })
+                  })
+              }
+            } catch {
+              res.status(500).json({
+                message: "internal server error"
+              })
+            }
+          })
+          .catch((err) => {
+            res.status(400).json({
+              message: { err },
             })
-        }
-
+          });
+        break;
       //project deleted 
       case "Project Deleted":
+        await yup.object().shape({
+          project_id: yup.string().required({ project_id: "required" }),
+        }).validate({
+          project_id: data.project_id
+        }, { abortEarly: false })
+          .then(async () => {
+            try {
         const projectDelete = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
@@ -228,16 +272,32 @@ export default async function insertUsers(req, res) {
               project_id: projectDelete.id
             }
           })
-          Projects.destroy(projectData, {
+          await ProjectsRepositories.destroy({
+            where: {
+              project_id: projectDelete.id
+            }
+          })
+         await Projects.destroy({
             where: { org_project_id: data.project_id }
           })
-            .then((res) => {
+            .then(() => {
               res.status(200).json({
                 message: "project deleted successfully"
               })
             })
         }
-
+      } catch {
+        res.status(500).json({
+          message: "internal server error"
+        })
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({
+        message: { err },
+      })
+    });
+  break;
       //add project manager 
       case "Manager Added":
         const projectAddManager = await Projects.findOne({
