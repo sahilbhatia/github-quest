@@ -10,7 +10,6 @@ export default async function insertUsers(req, res) {
 
   try {
     const data = req.body;
-    console.log(req.body);
     switch (data.event_type) {
 
       //user update
