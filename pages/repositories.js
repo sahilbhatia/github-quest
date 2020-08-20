@@ -157,6 +157,24 @@ export default function Index() {
         "maxWidth": "120px"
     },
     {
+      name: 'Error Details',
+      selector: d => d.error_details?(
+        <OverlayTrigger
+          placement="top"
+          delay={{ show: 250, hide: 400 }}
+          overlay={
+            <Tooltip>
+              {d.error_details}
+            </Tooltip>
+          }
+        >
+          <span>
+            {d.error_details}
+          </span>
+        </OverlayTrigger>):"-",
+        "maxWidth": "40px"
+    },
+    {
       name: 'Review On',
       selector: d => d.reviewed_at ? <>{new Date(moment(d.reviewed_at).utcOffset(utc)).toDateString().substring(4,15)}</> : <>-</>,
       "maxWidth": "150px",
