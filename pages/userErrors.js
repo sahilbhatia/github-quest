@@ -4,6 +4,8 @@ import { Button } from "react-bootstrap";
 import { Tooltip, OverlayTrigger} from "react-bootstrap";
 import ErrorComponent from "../components/errorpage"
 import LoadingComponent from "../components/loaderpage";
+import moment from "moment";
+
 let code;
 const fetcher = (url) => fetch(url).then((res) =>{code=res.status; return res.json()})
 
@@ -11,6 +13,8 @@ export default function Post() {
   let { data, error } = useSWR(`/api/getUserErrors`, fetcher);
   if (error || code==400 || code==404 || code==500) return <ErrorComponent code={code}/>
   if (!data) return <LoadingComponent/>
+  let utcTimeOffset = new Date().getTimezoneOffset();
+  let utc = utcTimeOffset * (-2);
   const columns = [
     {
       name: 'User Name',
@@ -40,6 +44,11 @@ export default function Post() {
         {d.error}
       </span>
     </OverlayTrigger>
+    },
+    {
+      name: 'Review On',
+      selector: d =><>{new Date(moment(d.created_at).utcOffset(utc)).toDateString().substring(4,15)}</>,
+      "maxWidth": "150px",
     },
   ];
   const customStyles = {

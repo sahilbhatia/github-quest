@@ -20,9 +20,13 @@ module.exports = {
           },
         },
         error: {
-            type: Sequelize.TEXT,
-            allowNull: true,
-          },
+          type: Sequelize.TEXT,
+          allowNull: true,
+        },
+        created_at: {
+          type: 'TIMESTAMP',
+          defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        },
       },
       {
         timestamp: false,
