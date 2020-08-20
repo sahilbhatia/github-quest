@@ -18,11 +18,12 @@ export default function Post() {
   const columns = [
     {
       name: 'User Name',
-      selector: d => d.user.name
+      selector: d => d.user.name,
+      
     },
     {
       name: 'Github Handle',
-      selector: d => d.user.github_handle
+      selector: d => d.user.github_handle,
     },
 
     {
@@ -43,12 +44,12 @@ export default function Post() {
       <span>
         {d.error}
       </span>
-    </OverlayTrigger>
+    </OverlayTrigger>,
+    "maxWidth": "150px",
     },
     {
-      name: 'Review On',
+      name: 'created On',
       selector: d =><>{new Date(moment(d.created_at).utcOffset(utc)).toDateString().substring(4,15)}</>,
-      "maxWidth": "150px",
     },
   ];
   const customStyles = {
