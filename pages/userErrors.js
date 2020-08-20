@@ -18,17 +18,17 @@ export default function Post() {
   const columns = [
     {
       name: 'User Name',
-      selector: d => d.user.name,
+      selector: "name",
       
     },
     {
       name: 'Github Handle',
-      selector: d => d.user.github_handle,
+      selector: "github_handle",
     },
 
     {
       name: 'Email',
-      selector: d => d.user.email
+      selector: "email"
     },
     {
       name: 'Error Details',
@@ -37,19 +37,14 @@ export default function Post() {
       delay={{ show: 250, hide: 400 }}
       overlay={
         <Tooltip>
-          {d.error}
+          {d.error_details}
         </Tooltip>
       }
     >
       <span>
-        {d.error}
+        {d.error_details}
       </span>
     </OverlayTrigger>,
-    "maxWidth": "150px",
-    },
-    {
-      name: 'created On',
-      selector: d =><>{new Date(moment(d.created_at).utcOffset(utc)).toDateString().substring(4,15)}</>,
     },
   ];
   const customStyles = {

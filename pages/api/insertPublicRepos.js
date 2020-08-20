@@ -8,7 +8,6 @@ const db = require("../../models/sequelize");
 const Users = db.users;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
-const Errors = db.user_errors;
 
 export default async function insertPublicRepos(req, res) {
   const insertRepos = async () => {
@@ -32,10 +31,14 @@ export default async function insertPublicRepos(req, res) {
             return null;
           }
         } catch {
-          await Errors.create({
-            user_id: usersList[iterator].dataValues.id,
-            error: "repositories not fetch for given github handle"
-          })
+          await Users.update({
+            error_details: "repositories not fetch for given github handle"
+          },
+            {
+              where: {
+                id: usersList[iterator].dataValues.id,
+              }
+            })
           return null;
         }
 
@@ -50,10 +53,14 @@ export default async function insertPublicRepos(req, res) {
             return null;
           }
         } catch {
-          await Errors.create({
-            user_id: usersList[iterator].dataValues.id,
-            error: "repositories not fetch for given github handle"
-          })
+          await Users.update({
+            error_details: "repositories not fetch for given github handle"
+          },
+            {
+              where: {
+                id: usersList[iterator].dataValues.id,
+              }
+            })
           return null;
         }
       }
@@ -90,10 +97,14 @@ export default async function insertPublicRepos(req, res) {
                   repository_id: insertRepos.dataValues.id,
                 })
               } catch {
-                await Errors.create({
-                  user_id: usersList[iterator].dataValues.id,
-                  error: "error came while inserting repositories"
-                })
+                await Users.update({
+                  error_details: "error comes while inserting repositories "
+                },
+                  {
+                    where: {
+                      id: usersList[iterator].dataValues.id,
+                    }
+                  })
                 return;
               }
             } else if (result.length === 0 && item.fork == true) {
@@ -165,27 +176,39 @@ export default async function insertPublicRepos(req, res) {
                                     repository_id: insertParentRepositories.dataValues.id,
                                   })
                                 } catch {
-                                  await Errors.create({
-                                    user_id: usersList[iterator].dataValues.id,
-                                    error: "error came while fetching child repositories"
-                                  })
+                                  await Users.update({
+                                    error_details: "error comes while fetching repositories"
+                                  },
+                                    {
+                                      where: {
+                                        id: usersList[iterator].dataValues.id,
+                                      }
+                                    })
                                   return;
                                 }
                               }
                             } catch {
-                              await Errors.create({
-                                user_id: usersList[iterator].dataValues.id,
-                                error: "error came while inserting repositories"
-                              })
+                              await Users.update({
+                                error_details: "error comes while inserting repositories"
+                              },
+                                {
+                                  where: {
+                                    id: usersList[iterator].dataValues.id,
+                                  }
+                                })
                               return;
                             }
                           })
                           return;
                         } catch {
-                          await Errors.create({
-                            user_id: usersList[iterator].dataValues.id,
-                            error: "error came while fetching forks repositories"
-                          })
+                          await Users.update({
+                            error_details: "error comes while fetching forks repositories"
+                          },
+                            {
+                              where: {
+                                id: usersList[iterator].dataValues.id,
+                              }
+                            })
                           return;
                         }
                       } else {
@@ -202,9 +225,12 @@ export default async function insertPublicRepos(req, res) {
                       where: { id: insertParentRepositories.dataValues.id },
                     });
                   } catch {
-                    await Errors.create({
-                      user_id: usersList[iterator].dataValues.id,
-                      error: "error came while updating review status"
+                    await Repositories.update({
+                      error_details: "error came while updating repositories"
+                    }, {
+                      where: {
+                        where: { id: insertParentRepositories.dataValues.id },
+                      }
                     })
                     return;
                   }
@@ -236,10 +262,14 @@ export default async function insertPublicRepos(req, res) {
                           repository_id: insertParentRepositories.dataValues.id,
                         })
                       } catch {
-                        await Errors.create({
-                          user_id: usersList[iterator].dataValues.id,
-                          error: "error came while inserting repositories"
-                        })
+                        await Users.update({
+                          error_details: "error comes while inserting repositories"
+                        },
+                          {
+                            where: {
+                              id: usersList[iterator].dataValues.id,
+                            }
+                          })
                         return;
                       }
                     }
@@ -302,27 +332,39 @@ export default async function insertPublicRepos(req, res) {
                                     repository_id: insertParentRepositories.dataValues.id,
                                   })
                                 } catch {
-                                  await Errors.create({
-                                    user_id: usersList[iterator].dataValues.id,
-                                    error: "error came while inserting repositories"
-                                  })
+                                  await Users.update({
+                                    error_details: "error comes while inserting repositories"
+                                  },
+                                    {
+                                      where: {
+                                        id: usersList[iterator].dataValues.id,
+                                      }
+                                    })
                                   return;
                                 }
                               }
                             } catch {
-                              await Errors.create({
-                                user_id: usersList[iterator].dataValues.id,
-                                error: "error came while inserting repositories"
-                              })
+                              await Users.update({
+                                error_details: "error comes while inserting repositories"
+                              },
+                                {
+                                  where: {
+                                    id: usersList[iterator].dataValues.id,
+                                  }
+                                })
                               return;
                             }
                           })
                           return;
                         } catch {
-                          await Errors.create({
-                            user_id: usersList[iterator].dataValues.id,
-                            error: "error came while fetching forks repositories"
-                          })
+                          await Users.update({
+                            error_details: "error comes while fetching forks repositories"
+                          },
+                            {
+                              where: {
+                                id: usersList[iterator].dataValues.id,
+                              }
+                            })
                           return;
                         }
                       } else {
@@ -476,10 +518,15 @@ export default async function insertPublicRepos(req, res) {
               where: { id: usersList[iterator].dataValues.id }
             });
           } catch {
-            await Errors.create({
-              user_id: usersList[iterator].dataValues.id,
-              error: "error came while updating users"
-            })
+            await Users.update({
+              error_details: "error comes while updating user"
+            },
+              {
+                where: {
+                  id: usersList[iterator].dataValues.id,
+                }
+              })
+              return
           }
         }
       }

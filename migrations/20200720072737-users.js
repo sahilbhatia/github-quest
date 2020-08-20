@@ -23,6 +23,10 @@ module.exports = {
           type: Sequelize.STRING(50),
           allowNull: true,
         },
+        error_details: {
+          type: Sequelize.TEXT,
+          allowNull: true,
+        },
         org_user_id: {
           type: Sequelize.STRING(50),
           allowNull: false,
