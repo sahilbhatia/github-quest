@@ -259,77 +259,106 @@ export default async function insertUsers(req, res) {
         }, { abortEarly: false })
           .then(async () => {
             try {
-        const projectDelete = await Projects.findOne({
-          where: { org_project_id: data.project_id }
-        })
-        if (!projectDelete) {
-          res.status(404).json({
-            message: "project not found"
-          })
-        } else {
-          await UsersProjects.destroy({
-            where: {
-              project_id: projectDelete.id
-            }
-          })
-          await ProjectsRepositories.destroy({
-            where: {
-              project_id: projectDelete.id
-            }
-          })
-         await Projects.destroy({
-            where: { org_project_id: data.project_id }
-          })
-            .then(() => {
-              res.status(200).json({
-                message: "project deleted successfully"
+              const projectDelete = await Projects.findOne({
+                where: { org_project_id: data.project_id }
               })
+              if (!projectDelete) {
+                res.status(404).json({
+                  message: "project not found"
+                })
+              } else {
+                await UsersProjects.destroy({
+                  where: {
+                    project_id: projectDelete.id
+                  }
+                })
+                await ProjectsRepositories.destroy({
+                  where: {
+                    project_id: projectDelete.id
+                  }
+                })
+                await Projects.destroy({
+                  where: { org_project_id: data.project_id }
+                })
+                  .then(() => {
+                    res.status(200).json({
+                      message: "project deleted successfully"
+                    })
+                  })
+              }
+            } catch {
+              res.status(500).json({
+                message: "internal server error"
+              })
+            }
+          })
+          .catch((err) => {
+            res.status(400).json({
+              message: { err },
             })
-        }
-      } catch {
-        res.status(500).json({
-          message: "internal server error"
-        })
-      }
-    })
-    .catch((err) => {
-      res.status(400).json({
-        message: { err },
-      })
-    });
-  break;
+          });
+        break;
       //add project manager 
       case "Manager Added":
-        const projectAddManager = await Projects.findOne({
-          where: { org_project_id: data.project_id }
-        })
-        if (!projectAddManager) {
-          res.status(404).json({
-            message: "project not found"
-          })
-        } else {
-          const user = await Users.findOne({
-            where: { org_user_id: data.user_id }
-          })
-          if (!user) {
-            res.status(404).json({
-              message: "user not found"
-            })
-          } else {
-            let projectData = { project_manager: user.id }
-            Projects.update(projectData, {
-              where: { org_project_id: data.project_id }
-            })
-              .then((res) => {
-                res.status(200).json({
-                  message: "added project manager successfully"
-                })
+        await yup.object().shape({
+          user_id: yup.string().required({ user_id: "required" }),
+          project_id: yup.string().required({ project_id: "required" }),
+        }).validate({
+          user_id: data.user_id,
+          project_id: data.project_id
+        }, { abortEarly: false })
+          .then(async () => {
+            try {
+              const projectAddManager = await Projects.findOne({
+                where: { org_project_id: data.project_id }
               })
-          }
-        }
-
+              if (!projectAddManager) {
+                res.status(404).json({
+                  message: "project not found"
+                })
+              } else {
+                const user = await Users.findOne({
+                  where: { org_user_id: data.user_id }
+                })
+                if (!user) {
+                  res.status(404).json({
+                    message: "user not found"
+                  })
+                } else {
+                  let projectData = { project_manager: user.id }
+                  await Projects.update(projectData, {
+                    where: { org_project_id: data.project_id }
+                  })
+                    .then(() => {
+                      res.status(200).json({
+                        message: "added project manager successfully"
+                      })
+                    })
+                }
+              }
+            } catch {
+              res.status(500).json({
+                message: "internal server error"
+              })
+            }
+          })
+          .catch((err) => {
+            res.status(400).json({
+              message: { err },
+            })
+          });
+        break;
       //remove project manager
       case "Manager Removed":
+        await yup.object().shape({
+          user_id: yup.string().required({ user_id: "required" }),
+          project_id: yup.string().required({ project_id: "required" }),
+        }).validate({
+          user_id: data.user_id,
+          project_id: data.project_id
+        }, { abortEarly: false })
+          .then(async () => {
+            try {
         const projectRemoveManager = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
@@ -347,17 +376,28 @@ export default async function insertUsers(req, res) {
             })
           } else {
             let projectData = { project_manager: null }
-            Projects.update(projectData, {
+           await Projects.update(projectData, {
               where: { org_project_id: data.project_id }
             })
-              .then((res) => {
+              .then(() => {
                 res.status(200).json({
                   message: "remove project manager successfully"
                 })
               })
           }
         }
-
+      } catch {
+        res.status(500).json({
+          message: "internal server error"
+        })
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({
+        message: { err },
+      })
+    });
+  break;
       //Repository is Removed from Project
       case "Repository Removed":
         const projectRemoveRepository = await Projects.findOne({
