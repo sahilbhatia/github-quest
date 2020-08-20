@@ -1,5 +1,6 @@
 const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
+const yup = require("yup");
 const db = require("../../models/sequelize");
 const Users = db.users;
 const UsersProjects = db.users_projects;
@@ -9,49 +10,84 @@ export default async function insertUsers(req, res) {
 
   try {
     const data = req.body;
+    console.log(req.body);
     switch (data.event_type) {
 
       //user update
       case "User updated":
-        const user = await Users.findOne({
-          where: { org_user_id: data.user_id }
-        })
-        if (!user) {
-          res.status(404).json({
-            message: "user not found"
-          })
-        } else {
-          let updateObject = {};
-          if (req.body.email) {
-            updateObject.email = req.body.email
-          }
-          if (req.body.name) {
-            updateObject.name = req.body.name
-          }
-          if (req.body.role) {
-            updateObject.role = req.body.role
-          }
+        await yup.object().shape({
+          user_id: yup
+            .string()
+            .required({ user_id: "required" }),
+        }).validate({
+          user_id: data.user_id
+        }, { abortEarly: false })
+          .then(async () => {
+            try {
+              const user = await Users.findOne({
+                where: { org_user_id: data.user_id }
+              })
+              if (!user) {
+                res.status(404).json({
+                  message: "user not found"
+                })
+              } else {
+                let updateObject = {};
+                if (data.email) {
+                  updateObject.email = data.email
+                }
+                if (data.name) {
+                  updateObject.name = data.name
+                }
+                if (data.role) {
+                  updateObject.role = data.role
+                }
 
-          if (req.body.public_profile) {
-            if (req.body.public_profile.github_handle) {
-              updateObject.github_handle = req.body.public_profile.github_handle
+                if (data.public_profile) {
+                  if (data.public_profile.github_handle) {
+                    updateObject.github_handle = data.public_profile.github_handle
+                  }
+                }
+                await Users.update(updateObject, {
+                  where: { org_user_id: data.user_id }
+                }).then(() => {
+                  res.status(200).json({
+                    message: "user update successfully"
+                  })
+                })
+              }
+            } catch {
+              res.status(500).json({
+                message: "internal server error"
+              })
             }
-          }
-          Users.update(updateObject, {
-            where: { org_user_id: data.user_id }
-          }).then((res) => {
-            res.status(200).json({
-              message: "user update successfully"
-            })
           })
-        }
-
+          .catch(() => {
+            res.status(400).json({
+              message: "user id required"
+            })
+          });
+        break;
       //user added in project
       case "User Added":
-        const project = await Projects.findOne({
+        case "User updated":
+        await yup.object().shape({
+          user_id: yup
+            .string()
+            .required({ user_id: "required" }),
+            project_id: yup
+            .string()
+            .required({ project_id: "required" }),
+        }).validate({
+          user_id: data.user_id,
+          project_id:data.project_id
+        }, { abortEarly: false })
+          .then(async () => {
+            try {
+        const projectAddUser = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectAddUser) {
           res.status(404).json({
             message: "project not found"
           })
@@ -65,24 +101,36 @@ export default async function insertUsers(req, res) {
             })
           } else {
             const insertObj = {
-              project_id: project.id,
+              project_id: projectAddUser.id,
               user_id: user.id
             }
-            UsersProjects.create(insertObj)
-              .then((res) => {
+           await UsersProjects.create(insertObj)
+              .then(() => {
                 res.status(200).json({
                   message: "added user in project successfully"
                 })
               })
           }
         }
-
+      } catch(err) {
+        console.log(err)
+        res.status(500).json({
+          message: "internal server error"
+        })
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({
+        message: {err},
+      })
+    });
+        break;
       //user removed from project
       case "User Removed":
-        const project = await Projects.findOne({
+        const projectRemoveUser = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectRemoveUser) {
           res.status(404).json({
             message: "project not found"
           })
@@ -97,7 +145,7 @@ export default async function insertUsers(req, res) {
           } else {
             UsersProjects.destroy({
               where: {
-                project_id: project.id,
+                project_id: projectRemoveUser.id,
                 user_id: user.id
               }
             })
@@ -111,10 +159,10 @@ export default async function insertUsers(req, res) {
 
       //change project status to active 
       case "Project Active":
-        const project = await Projects.findOne({
+        const projectActive = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectActive) {
           res.status(404).json({
             message: "project not found"
           })
@@ -132,10 +180,10 @@ export default async function insertUsers(req, res) {
 
       //change project status to inactive 
       case "Project Inactive":
-        const project = await Projects.findOne({
+        const projectInactive = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectInactive) {
           res.status(404).json({
             message: "project not found"
           })
@@ -153,17 +201,17 @@ export default async function insertUsers(req, res) {
 
       //project deleted 
       case "Project Deleted":
-        const project = await Projects.findOne({
+        const projectDelete = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectDelete) {
           res.status(404).json({
             message: "project not found"
           })
         } else {
           await UsersProjects.destroy({
             where: {
-              project_id: project.id
+              project_id: projectDelete.id
             }
           })
           Projects.destroy(projectData, {
@@ -178,10 +226,10 @@ export default async function insertUsers(req, res) {
 
       //add project manager 
       case "Manager Added":
-        const project = await Projects.findOne({
+        const projectAddManager = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectAddManager) {
           res.status(404).json({
             message: "project not found"
           })
@@ -208,10 +256,10 @@ export default async function insertUsers(req, res) {
 
       //remove project manager
       case "Manager Removed":
-        const project = await Projects.findOne({
+        const projectRemoveManager = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectRemoveManager) {
           res.status(404).json({
             message: "project not found"
           })
@@ -238,10 +286,10 @@ export default async function insertUsers(req, res) {
 
       //Repository is Removed from Project
       case "Repository Removed":
-        const project = await Projects.findOne({
+        const projectRemoveRepository = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectRemoveRepository) {
           res.status(404).json({
             message: "project not found"
           })
@@ -267,10 +315,10 @@ export default async function insertUsers(req, res) {
 
       //Repository is Added to Project
       case "Repository Added":
-        const project = await Projects.findOne({
+        const projectAddRepository = await Projects.findOne({
           where: { org_project_id: data.project_id }
         })
-        if (!project) {
+        if (!projectAddRepository) {
           res.status(404).json({
             message: "project not found"
           })
