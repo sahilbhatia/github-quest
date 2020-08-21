@@ -176,7 +176,7 @@ describe("test cases for web hooks to remove user from project", function () {
       .request(app)
       .get("/api/webhooks")
       .send({
-        event_type: "User Removed",
+        event_type: "User Added",
         user_id: userId,
         project_id: projectId,
       })
@@ -192,7 +192,7 @@ describe("test cases for web hooks to remove user from project", function () {
       .request(app)
       .get("/api/webhooks")
       .send({
-        event_type: "User Removed",
+        event_type: "User Added",
         user_id: userId,
         project_id: "1a2b",
       })
@@ -208,7 +208,7 @@ describe("test cases for web hooks to remove user from project", function () {
       .request(app)
       .get("/api/webhooks")
       .send({
-        event_type: "User Removed",
+        event_type: "User Added",
         user_id: "1a2b",
         project_id: projectId,
       })
@@ -219,3 +219,137 @@ describe("test cases for web hooks to remove user from project", function () {
       });
   });
 }); 
+
+//add project manager in project
+describe("test cases for web hooks to add project manager in project", function () {
+  let userId = user.org_user_id;
+  let projectId = project.org_project_id;
+  before((done) => {
+    db.users.create(user).then(() => {
+      db.projects.create(project).then(() => {
+        done();
+      });
+    });
+  });
+
+  after(async () => {
+    await db.projects.destroy({ where: { org_project_id: projectId } });
+    await db.users.destroy({ where: { org_user_id: userId } });
+  });
+
+  it("add project manager in project and should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Manager Added",
+        user_id: userId,
+        project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid project id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Manager Added",
+        user_id: userId,
+        project_id: "1a2b",
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid user id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Manager Added",
+        user_id: "1a2b",
+        project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+}); 
+
+//remove project manager from project
+describe("test cases for web hooks to remove project manager from project", function () {
+  let userId = user.org_user_id;
+  let projectId = project.org_project_id;
+  let user_id;
+  before((done) => {
+    db.users.create(user).then((res) => {
+      project.project_manager = res.id
+      db.projects.create(project).then(() => {
+        done();
+      });
+    });
+  });
+
+  after(async () => {
+    await db.projects.destroy({ where: { org_project_id: projectId } });
+    await db.users.destroy({ where: { org_user_id: userId } });
+  });
+
+  it("remove project manager from project and should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Manager Added",
+        user_id: userId,
+        project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid project id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Manager Added",
+        user_id: userId,
+        project_id: "1a2b",
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid user id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Manager Added",
+        user_id: "1a2b",
+        project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+});
