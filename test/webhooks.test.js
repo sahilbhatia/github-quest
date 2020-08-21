@@ -218,7 +218,7 @@ describe("test cases for web hooks to remove user from project", function () {
         done();
       });
   });
-}); 
+});
 
 //add project manager in project
 describe("test cases for web hooks to add project manager in project", function () {
@@ -284,13 +284,12 @@ describe("test cases for web hooks to add project manager in project", function 
         done();
       });
   });
-}); 
+});
 
 //remove project manager from project
 describe("test cases for web hooks to remove project manager from project", function () {
   let userId = user.org_user_id;
   let projectId = project.org_project_id;
-  let user_id;
   before((done) => {
     db.users.create(user).then((res) => {
       project.project_manager = res.id
@@ -345,6 +344,141 @@ describe("test cases for web hooks to remove project manager from project", func
         event_type: "Manager Added",
         user_id: "1a2b",
         project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+});
+
+//project activate
+describe("test cases for web hooks to active project", function () {
+  let projectId = project.org_project_id;
+  before((done) => {
+     delete project.project_manager;
+    db.projects.create(project).then(() => {
+      done();
+    });
+  });
+
+  after(async () => {
+    await db.projects.destroy({ where: { org_project_id: projectId } });
+  });
+
+  it("activate project and should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Project Active",
+        project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid project id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Project Active",
+        project_id: "1a2b",
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+});
+
+//project Inactivate
+describe("test cases for web hooks to Inactive project", function () {
+  let projectId = project.org_project_id;
+  before((done) => {
+     delete project.project_manager;
+    db.projects.create(project).then(() => {
+      done();
+    });
+  });
+
+  after(async () => {
+    await db.projects.destroy({ where: { org_project_id: projectId } });
+  });
+
+  it("inactivate project and should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Project Inactive",
+        project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid project id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Project Inactive",
+        project_id: "1a2b",
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+});
+
+//project deleted
+describe("test cases for web hooks to delete project", function () {
+  let projectId = project.org_project_id;
+  before((done) => {
+     delete project.project_manager;
+    db.projects.create(project).then(() => {
+      done();
+    });
+  });
+
+  after(async () => {
+    await db.projects.destroy({ where: { org_project_id: projectId } });
+  });
+
+  it("delete project and should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Project Deleted",
+        project_id: projectId,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid project id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Project Deleted",
+        project_id: "1a2b",
       })
       .end(function (err, res) {
         should(res.status).eql(404);
