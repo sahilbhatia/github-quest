@@ -13,6 +13,9 @@ data.project = {
   name: faker.name.firstName()
 };
 
-
+data.project_repository = {
+  repository_url:faker.internet.url(),
+  host: faker.internet.domainName()
+};
 
 module.exports = data;

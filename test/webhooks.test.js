@@ -1,5 +1,6 @@
 const dbConn = require("../models/sequelize");
 dbConn.sequelize;
+const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const should = require('should');
@@ -10,6 +11,7 @@ const data = require("./data");
 
 let user = data.user;
 let project = data.project;
+let project_repository = data.project_repository;
 
 //update user
 describe("test cases for web hooks to invalid event", function () {
@@ -357,7 +359,7 @@ describe("test cases for web hooks to remove project manager from project", func
 describe("test cases for web hooks to active project", function () {
   let projectId = project.org_project_id;
   before((done) => {
-     delete project.project_manager;
+    delete project.project_manager;
     db.projects.create(project).then(() => {
       done();
     });
@@ -402,7 +404,7 @@ describe("test cases for web hooks to active project", function () {
 describe("test cases for web hooks to Inactive project", function () {
   let projectId = project.org_project_id;
   before((done) => {
-     delete project.project_manager;
+    delete project.project_manager;
     db.projects.create(project).then(() => {
       done();
     });
@@ -447,7 +449,7 @@ describe("test cases for web hooks to Inactive project", function () {
 describe("test cases for web hooks to delete project", function () {
   let projectId = project.org_project_id;
   before((done) => {
-     delete project.project_manager;
+    delete project.project_manager;
     db.projects.create(project).then(() => {
       done();
     });
@@ -482,6 +484,145 @@ describe("test cases for web hooks to delete project", function () {
       })
       .end(function (err, res) {
         should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+});
+
+//add repository in project
+describe("test cases for web hooks to add repository in project", function () {
+  let projectId = project.org_project_id;
+  let project_id;
+  before((done) => {
+    db.projects.create(project).then((res) => {
+      project_id = res.id;
+      done();
+    });
+  });
+
+  after(async () => {
+    await db.projects_repositories.destroy({ where: {project_id: project_id } });
+    await db.projects.destroy({ where: { org_project_id: projectId } });
+  });
+
+  it("add repository in project and should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Repository Added",
+        project_id: projectId,
+        repository_url: faker.internet.url(),
+        Repository_details: {
+          host: faker.internet.domainName()
+        }
+      })
+      .end(function (err, res) {
+        should(res.status).eql(201);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid project id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Repository Added",
+        project_id: "1a2b",
+        repository_url: faker.internet.url(),
+        Repository_details: {
+          host: faker.internet.domainName()
+        }
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("passing null value of repository url should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Repository Added",
+        project_id: projectId,
+        Repository_details: {
+          host: faker.internet.domainName()
+        }
+      })
+      .end(function (err, res) {
+        should(res.status).eql(400);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+});
+
+//add repository in project
+describe("test cases for web hooks to add repository in project", function () {
+  let projectId = project.org_project_id;
+  let project_id;
+  before((done) => {
+    db.projects.create(project).then((res) => {
+      project_id = res.id;
+      project_repository.project_id = project_id;
+      db.projects_repositories.create(project_repository).then(() => {
+        done();
+      })
+    });
+  });
+
+  after(async () => {
+    await db.projects.destroy({ where: { org_project_id: projectId } });
+  });
+
+  it("add repository in project and should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Repository Removed",
+        project_id: projectId,
+        repository_url: project_repository.repository_url,
+      })
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("invalid project id should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Repository Added",
+        project_id: "1a2b",
+        repository_url: faker.internet.url(),
+      })
+      .end(function (err, res) {
+        should(res.status).eql(404);
+        should(res.body).be.a.Object();
+        done();
+      });
+  });
+
+  it("passing null value of repository url should give status 404", function (done) {
+    chai
+      .request(app)
+      .get("/api/webhooks")
+      .send({
+        event_type: "Repository Added",
+        project_id: projectId
+      })
+      .end(function (err, res) {
+        should(res.status).eql(400);
         should(res.body).be.a.Object();
         done();
       });
