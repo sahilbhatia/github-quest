@@ -8,6 +8,11 @@ data.user = {
   role_id: 1,
 };
 
+data.project = {
+  org_project_id: faker.random.alphaNumeric(),
+  name: faker.name.firstName()
+};
+
 
 
 module.exports = data;
