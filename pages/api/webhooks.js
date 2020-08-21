@@ -496,8 +496,8 @@ export default async function insertUsers(req, res) {
           });
         break;
       default:
-        res.status(500).json({
-          message: "internal server error"
+        res.status(400).json({
+          message: "invalid event hook"
         })
     }
   } catch{
