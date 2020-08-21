@@ -18,4 +18,16 @@ data.project_repository = {
   host: faker.internet.domainName()
 };
 
+data.user_repository = {
+  github_repo_id:faker.random.number(),
+  url:faker.internet.url(),
+  is_forked: false,
+  is_archived: false,
+  is_disabled: false,
+  is_suspicious: false,
+  manual_review: false,
+  is_private: false,
+};
+
+
 module.exports = data;
