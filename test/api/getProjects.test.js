@@ -76,7 +76,7 @@ describe("test cases for get project api", function () {
       });
   });
 
-  it("filter by repo name should give status 200", function (done) {
+  it("filter by project name should give status 200", function (done) {
     chai
       .request(app)
       .get(`/api/getProjects?projectName=${project.name}`)
@@ -88,7 +88,7 @@ describe("test cases for get project api", function () {
       });
   });
 
-  it("filter by invalid repo name should give status 200", function (done) {
+  it("filter by invalid project name should give status 200", function (done) {
     chai
       .request(app)
       .get(`/api/getProjects?projectName=azby`)
