@@ -21,6 +21,7 @@ describe("test cases for get public repo api", function () {
     is_disabled: false,
     is_suspicious: false,
     manual_review: false,
+    review: "pending",
     is_private: false,
   };
   let repositoryData2 = {
@@ -31,13 +32,12 @@ describe("test cases for get public repo api", function () {
     is_archived: true,
     is_disabled: true,
     is_suspicious: true,
-    manual_review: true,
+    review: "no action",
     is_private: true,
     error_details: faker.random.word()
   };
   before(async () => {
     userRes = await db.users.create(user);
-    //console.log(userRes.dataValues)
     repoRes1 = await db.repositories.create(repositoryData1);
     repoRes2 = await db.repositories.create(repositoryData2);
     await db.users_repositories.create({ user_id: userRes.id, repository_id: repoRes1.id });
@@ -51,7 +51,7 @@ describe("test cases for get public repo api", function () {
     await db.repositories.destroy({ where: { id: repoRes1.id } });
   });
 
-  it("insert users and should give status 200", function (done) {
+  it("array length should equal to limit  and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/getPublicRepos?limit=2")
@@ -63,18 +63,28 @@ describe("test cases for get public repo api", function () {
       });
   });
 
+  it("should give status 200", function (done) {
+    chai
+      .request(app)
+      .get("/api/getPublicRepos")
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body.repositories).be.a.Array();
+        done();
+      });
+  });
+
   it("filter should give status 200 with correct response", function (done) {
     chai
       .request(app)
-      .get(`/api/getPublicRepos?repoName=${repositoryData1.name}&is_forked=false&is_archived=false&is_disabled=false&is_suspicious=false&manual_review=false&is_private=false&error_details=false`)
+      .get(`/api/getPublicRepos?is_forked=false&is_archived=false&is_disabled=false&is_suspicious=false&review=pending&is_private=false&error_details=false`)
       .end(function (err, res) {
         should(res.status).eql(200);
-        should(res.body.repositories[0].name).eql(repositoryData1.name);
         should(res.body.repositories[0].is_forked).eql(false);
         should(res.body.repositories[0].is_archived).eql(false);
         should(res.body.repositories[0].is_disabled).eql(false);
         should(res.body.repositories[0].is_suspicious).eql(false);
-        should(res.body.repositories[0].manual_review).eql(false);
+        should(res.body.repositories[0].review).eql("pending");
         should(res.body.repositories[0].is_private).eql(false);
         should(res.body.repositories[0].error_details).eql(null);
         should(res.body.repositories).be.a.Array();
@@ -85,26 +95,38 @@ describe("test cases for get public repo api", function () {
   it("filter should give status 200 with correct response", function (done) {
     chai
       .request(app)
-      .get(`/api/getPublicRepos?repoName=${repositoryData2.name}&is_forked=true&is_archived=true&is_disabled=true&is_suspicious=true&manual_review=true&is_private=true&error_details=true`)
+      .get(`/api/getPublicRepos?is_forked=true&is_archived=true&is_disabled=true&is_suspicious=true&review=no action&is_private=true&error_details=true`)
       .end(function (err, res) {
         should(res.status).eql(200);
-        should(res.body.repositories[0].name).eql(repositoryData2.name);
         should(res.body.repositories[0].is_forked).eql(true);
         should(res.body.repositories[0].is_archived).eql(true);
         should(res.body.repositories[0].is_disabled).eql(true);
         should(res.body.repositories[0].is_suspicious).eql(true);
-        should(res.body.repositories[0].manual_review).eql(true);
+        should(res.body.repositories[0].review).eql("no action");
         should(res.body.repositories[0].is_private).eql(true);
-        should(res.body.repositories[0].error_details).eql(repositoryData2.error_details);
+        should(res.body.repositories[0].error_details).not.eql(null);
         should(res.body.repositories).be.a.Array();
         done();
       });
   });
 
-  it("filter should give status 200 with empty array", function (done) {
+  it("filter by repo name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getPublicRepos?repoName=${repositoryData2.name}&is_forked=false`)
+      .get(`/api/getPublicRepos?repoName=${repositoryData1.name}`)
+      .end(function (err, res) {
+        should(res.status).eql(200);
+
+        should(res.body.repositories[0].name).eql(repositoryData1.name);
+        should(res.body.repositories).be.a.Array();
+        done();
+      });
+  });
+
+  it("filter by invalid repo name should give status 200", function (done) {
+    chai
+      .request(app)
+      .get(`/api/getPublicRepos?repoName=azby`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.repositories.length).eql(0);
@@ -125,14 +147,25 @@ describe("test cases for get public repo api", function () {
       });
   });
 
-  it("filter on user id and should give status 200 ", function (done) {
+  it("filter on user name and should give status 200 ", function (done) {
     chai
       .request(app)
       .get(`/api/getPublicRepos?userName=${user.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
-        should(res.body.repositories.length).eql(2);
         should(res.body.repositories[0].name).eql(user.name);
+        should(res.body.repositories).be.a.Array();
+        done();
+      });
+  });
+
+  it("filter on invalid user name and should give status 200 ", function (done) {
+    chai
+      .request(app)
+      .get(`/api/getPublicRepos?userName=azby`)
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body.repositories.length).eql(0);
         should(res.body.repositories).be.a.Array();
         done();
       });
