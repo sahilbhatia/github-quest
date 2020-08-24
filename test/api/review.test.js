@@ -1,4 +1,4 @@
-const dbConn = require("../models/sequelize");
+const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
 const faker = require("faker");
 const chai = require("chai");
@@ -6,8 +6,8 @@ const chaiHttp = require("chai-http");
 const should = require('should');
 chai.use(chaiHttp);
 const app = "http://localhost:3000";//require("../server");
-const db = require("../models/sequelize");
-const data = require("./data");
+const db = require("../../models/sequelize");
+const data = require("../data");
 
 let user_repository = data.user_repository;
 

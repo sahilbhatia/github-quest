@@ -1,14 +1,11 @@
-const dbConn = require("../models/sequelize");
+const dbConn = require("../../models/sequelize");
 dbConn.sequelize;
-const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const should = require('should');
 chai.use(chaiHttp);
-const app = "http://localhost:3000";//require("../server");
-const db = require("../models/sequelize");
+const app = "http://localhost:3000";
 
-//add repository in project
 describe("test cases for cron schedule", function () {
   it("insert users and should give status 200", function (done) {
     chai
