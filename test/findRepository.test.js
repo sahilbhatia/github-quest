@@ -1,13 +1,13 @@
-const dbConn = require("../../models/sequelize");
+const dbConn = require("../models/sequelize");
 dbConn.sequelize;
 const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const should = require('should');
 chai.use(chaiHttp);
-const app = "http://localhost:3000";
-const db = require("../../models/sequelize");
-const data = require("../data");
+const app = process.env.SERVER;
+const db = require("../models/sequelize");
+const data = require("./data");
 let user = data.user;
 let repository = data.user_repository;
 describe("test cases for find user api", function () {
