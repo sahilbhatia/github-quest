@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test case for index page 1`] = `
+<div>
+  <h1
+    className="text-center"
+  >
+    welcome to Github-Quest
+  </h1>
+  <br />
+  <div
+    className="d-flex justify-content-around"
+  >
+    <h3
+      className="text-primary border rounded border-dark p-2"
+      onClick={[Function]}
+      onMouseEnter={[Function]}
+    >
+      <u>
+        User List
+      </u>
+    </h3>
+    <h3
+      className="text-primary border rounded border-dark p-2"
+      onClick={[Function]}
+      onMouseEnter={[Function]}
+    >
+      <u>
+        Project List
+      </u>
+    </h3>
+    <h3
+      className="text-primary rounded border-dark border p-2"
+      onClick={[Function]}
+      onMouseEnter={[Function]}
+    >
+      <u>
+        Repository List
+      </u>
+    </h3>
+    <h3
+      className="text-primary rounded border-dark border p-2"
+      onClick={[Function]}
+      onMouseEnter={[Function]}
+    >
+      <u>
+        Errors
+      </u>
+    </h3>
+  </div>
+</div>
+`;
