@@ -38,15 +38,6 @@ exports[`test case for index page 1`] = `
         Repository List
       </u>
     </h3>
-    <h3
-      className="text-primary rounded border-dark border p-2"
-      onClick={[Function]}
-      onMouseEnter={[Function]}
-    >
-      <u>
-        Errors
-      </u>
-    </h3>
   </div>
 </div>
 `;

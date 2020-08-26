@@ -2,7 +2,8 @@ import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import React, { useState } from "react";
 import Filter from "./projectFilter";
-import Pagination from "./pagination"
+import Pagination from "./pagination";
+import PropTypes from "prop-types";
 import Link from "next/link";
 export default function ProjectListComponent({
   filter,
@@ -93,4 +94,14 @@ export default function ProjectListComponent({
       }
       <Button href="/" className="m-3 bg-dark">Back</Button>
     </div>)
+};
+
+ProjectListComponent.prototype={
+  data: PropTypes.array.isRequired,
+  limit: PropTypes.number.isRequired,
+  offset: PropTypes.number.isRequired,
+  setOffset: PropTypes.func.isRequired,
+  setLimit: PropTypes.func.isRequired,
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
 };

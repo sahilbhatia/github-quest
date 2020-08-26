@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from "prop-types";
 import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 export default function Index({ limit, offset, setLimit, setOffset, data }) {
   const prev = () => {
@@ -26,3 +27,11 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
     </div>
   )
 };
+
+Index.prototype={
+  data: PropTypes.array.isRequired,
+  limit: PropTypes.number.isRequired,
+  offset: PropTypes.number.isRequired,
+  setOffset: PropTypes.func.isRequired,
+  setLimit: PropTypes.func.isRequired
+}

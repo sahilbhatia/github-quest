@@ -1,9 +1,10 @@
 import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import Link from "next/link";
-export default function ProjectsOfUserComponent({data}) {
-  let name =data.name;
-  data=data.users_projects;
+import PropTypes from "prop-types";
+export default function ProjectsOfUserComponent({ data }) {
+  let name = data.name;
+  data = data.users_projects;
   const columns = [
     {
       name: 'Name',
@@ -24,11 +25,11 @@ export default function ProjectsOfUserComponent({data}) {
     },
     {
       name: "Active Users",
-      selector: d => d.project.users_projects.length !=0 ?<Link href="/getUsers/[projectId]" as={`/getUsers/${d.project.id}`}><a>{d.project.users_projects.length}</a></Link> : <>✘</>,
+      selector: d => d.project.users_projects.length != 0 ? <Link href="/getUsers/[projectId]" as={`/getUsers/${d.project.id}`}><a>{d.project.users_projects.length}</a></Link> : <>✘</>,
     },
     {
       name: "Repositories",
-      selector: d => d.project.projects_repositories.length !=0 ?<Link href="/getProjectRepositories/[projectId]" as={`/getProjectRepositories/${d.project.id}`}><a>{d.project.projects_repositories.length}</a></Link> : <>✘</>
+      selector: d => d.project.projects_repositories.length != 0 ? <Link href="/getProjectRepositories/[projectId]" as={`/getProjectRepositories/${d.project.id}`}><a>{d.project.projects_repositories.length}</a></Link> : <>✘</>
     },
     {
       name: "Active",
@@ -66,4 +67,8 @@ export default function ProjectsOfUserComponent({data}) {
       />
       <Button href="/users" className="m-3 bg-dark">Back</Button>
     </div>)
+};
+
+ProjectsOfUserComponent.prototype = {
+  data: PropTypes.array.isRequired,
 };

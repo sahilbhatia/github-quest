@@ -1,8 +1,9 @@
 import React from "react";
 import DataTable from "react-data-table-component";
 import { Button } from "react-bootstrap";
+import PropTypes from "prop-types"
 
-export default function ForkedRepoComponent({data}) {
+export default function ForkedRepoComponent({ data }) {
 
   const columns = [
     {
@@ -60,4 +61,8 @@ export default function ForkedRepoComponent({data}) {
       />
       <Button href="/repositories" className="m-3 bg-dark">Back</Button>
     </div>)
+};
+
+ForkedRepoComponent.prototype = {
+  data: PropTypes.object.isRequired,
 };

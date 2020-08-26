@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Filter from "./userFilter";
 import Pagination from "./pagination"
 import Link from "next/link";
+import PropTypes from "prop-types";
 
 export default function UserListComponent({
   filter,
@@ -103,4 +104,14 @@ export default function UserListComponent({
       }
       <Button href="/" className="m-3 bg-dark">Back</Button>
     </div>)
+};
+
+UserListComponent.prototype = {
+  data: PropTypes.array.isRequired,
+  limit: PropTypes.number.isRequired,
+  offset: PropTypes.number.isRequired,
+  setOffset: PropTypes.func.isRequired,
+  setLimit: PropTypes.func.isRequired,
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
 };

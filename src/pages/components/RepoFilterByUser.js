@@ -3,6 +3,7 @@ import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 import moment from "moment";
+import PropTypes from "prop-types";
 export default function Index({ filter, setFilter, minDate, userId }) {
   let [repositoryName, setRepositoryName] = useState(null);
   let repositoryList = [];
@@ -181,4 +182,11 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
       </div>
     </div>)
+};
+
+Index.prototype = {
+  minDate: PropTypes.string.isRequired,
+  userId: PropTypes.number.isRequired,
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
 };

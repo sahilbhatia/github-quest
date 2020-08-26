@@ -3,6 +3,8 @@ import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
+import PropTypes from "prop-types";
+
 import moment from "moment";
 let limit =10;
 let offset=0;
@@ -225,3 +227,9 @@ export default function Index({ filter, setFilter, minDate }) {
       </div>
     </div>)
 };
+
+Index.prototype={
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
+  minDate: PropTypes.string.isRequired
+}

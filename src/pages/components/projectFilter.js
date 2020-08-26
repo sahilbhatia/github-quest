@@ -2,6 +2,7 @@ import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
+import PropTypes from "prop-types";
 import moment from "moment";
 export default function Index({ filter, setFilter, minDate }) {
   let [projectName, setProjectName] = useState(null);
@@ -99,4 +100,10 @@ export default function Index({ filter, setFilter, minDate }) {
         <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
       </div>
     </div>)
+};
+
+Index.prototype={
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
+  minDate: PropTypes.string.isRequired
 };

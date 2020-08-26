@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Filter from "./filter";
 import Pagination from "./pagination"
 import Link from "next/link";
+import PropTypes from "prop-types";
 import moment from "moment";
 
 export default function RepositoryListComponent({
@@ -21,14 +22,6 @@ export default function RepositoryListComponent({
   data = data.repositories;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * (-2);
-  //   const onSelectManualReview = (id) => {
-  //     fetch(`/api/updateManualReview?id=${id}&updatedAt=${moment().toISOString()}`);
-  //     window.location.reload(false);
-  //   }
-  //   const onSelectSuspeciousMark = (id) => {
-  //     fetch(`/api/updateSuspiciousRepos?id=${id}&updatedAt=${moment().toISOString()}`);
-  //     window.location.reload(false);
-  //   }
   const columns = [
     {
       name: 'Owner Name',
@@ -262,3 +255,16 @@ export default function RepositoryListComponent({
       <Button href="/" className="m-3 bg-dark">Back</Button>
     </div>)
 };
+
+RepositoryListComponent.prototype = {
+  data: PropTypes.array.isRequired,
+  limit: PropTypes.number.isRequired,
+  offset: PropTypes.number.isRequired,
+  setOffset: PropTypes.func.isRequired,
+  setLimit: PropTypes.func.isRequired,
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
+  onSelectManualReview: PropTypes.func.isRequired,
+  onSelectSuspeciousMark: PropTypes.func.isRequired
+};
+

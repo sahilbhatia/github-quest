@@ -4,6 +4,7 @@ import Filter from "../components/RepoFilterByUser";
 import Pagination from "../components/pagination"
 import Link from "next/link";
 import moment from "moment";
+import PropTypes from "prop-types";
 
 export default function UserRepositoryComponent({
   filter,
@@ -237,4 +238,17 @@ export default function UserRepositoryComponent({
       }
       <Button href="/users" className="m-3 bg-dark">Back</Button>
     </div>)
+};
+
+UserRepositoryComponent.prototype = {
+  userId: PropTypes.number.isRequired,
+  data: PropTypes.array.isRequired,
+  limit: PropTypes.number.isRequired,
+  offset: PropTypes.number.isRequired,
+  setOffset: PropTypes.func.isRequired,
+  setLimit: PropTypes.func.isRequired,
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
+  onSelectManualReview: PropTypes.func.isRequired,
+  onSelectSuspeciousMark: PropTypes.func.isRequired
 };
