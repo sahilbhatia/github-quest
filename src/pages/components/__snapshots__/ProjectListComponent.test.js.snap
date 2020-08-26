@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test case for project list component 1`] = `
+<div
+  data-testid="projectList"
+>
+  <div
+    className="d-flex justify-content-end my-3"
+  >
+    <div
+      className="dropdown"
+      onKeyDown={[Function]}
+    >
+      <button
+        aria-expanded={false}
+        aria-haspopup={true}
+        className="dropdown-toggle btn btn-light"
+        disabled={false}
+        onClick={[Function]}
+        type="button"
+      >
+        Rows per page: undefined
+      </button>
+    </div>
+    <button
+      className=" ml-5 bg-white text-dark btn btn-primary"
+      disabled={false}
+      onClick={[Function]}
+      type="button"
+    >
+      « 
+      NaN - undefined
+    </button>
+    <button
+      className="mx-5 bg-white text-dark btn btn-primary"
+      disabled={false}
+      onClick={[Function]}
+      type="button"
+    >
+      NaN - NaN
+       »
+    </button>
+  </div>
+  <a
+    className="m-3 bg-dark btn btn-primary"
+    href="/"
+    onClick={[Function]}
+    onKeyDown={[Function]}
+  >
+    Back
+  </a>
+</div>
+`;
