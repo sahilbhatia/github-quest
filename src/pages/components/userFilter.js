@@ -40,7 +40,7 @@ export default function Index({ filter, setFilter, minDate }) {
 
   githubHandleData.then((response) => { return response.json() }).then((res) => {
     res.map((user) =>
-    githubHandleList.push({
+      githubHandleList.push({
         value: user.github_handle,
         label: user.github_handle,
       })
@@ -80,7 +80,18 @@ export default function Index({ filter, setFilter, minDate }) {
     data.endDate = value;
     setFilter(data);
   };
-  
+  const errorStatus = (value) => {
+    let data = { ...filter };
+    data.error_details = value;
+    setFilter(data)
+  };
+  const setColor = (status) => {
+    switch (status != undefined ? status.toString() : status) {
+      case "false": return "danger"
+      case "true": return "success"
+      default: return "dark"
+    }
+  };
 
   return (
     <div>
@@ -121,12 +132,17 @@ export default function Index({ filter, setFilter, minDate }) {
           placeholderText="Select search date to"
           className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
         />
+        <DropdownButton className="mx-2" variant={setColor(filter.error_details)} title="Error Status">
+          <Dropdown.Item onClick={(e => errorStatus(true))} className="bg-success">true</Dropdown.Item>
+          <Dropdown.Item onClick={(e => errorStatus(false))} className="bg-danger">false</Dropdown.Item>
+          <Dropdown.Item onClick={(e => errorStatus(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        </DropdownButton>
         <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
       </div>
     </div>)
 };
 
-Index.prototype={
+Index.prototype = {
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
   minDate: PropTypes.string.isRequired

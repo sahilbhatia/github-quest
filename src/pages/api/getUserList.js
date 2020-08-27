@@ -24,20 +24,31 @@ Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: tr
 
 const getUsers = async (req, res) => {
   try {
-    let { limit, offset, userName, githubHandle, startDate, endDate } =req.query;
+    let { limit, offset, userName, githubHandle, startDate, endDate, error_details } = req.query;
     let where = {
-      name :{
+      name: {
         [Sequelize.Op.ne]: "unknown",
       }
     };
-    if(userName!=undefined){
-      where.name={
-        [Sequelize.Op.eq]: userName, 
+    if (userName != undefined) {
+      where.name = {
+        [Sequelize.Op.eq]: userName,
       }
     }
-    if(githubHandle!=undefined){
-      where.github_handle={
-        [Sequelize.Op.eq]: githubHandle, 
+    if (githubHandle != undefined) {
+      where.github_handle = {
+        [Sequelize.Op.eq]: githubHandle,
+      }
+    }
+    if (error_details == "true" || error_details == "false") {
+      if (error_details == "true") {
+        where.error_details = {
+          [Sequelize.Op.ne]: null
+        }
+      } else if (error_details == "false") {
+        where.error_details = {
+          [Sequelize.Op.eq]: null
+        }
       }
     }
     if (startDate != undefined && endDate != undefined) {
@@ -65,20 +76,20 @@ const getUsers = async (req, res) => {
             model: Users_repositories, attributes: ["id"]
           }
         ],
-        limit:limit,
-        offset:offset,
+        limit: limit,
+        offset: offset,
       });
-      const earliestDate = await Users.findAll({
-        attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
-      })
-      let data = {};
-      data.users = usersData,
-        data.date = earliestDate[0];
-      res.status(200).json(data);
+    const earliestDate = await Users.findAll({
+      attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
+    })
+    let data = {};
+    data.users = usersData,
+      data.date = earliestDate[0];
+    res.status(200).json(data);
   } catch  {
     res.status(500).json({
       message: "internal server error",
-      err:err
+      err: err
     })
   }
 };
