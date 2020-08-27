@@ -27,7 +27,7 @@ describe("test cases for review repositories", function () {
   it("update manual review status and should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/updateManualReview?id=${repoId}&updatedAt=${faker.date.recent()}`)
+      .get(`/api/updateManualReview?id=${repoId}&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(200);
         done();
@@ -47,7 +47,7 @@ describe("test cases for review repositories", function () {
   it("send invalid id and should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/updateManualReview?id=7000&updatedAt=${faker.date.recent()}`)
+      .get(`/api/updateManualReview?id=7000&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(404);
         should(res.body).be.a.Object();
@@ -58,7 +58,7 @@ describe("test cases for review repositories", function () {
   it("send non numeric id and should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/updateManualReview?id=1aw&updatedAt=${faker.date.recent()}`)
+      .get(`/api/updateManualReview?id=1aw&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(400);
         should(res.body).be.a.Object();
@@ -70,7 +70,7 @@ describe("test cases for review repositories", function () {
   it("update suspicious repo and should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/updateSuspiciousRepos?id=${repoId}&updatedAt=${faker.date.recent()}`)
+      .get(`/api/updateSuspiciousRepos?id=${repoId}&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body).be.a.Object();
@@ -81,7 +81,7 @@ describe("test cases for review repositories", function () {
   it("send invalid id and should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/updateSuspiciousRepos?id=7000&updatedAt=${faker.date.recent()}`)
+      .get(`/api/updateSuspiciousRepos?id=7000&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(404);
         should(res.body).be.a.Object();
@@ -92,7 +92,7 @@ describe("test cases for review repositories", function () {
   it("send non numeric id and should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/updateSuspiciousRepos?id=1aw&updatedAt=${faker.date.recent()}`)
+      .get(`/api/updateSuspiciousRepos?id=1aw&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(400);
         should(res.body).be.a.Object();

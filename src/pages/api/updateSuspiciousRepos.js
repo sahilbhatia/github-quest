@@ -12,14 +12,18 @@ const updateSuspiciousRepos = async (req, res) => {
     repoId: yup
       .number()
       .required({ repoId: "required" }),
+    updatedAt: yup
+      .string()
+      .required({ updatedAt: "required" }),
   }).validate({
-    repoId: req.query.id
+    repoId: req.query.id,
+    updatedAt: updatedAt
   }, { abortEarly: false })
-  .catch(()=>{
-    res.status(400).json({
-      message: "repo Id must be number"
+    .catch(() => {
+      res.status(400).json({
+        message: "repo Id must be number"
+      })
     })
-  })
 
   if (repoId != "undefined") {
     try {
@@ -33,7 +37,7 @@ const updateSuspiciousRepos = async (req, res) => {
         where: { id: repoId },
       });
 
-    } catch{
+    } catch {
       res.status(404).json({
         message: "repository with specified id not found"
       })

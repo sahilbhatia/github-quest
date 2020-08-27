@@ -6,6 +6,7 @@ const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
+const yup = require("yup");
 
 Users_repositories.belongsTo(Repositories, { foreignKey: { name: 'repository_id', allowNull: true } });
 Repositories.hasMany(Users_repositories, { foreignKey: { name: 'repository_id', allowNull: true } });
@@ -35,6 +36,33 @@ const getAllPublicRepos = async (req, res) => {
     error_details,
     userId
   } = req.query;
+  limit = limit == undefined ? 10 : limit;
+  if (userId != undefined) {
+    await yup.object().shape({
+      userId: yup
+        .number()
+        .required({ userId: "required" }),
+    }).validate({
+      userId: userId
+    }, { abortEarly: false })
+      .then(async () => {
+        let user = await Users.findOne({
+          where: {
+            id: userId
+          }
+        });
+        if (!user) {
+          res.status(404).json({
+            message: "user not found for given id"
+          })
+        } 
+      })
+      .catch(() => {
+        res.status(400).json({
+          message: "user Id must be number"
+        })
+      });
+    }
   const getUsersWhereClause = () => {
     if (userId != undefined) {
       findUserWhereClause = {
@@ -54,11 +82,7 @@ const getAllPublicRepos = async (req, res) => {
         include: {
           model: Users,
           where: {
-            [Sequelize.Op.or]: {
-              name: {
-                [Sequelize.Op.iLike]: "%" + userName + "%",
-              },
-            },
+            name: userName
           }
         },
       }

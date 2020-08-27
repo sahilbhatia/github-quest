@@ -15,7 +15,6 @@ export default function UserListComponent({
   setLimit,
   data
 }) {
-  console.log(data)
   const minDate = data.date.min;
   data = data.users;
   const columns = [

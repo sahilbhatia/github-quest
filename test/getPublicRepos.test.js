@@ -153,7 +153,7 @@ describe("test cases for get public repo api", function () {
       .get(`/api/getPublicRepos?userName=${user.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
-        should(res.body.repositories[0].name).eql(user.name);
+        should(res.body.repositories[0].users_repositories[0].user.name).eql(user.name);
         should(res.body.repositories).be.a.Array();
         done();
       });
@@ -174,7 +174,7 @@ describe("test cases for get public repo api", function () {
   it("pass invalid user id and should give status 404 ", function (done) {
     chai
       .request(app)
-      .get(`/api/getPublicRepos?userId=12345`)
+      .get(`/api/getPublicRepos?userId=12234`)
       .end(function (err, res) {
         should(res.status).eql(404);
         done();

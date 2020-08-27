@@ -12,8 +12,12 @@ const updateManualRepos = async (req, res) => {
     repoId: yup
       .number()
       .required({ repoId: "required" }),
+    updatedAt: yup
+      .string()
+      .required({ updatedAt: "required" }),
   }).validate({
-    repoId: req.query.id
+    repoId: req.query.id,
+    updatedAt: updatedAt
   }, { abortEarly: false })
     .catch(() => {
       res.status(400).json({

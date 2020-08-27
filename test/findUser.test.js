@@ -24,12 +24,12 @@ describe("test cases for find user api", function () {
     await db.users.destroy({ where: { id: userId } });
   });
 
-  it("should give status 200", function (done) {
+  it("should give status 400", function (done) {
     chai
       .request(app)
       .get("/api/findUser")
       .end(function (err, res) {
-        should(res.status).eql(200);
+        should(res.status).eql(400);
         done();
       });
   });

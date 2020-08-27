@@ -18,8 +18,7 @@ const findUser = async (req, res) => {
         }
       })
       res.status(200).json(userList);
-    }
-    if (githubHandle) {
+    } else if (githubHandle) {
       let userList = await Users.findAll({
         where: {
           github_handle: {
@@ -28,28 +27,37 @@ const findUser = async (req, res) => {
         }
       })
       res.status(200).json(userList);
-    }
-    if (userId) {
+    } else if (userId) {
       await yup.object().shape({
         userId: yup
           .number()
-          .required({ repoId: "required" }),
+          .required({ userId: "required" }),
       }).validate({
         userId: userId
       }, { abortEarly: false })
         .then(async () => {
-          let userList = await Users.findOne({
+          let user = await Users.findOne({
             where: {
               id: userId
             }
           });
-          res.status(200).json(userList);
+          if (user) {
+            res.status(200).json(user);
+          } else {
+            res.status(404).json({
+              message: "user not found for given id"
+            })
+          }
         })
         .catch(() => {
           res.status(400).json({
             message: "user Id must be number"
           })
         });
+    } else {
+      res.status(400).json({
+        message: "key value required"
+      })
     }
   } catch {
     res.status(500).json({

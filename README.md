@@ -31,4 +31,14 @@ Environment variables are required to run server refer .env.sample file for resp
 
 7. for starting cron job call API "http://localhost:3000/api/insertPublicRepos" ("this API will activate cron job for fetching repos from github with corresponding users and store them into database").
 
-8. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+8. for starting cron job call API "http://localhost:3000/api/insertProjects" ("this API will activate cron job for fetching projects from intranet-stage and store them into database").
+
+9. Open [http://localhost:3000] with your browser to see the result.
+
+# Run Api Test Cases:
+
+1. add SERVER env variable in .env file put current running server for that.
+
+2. start the server using npm run dev command.
+
+3. open new terminal and run mocha command.
