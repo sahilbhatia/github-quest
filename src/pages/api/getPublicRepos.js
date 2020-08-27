@@ -41,7 +41,6 @@ const getAllPublicRepos = async (req, res) => {
     await yup.object().shape({
       userId: yup
         .number()
-        .required({ userId: "required" }),
     }).validate({
       userId: userId
     }, { abortEarly: false })

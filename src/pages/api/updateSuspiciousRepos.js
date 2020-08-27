@@ -25,40 +25,24 @@ const updateSuspiciousRepos = async (req, res) => {
       })
     })
 
-  if (repoId != "undefined") {
-    try {
-      suspeciousRepo = await Repositories.update({
-        is_suspicious: true,
-        review: "suspicious manual",
-        reviewed_at: updatedAt,
-      }, {
-        returning: true,
-        plain: true,
-        where: { id: repoId },
-      });
+  try {
+    suspeciousRepo = await Repositories.update({
+      is_suspicious: true,
+      review: "suspicious manual",
+      reviewed_at: updatedAt,
+    }, {
+      returning: true,
+      plain: true,
+      where: { id: repoId },
+    });
 
-    } catch {
-      res.status(404).json({
-        message: "repository with specified id not found"
-      })
-    }
+  } catch {
+    res.status(404).json({
+      message: "repository with specified id not found"
+    })
+  }
 
-    if (suspeciousRepo[1].dataValues.parent_repo_id) {
-      try {
-        await Repositories.update({
-          is_suspicious: true,
-          review: "suspicious manual",
-          reviewed_at: updatedAt,
-        }, {
-          returning: true,
-          where: { parent_repo_id: suspeciousRepo[1].dataValues.parent_repo_id },
-        });
-      } catch{
-        res.status(404).json({
-          message: "repository with specified id not found"
-        })
-      }
-    }
+  if (suspeciousRepo[1].dataValues.parent_repo_id) {
     try {
       await Repositories.update({
         is_suspicious: true,
@@ -66,18 +50,33 @@ const updateSuspiciousRepos = async (req, res) => {
         reviewed_at: updatedAt,
       }, {
         returning: true,
-        where: { parent_repo_id: suspeciousRepo[1].dataValues.id },
+        where: { parent_repo_id: suspeciousRepo[1].dataValues.parent_repo_id },
       });
-    } catch {
+    } catch{
       res.status(404).json({
         message: "repository with specified id not found"
       })
     }
+  }
 
-    res.status(200).json({
-      message: "repository updated successfully"
+  try {
+    await Repositories.update({
+      is_suspicious: true,
+      review: "suspicious manual",
+      reviewed_at: updatedAt,
+    }, {
+      returning: true,
+      where: { parent_repo_id: suspeciousRepo[1].dataValues.id },
+    });
+  } catch {
+    res.status(404).json({
+      message: "repository with specified id not found"
     })
   }
+
+  res.status(200).json({
+    message: "repository updated successfully"
+  })
 }
 
 export default updateSuspiciousRepos;

@@ -25,54 +25,51 @@ const updateManualRepos = async (req, res) => {
       })
     })
 
-  if (repoId != "undefined") {
-
-    try {
-      manualRepoReview = await Repositories.update({
-        manual_review: false,
-        review: 'approved',
-        reviewed_at: updatedAt,
-      }, {
-        returning: true,
-        plain: true,
-        where: { id: repoId },
-      });
-    } catch{
-      res.status(404).json({
-        message: "repository with specified id not found"
-      })
-    }
-
-    if (manualRepoReview[1].dataValues.parent_repo_id) {
-      try {
-        await Repositories.update({
-          manual_review: false,
-          review: 'approved',
-          reviewed_at: updatedAt,
-        }, {
-          returning: true,
-          where: { parent_repo_id: manualRepoReview[1].dataValues.parent_repo_id },
-        });
-      } catch {
-        res.status(404).json({
-          message: "repository with specified id not found"
-        })
-      }
-    }
-
-    await Repositories.update({
+  try {
+    manualRepoReview = await Repositories.update({
       manual_review: false,
       review: 'approved',
       reviewed_at: updatedAt,
     }, {
       returning: true,
-      where: { parent_repo_id: manualRepoReview[1].dataValues.id },
+      plain: true,
+      where: { id: repoId },
     });
-
-    res.status(200).json({
-      message: "repository updated successfully"
+  } catch{
+    res.status(404).json({
+      message: "repository with specified id not found"
     })
   }
+  
+  if (manualRepoReview[1].dataValues.parent_repo_id) {
+    try {
+      await Repositories.update({
+        manual_review: false,
+        review: 'approved',
+        reviewed_at: updatedAt,
+      }, {
+        returning: true,
+        where: { parent_repo_id: manualRepoReview[1].dataValues.parent_repo_id },
+      });
+    } catch {
+      res.status(404).json({
+        message: "repository with specified id not found"
+      })
+    }
+  }
+
+  await Repositories.update({
+    manual_review: false,
+    review: 'approved',
+    reviewed_at: updatedAt,
+  }, {
+    returning: true,
+    where: { parent_repo_id: manualRepoReview[1].dataValues.id },
+  });
+
+  res.status(200).json({
+    message: "repository updated successfully"
+  })
 }
 
 export default updateManualRepos;
