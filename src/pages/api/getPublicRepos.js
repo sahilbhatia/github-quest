@@ -37,6 +37,77 @@ const getAllPublicRepos = async (req, res) => {
     userId
   } = req.query;
   limit = limit == undefined ? 10 : limit;
+  const getWhereClause = () => {
+    if (repoName || is_forked || is_archived || is_disabled || startDate || endDate || is_suspicious || is_private || review || reviewDate || error_details) {
+      if (repoName != undefined) {
+        where = {
+          [Sequelize.Op.or]: {
+            name: {
+              [Sequelize.Op.iLike]: "%" + repoName + "%",
+            },
+          },
+        };
+      }
+      if (review != undefined && review != "undefined") {
+        where.review = review;
+      }
+      if (is_forked == "true" || is_forked == "false") {
+        where.is_forked = is_forked;
+      }
+
+      if (is_archived == "true" || is_archived == "false") {
+        where.is_archived = is_archived;
+      }
+
+      if (is_disabled == "true" || is_disabled == "false") {
+        where.is_disabled = is_disabled;
+      }
+
+      if (is_suspicious == "true" || is_suspicious == "false") {
+        where.is_suspicious = is_suspicious;
+      }
+
+      if (is_private == "true" || is_private == "false") {
+        where.is_private = is_private;
+      }
+
+      if (startDate != undefined && endDate != undefined) {
+        where.created_at = {
+          [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
+        }
+      } else if (endDate != undefined) {
+        where.created_at = {
+          [Sequelize.Op.lt]: new Date(endDate),
+        }
+      } else if (startDate != undefined) {
+        const date = new Date();
+        where.created_at = {
+          [Sequelize.Op.between]: [new Date(startDate), date]
+        }
+      }
+
+      if (reviewDate != undefined) {
+        let endDate = moment(reviewDate).add(24, "hours").toISOString();
+        let startDate = reviewDate;
+        where.reviewed_at = {
+          [Sequelize.Op.between]: [startDate, endDate]
+        }
+      }
+
+      if (error_details == "true" || error_details == "false") {
+        if (error_details == "true") {
+          where.error_details = {
+            [Sequelize.Op.ne]: null
+          }
+        } else if (error_details == "false") {
+          where.error_details = {
+            [Sequelize.Op.eq]: null
+          }
+        }
+      }
+      return where;
+    }
+  }
   if (userId != undefined) {
     await yup.object().shape({
       userId: yup
@@ -74,78 +145,6 @@ const getAllPublicRepos = async (req, res) => {
             ],
             limit: limit,
             offset: offset,
-          }
-
-          const getWhereClause = () => {
-            if (repoName || is_forked || is_archived || is_disabled || startDate || endDate || is_suspicious || is_private || review || reviewDate || error_details) {
-              if (repoName != undefined) {
-                where = {
-                  [Sequelize.Op.or]: {
-                    name: {
-                      [Sequelize.Op.iLike]: "%" + repoName + "%",
-                    },
-                  },
-                };
-              }
-              if (review != undefined && review != "undefined") {
-                where.review = review;
-              }
-              if (is_forked == "true" || is_forked == "false") {
-                where.is_forked = is_forked;
-              }
-
-              if (is_archived == "true" || is_archived == "false") {
-                where.is_archived = is_archived;
-              }
-
-              if (is_disabled == "true" || is_disabled == "false") {
-                where.is_disabled = is_disabled;
-              }
-
-              if (is_suspicious == "true" || is_suspicious == "false") {
-                where.is_suspicious = is_suspicious;
-              }
-
-              if (is_private == "true" || is_private == "false") {
-                where.is_private = is_private;
-              }
-
-              if (startDate != undefined && endDate != undefined) {
-                where.created_at = {
-                  [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
-                }
-              } else if (endDate != undefined) {
-                where.created_at = {
-                  [Sequelize.Op.lt]: new Date(endDate),
-                }
-              } else if (startDate != undefined) {
-                const date = new Date();
-                where.created_at = {
-                  [Sequelize.Op.between]: [new Date(startDate), date]
-                }
-              }
-
-              if (reviewDate != undefined) {
-                let endDate = moment(reviewDate).add(24, "hours").toISOString();
-                let startDate = reviewDate;
-                where.reviewed_at = {
-                  [Sequelize.Op.between]: [startDate, endDate]
-                }
-              }
-
-              if (error_details == "true" || error_details == "false") {
-                if (error_details == "true") {
-                  where.error_details = {
-                    [Sequelize.Op.ne]: null
-                  }
-                } else if (error_details == "false") {
-                  where.error_details = {
-                    [Sequelize.Op.eq]: null
-                  }
-                }
-              }
-              return where;
-            }
           }
 
           const getWhereClauseObject = await getWhereClause();
@@ -237,78 +236,6 @@ const getAllPublicRepos = async (req, res) => {
       ],
       limit: limit,
       offset: offset,
-    }
-
-    const getWhereClause = () => {
-      if (repoName || is_forked || is_archived || is_disabled || startDate || endDate || is_suspicious || is_private || review || reviewDate || error_details) {
-        if (repoName != undefined) {
-          where = {
-            [Sequelize.Op.or]: {
-              name: {
-                [Sequelize.Op.iLike]: "%" + repoName + "%",
-              },
-            },
-          };
-        }
-        if (review != undefined && review != "undefined") {
-          where.review = review;
-        }
-        if (is_forked == "true" || is_forked == "false") {
-          where.is_forked = is_forked;
-        }
-
-        if (is_archived == "true" || is_archived == "false") {
-          where.is_archived = is_archived;
-        }
-
-        if (is_disabled == "true" || is_disabled == "false") {
-          where.is_disabled = is_disabled;
-        }
-
-        if (is_suspicious == "true" || is_suspicious == "false") {
-          where.is_suspicious = is_suspicious;
-        }
-
-        if (is_private == "true" || is_private == "false") {
-          where.is_private = is_private;
-        }
-
-        if (startDate != undefined && endDate != undefined) {
-          where.created_at = {
-            [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
-          }
-        } else if (endDate != undefined) {
-          where.created_at = {
-            [Sequelize.Op.lt]: new Date(endDate),
-          }
-        } else if (startDate != undefined) {
-          const date = new Date();
-          where.created_at = {
-            [Sequelize.Op.between]: [new Date(startDate), date]
-          }
-        }
-
-        if (reviewDate != undefined) {
-          let endDate = moment(reviewDate).add(24, "hours").toISOString();
-          let startDate = reviewDate;
-          where.reviewed_at = {
-            [Sequelize.Op.between]: [startDate, endDate]
-          }
-        }
-
-        if (error_details == "true" || error_details == "false") {
-          if (error_details == "true") {
-            where.error_details = {
-              [Sequelize.Op.ne]: null
-            }
-          } else if (error_details == "false") {
-            where.error_details = {
-              [Sequelize.Op.eq]: null
-            }
-          }
-        }
-        return where;
-      }
     }
 
     const getWhereClauseObject = await getWhereClause();
