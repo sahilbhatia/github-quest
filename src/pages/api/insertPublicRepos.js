@@ -31,14 +31,6 @@ export default async function insertPublicRepos(req, res) {
             return null;
           }
         } catch {
-          await Users.update({
-            error_details: "repositories not fetch for given github handle"
-          },
-            {
-              where: {
-                id: usersList[iterator].dataValues.id,
-              }
-            })
           return null;
         }
 
