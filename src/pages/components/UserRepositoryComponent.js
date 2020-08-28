@@ -62,7 +62,7 @@ export default function UserRepositoryComponent({
     },
     {
       name: 'Forked',
-      selector: d => d.is_forked ? <Link href="/getForkedRepo/[userId]" as={`/getForkedRepo/${d.id}`}><a>{d.parent_of.length}</a></Link> : <>✘</>,
+      selector: d => d.parent_of.length > 0 ? <Link href="/getForkedRepo/[userId]" as={`/getForkedRepo/${d.id}`}><a>{d.parent_of.length}</a></Link> : d.is_forked ? <>✔</> : <>✘</>,
       "maxWidth": "10px"
     },
     {
