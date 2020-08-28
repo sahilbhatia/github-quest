@@ -8,7 +8,7 @@ const updateManualRepos = async (req, res) => {
   const repoId = req.query.id;
   const updatedAt = req.query.updatedAt;
   let manualRepoReview;
-  yup.object().shape({
+  await yup.object().shape({
     repoId: yup
       .number()
       .required({ repoId: "required" }),
@@ -18,58 +18,57 @@ const updateManualRepos = async (req, res) => {
   }).validate({
     repoId: req.query.id,
     updatedAt: updatedAt
-  }, { abortEarly: false })
+  }, { abortEarly: false }).then(async () => {
+    try {
+      let repo = await Repositories.findOne({ where: { id: repoId } });
+      if (!repo) {
+        res.status(404).json({
+          message: "repository not found for given id"
+        })
+      } else {
+        manualRepoReview = await Repositories.update({
+          manual_review: false,
+          review: 'approved',
+          reviewed_at: updatedAt,
+        }, {
+          returning: true,
+          plain: true,
+          where: { id: repoId },
+        });
+        if (manualRepoReview[1].dataValues.parent_repo_id) {
+          await Repositories.update({
+            manual_review: false,
+            review: 'approved',
+            reviewed_at: updatedAt,
+          }, {
+            returning: true,
+            where: { parent_repo_id: manualRepoReview[1].dataValues.parent_repo_id },
+          });
+        }
+        await Repositories.update({
+          manual_review: false,
+          review: 'approved',
+          reviewed_at: updatedAt,
+        }, {
+          returning: true,
+          where: { parent_repo_id: manualRepoReview[1].dataValues.id },
+        });
+
+        res.status(200).json({
+          message: "repository updated successfully"
+        })
+      }
+    } catch{
+      res.status(500).json({
+        message: "Internal server error"
+      })
+    }
+  })
     .catch(() => {
       res.status(400).json({
         message: "repo Id must be number"
       })
     })
-
-  try {
-    manualRepoReview = await Repositories.update({
-      manual_review: false,
-      review: 'approved',
-      reviewed_at: updatedAt,
-    }, {
-      returning: true,
-      plain: true,
-      where: { id: repoId },
-    });
-  } catch{
-    res.status(404).json({
-      message: "repository with specified id not found"
-    })
-  }
-  
-  if (manualRepoReview[1].dataValues.parent_repo_id) {
-    try {
-      await Repositories.update({
-        manual_review: false,
-        review: 'approved',
-        reviewed_at: updatedAt,
-      }, {
-        returning: true,
-        where: { parent_repo_id: manualRepoReview[1].dataValues.parent_repo_id },
-      });
-    } catch {
-      res.status(404).json({
-        message: "repository with specified id not found"
-      })
-    }
-  }
-
-  await Repositories.update({
-    manual_review: false,
-    review: 'approved',
-    reviewed_at: updatedAt,
-  }, {
-    returning: true,
-    where: { parent_repo_id: manualRepoReview[1].dataValues.id },
-  });
-
-  res.status(200).json({
-    message: "repository updated successfully"
-  })
 }
 
 export default updateManualRepos;
