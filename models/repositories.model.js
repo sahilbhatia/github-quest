@@ -55,10 +55,10 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: true,
       },
       reviewed_at: {
-        type: 'TIMESTAMP',
+        type: "TIMESTAMP",
         allowNull: true,
       },
-      reviewed_by:{
+      reviewed_by: {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
@@ -79,10 +79,10 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: true,
       },
       created_at: {
-        type: 'TIMESTAMP',
+        type: "TIMESTAMP",
       },
       updated_at: {
-        type: 'TIMESTAMP',
+        type: "TIMESTAMP",
       },
     },
     {
@@ -93,4 +93,3 @@ module.exports = (sequelize, Sequelize) => {
   );
   return Repositories;
 };
-

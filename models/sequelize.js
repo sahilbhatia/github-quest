@@ -1,5 +1,4 @@
 "use strict";
-const path = require("path");
 const Sequelize = require("sequelize");
 const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/../config/config.js")[env];
@@ -22,9 +21,15 @@ db.Sequelize = Sequelize;
 db.roles = require("./roles.model")(sequelize, Sequelize);
 db.users = require("./users.model")(sequelize, Sequelize);
 db.repositories = require("./repositories.model")(sequelize, Sequelize);
-db.users_repositories = require("./users_repositories.model")(sequelize, Sequelize);
+db.users_repositories = require("./users_repositories.model")(
+  sequelize,
+  Sequelize
+);
 db.projects = require("./projects.model")(sequelize, Sequelize);
-db.projects_repositories = require("./projects_repositories.model")(sequelize, Sequelize);
+db.projects_repositories = require("./projects_repositories.model")(
+  sequelize,
+  Sequelize
+);
 db.users_projects = require("./users_projects.model")(sequelize, Sequelize);
 
 module.exports = db;

@@ -1,5 +1,3 @@
-
-
 module.exports = (sequelize, Sequelize) => {
   const Projects = sequelize.define(
     "projects",
@@ -33,12 +31,12 @@ module.exports = (sequelize, Sequelize) => {
         },
       },
       created_at: {
-        type: 'TIMESTAMP',
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        type: "TIMESTAMP",
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updated_at: {
-        type: 'TIMESTAMP',
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        type: "TIMESTAMP",
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     },
     {

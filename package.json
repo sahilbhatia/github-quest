@@ -11,7 +11,7 @@
   },
   "lint-staged": {
     "*.js": [
-      "eslint src/pages/api/webhooks.js"
+      "eslint /*.js"
     ]
   },
   "dependencies": {
