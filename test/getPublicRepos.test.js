@@ -3,13 +3,14 @@ dbConn.sequelize;
 const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const should = require('should');
+const should = require("should");
 chai.use(chaiHttp);
 const app = process.env.SERVER;
 const db = require("../models/sequelize");
 const data = require("./data");
 let user = data.user;
 
+/*eslint-disable  no-undef*/
 describe("test cases for get public repo api", function () {
   let userRes, repoRes1, repoRes2;
   let repositoryData1 = {
@@ -34,18 +35,24 @@ describe("test cases for get public repo api", function () {
     is_suspicious: true,
     review: "no action",
     is_private: true,
-    error_details: faker.random.word()
+    error_details: faker.random.word(),
   };
   before(async () => {
     userRes = await db.users.create(user);
     repoRes1 = await db.repositories.create(repositoryData1);
     repoRes2 = await db.repositories.create(repositoryData2);
-    await db.users_repositories.create({ user_id: userRes.id, repository_id: repoRes1.id });
-    await db.users_repositories.create({ user_id: userRes.id, repository_id: repoRes2.id });
+    await db.users_repositories.create({
+      user_id: userRes.id,
+      repository_id: repoRes1.id,
+    });
+    await db.users_repositories.create({
+      user_id: userRes.id,
+      repository_id: repoRes2.id,
+    });
   });
 
   after(async () => {
-    await db.users_repositories.destroy({ where: { user_id: userRes.id } })
+    await db.users_repositories.destroy({ where: { user_id: userRes.id } });
     await db.users.destroy({ where: { id: userRes.id } });
     await db.repositories.destroy({ where: { id: repoRes1.id } });
     await db.repositories.destroy({ where: { id: repoRes1.id } });
@@ -77,7 +84,9 @@ describe("test cases for get public repo api", function () {
   it("filter should give status 200 with correct response", function (done) {
     chai
       .request(app)
-      .get(`/api/getPublicRepos?is_forked=false&is_archived=false&is_disabled=false&is_suspicious=false&review=pending&is_private=false&error_details=false`)
+      .get(
+        `/api/getPublicRepos?is_forked=false&is_archived=false&is_disabled=false&is_suspicious=false&review=pending&is_private=false&error_details=false`
+      )
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.repositories[0].is_forked).eql(false);
@@ -95,7 +104,9 @@ describe("test cases for get public repo api", function () {
   it("filter should give status 200 with correct response", function (done) {
     chai
       .request(app)
-      .get(`/api/getPublicRepos?is_forked=true&is_archived=true&is_disabled=true&is_suspicious=true&review=no action&is_private=true&error_details=true`)
+      .get(
+        `/api/getPublicRepos?is_forked=true&is_archived=true&is_disabled=true&is_suspicious=true&review=no action&is_private=true&error_details=true`
+      )
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.repositories[0].is_forked).eql(true);
@@ -153,7 +164,9 @@ describe("test cases for get public repo api", function () {
       .get(`/api/getPublicRepos?userName=${user.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
-        should(res.body.repositories[0].users_repositories[0].user.name).eql(user.name);
+        should(res.body.repositories[0].users_repositories[0].user.name).eql(
+          user.name
+        );
         should(res.body.repositories).be.a.Array();
         done();
       });
@@ -191,3 +204,4 @@ describe("test cases for get public repo api", function () {
       });
   });
 });
+/*eslint-disable  no-undef*/

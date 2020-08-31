@@ -2,10 +2,10 @@ const dbConn = require("../models/sequelize");
 dbConn.sequelize;
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const should = require('should');
+const should = require("should");
 chai.use(chaiHttp);
 const app = process.env.SERVER;
-
+/*eslint-disable  no-undef*/
 describe("test cases for cron schedule", function () {
   it("insert users and should give status 200", function (done) {
     chai
@@ -40,3 +40,4 @@ describe("test cases for cron schedule", function () {
       });
   });
 });
+/*eslint-disable  no-undef*/

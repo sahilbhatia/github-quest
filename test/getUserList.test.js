@@ -3,15 +3,16 @@ dbConn.sequelize;
 const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const should = require('should');
+const should = require("should");
 chai.use(chaiHttp);
 const app = process.env.SERVER;
 const db = require("../models/sequelize");
 const data = require("./data");
 let user = data.user;
+
+/*eslint-disable  no-undef*/
 describe("test cases for get project api", function () {
   let userId;
-
   before((done) => {
     user.github_handle = faker.random.alphaNumeric();
     db.users.create(user).then((res) => {
@@ -95,3 +96,4 @@ describe("test cases for get project api", function () {
       });
   });
 });
+/*eslint-disable  no-undef*/

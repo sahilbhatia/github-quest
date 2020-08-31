@@ -1,17 +1,17 @@
 const dbConn = require("../models/sequelize");
 dbConn.sequelize;
-const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const should = require('should');
+const should = require("should");
 chai.use(chaiHttp);
 const app = process.env.SERVER;
 const db = require("../models/sequelize");
 const data = require("./data");
 let project = data.project;
+
+/*eslint-disable  no-undef*/
 describe("test cases for find user api", function () {
   let projectId;
-
   before((done) => {
     db.projects.create(project).then((res) => {
       projectId = res.id;
@@ -44,3 +44,4 @@ describe("test cases for find user api", function () {
       });
   });
 });
+/*eslint-disable  no-undef*/

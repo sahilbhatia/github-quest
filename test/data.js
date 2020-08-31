@@ -10,17 +10,17 @@ data.user = {
 
 data.project = {
   org_project_id: faker.random.alphaNumeric(),
-  name: faker.name.firstName()
+  name: faker.name.firstName(),
 };
 
 data.project_repository = {
-  repository_url:faker.internet.url(),
-  host: faker.internet.domainName()
+  repository_url: faker.internet.url(),
+  host: faker.internet.domainName(),
 };
 
 data.user_repository = {
-  github_repo_id:faker.random.number(),
-  url:faker.internet.url(),
+  github_repo_id: faker.random.number(),
+  url: faker.internet.url(),
   is_forked: false,
   is_archived: false,
   is_disabled: false,
@@ -28,6 +28,5 @@ data.user_repository = {
   manual_review: false,
   is_private: false,
 };
-
 
 module.exports = data;

@@ -1,30 +1,34 @@
 const dbConn = require("../models/sequelize");
 dbConn.sequelize;
-const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const should = require('should');
+const should = require("should");
 chai.use(chaiHttp);
 const app = process.env.SERVER;
 const db = require("../models/sequelize");
 const data = require("./data");
 let user = data.user;
 let repository = data.user_repository;
+
+/*eslint-disable  no-undef*/
 describe("test cases for find user api", function () {
   let userId, repoId;
-  before( (done) => {
+  before((done) => {
     db.users.create(user).then((res) => {
       userId = res.id;
       db.repositories.create(repository).then((res) => {
         repoId = res.id;
-        db.users_repositories.create({ user_id: userId, repository_id: repoId });
+        db.users_repositories.create({
+          user_id: userId,
+          repository_id: repoId,
+        });
         done();
       });
     });
   });
 
   after(async () => {
-    await db.users_repositories.destroy({ where: { user_id: userId } })
+    await db.users_repositories.destroy({ where: { user_id: userId } });
     await db.users.destroy({ where: { id: userId } });
     await db.repositories.destroy({ where: { id: repoId } });
   });
@@ -61,7 +65,6 @@ describe("test cases for find user api", function () {
       });
   });
 
-
   it("find by id should give status 200", function (done) {
     chai
       .request(app)
@@ -92,3 +95,4 @@ describe("test cases for find user api", function () {
       });
   });
 });
+/*eslint-disable  no-undef*/

@@ -1,17 +1,17 @@
 const dbConn = require("../models/sequelize");
 dbConn.sequelize;
-const faker = require("faker");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const should = require('should');
+const should = require("should");
 chai.use(chaiHttp);
 const app = process.env.SERVER;
 const db = require("../models/sequelize");
 const data = require("./data");
 let user = data.user;
+
+/*eslint-disable  no-undef*/
 describe("test cases for find user api", function () {
   let userId;
-
   before((done) => {
     db.users.create(user).then((res) => {
       userId = res.id;
@@ -33,8 +33,6 @@ describe("test cases for find user api", function () {
       });
   });
 
-
-
   it("find project of invalid user id should give status 400", function (done) {
     chai
       .request(app)
@@ -55,3 +53,4 @@ describe("test cases for find user api", function () {
       });
   });
 });
+/*eslint-disable  no-undef*/
