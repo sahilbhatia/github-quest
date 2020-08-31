@@ -27,7 +27,6 @@ module.exports = {
         {
           role: "HR",
         },
-
       ]);
     }
   },
