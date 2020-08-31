@@ -10,6 +10,7 @@ const Wrapper = styled.div`
 const ErrorCode = styled.h1`
   font-size: 1000%;
 `;
+
 const errorMassage = (code) => {
   switch (code) {
     case 400:

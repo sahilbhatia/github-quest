@@ -21,7 +21,7 @@ Users.hasMany(Users_repositories, {
   foreignKey: { name: "user_id", allowNull: true },
 });
 
-const findRepos = async (req, res) => {
+const findRepository = async (req, res) => {
   try {
     const { repositoryName, userName, userId } = req.query;
     if (userId != "undefined" && userId != undefined) {
@@ -124,4 +124,4 @@ const findRepos = async (req, res) => {
   }
 };
 
-export default findRepos;
+export default findRepository;

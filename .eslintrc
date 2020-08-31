@@ -3,23 +3,44 @@
     "browser": false,
     "commonjs": true,
     "es6": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
   "extends": [
     "eslint:recommended",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:react/recommended",
+    "plugin:jest/recommended",
+    "plugin:jest/style",
+    "plugin:jest-formatting/recommended",
+    "plugin:jsx-a11y/recommended"
   ],
   "plugins": [
-    "prettier"
+    "prettier",
+    "react",
+    "jest",
+    "jest-formatting",
+    "jsx-a11y"
   ],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
   },
   "parserOptions": {
-    "ecmaVersion": 2018
+    "ecmaFeatures": {
+      "jsx": true,
+      "modules": true
+    },
+    "ecmaVersion": 2018,
+    "sourceType": "module"
   },
   "parser": "babel-eslint",
+  "settings": {
+    "react": {
+      "pragma": "React",
+      "version": "^16.13.1"
+    }
+  },
   "rules": {
     "prettier/prettier": "error",
     "no-console": "error",
@@ -29,6 +50,8 @@
     "no-multiple-empty-lines": "error",
     "no-multi-spaces": "error",
     "no-self-compare": "error",
-    "no-unused-vars": "error"
+    "no-unused-vars": "error",
+    "react/jsx-uses-react": "error",   
+     "react/jsx-uses-vars": "error" 
   }
 }
