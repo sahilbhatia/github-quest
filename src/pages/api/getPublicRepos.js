@@ -8,13 +8,22 @@ const Users_repositories = db.users_repositories;
 const Users = db.users;
 const yup = require("yup");
 
-Users_repositories.belongsTo(Repositories, { foreignKey: { name: 'repository_id', allowNull: true } });
-Repositories.hasMany(Users_repositories, { foreignKey: { name: 'repository_id', allowNull: true } });
-
-Users_repositories.belongsTo(Users, { foreignKey: { name: 'user_id', allowNull: true } });
-Users.hasMany(Users_repositories, { foreignKey: { name: 'user_id', allowNull: true } });
-
-Repositories.hasMany(Repositories, { foreignKey: { name: 'parent_repo_id', allowNull: true }, as: "parent_of" });
+Users_repositories.belongsTo(Repositories, {
+  foreignKey: { name: "repository_id", allowNull: true },
+});
+Repositories.hasMany(Users_repositories, {
+  foreignKey: { name: "repository_id", allowNull: true },
+});
+Users_repositories.belongsTo(Users, {
+  foreignKey: { name: "user_id", allowNull: true },
+});
+Users.hasMany(Users_repositories, {
+  foreignKey: { name: "user_id", allowNull: true },
+});
+Repositories.hasMany(Repositories, {
+  foreignKey: { name: "parent_repo_id", allowNull: true },
+  as: "parent_of",
+});
 
 const getAllPublicRepos = async (req, res) => {
   let where = {};
@@ -34,11 +43,23 @@ const getAllPublicRepos = async (req, res) => {
     is_private,
     review,
     error_details,
-    userId
+    userId,
   } = req.query;
   limit = limit == undefined ? 10 : limit;
   const getWhereClause = () => {
-    if (repoName || is_forked || is_archived || is_disabled || startDate || endDate || is_suspicious || is_private || review || reviewDate || error_details) {
+    if (
+      repoName ||
+      is_forked ||
+      is_archived ||
+      is_disabled ||
+      startDate ||
+      endDate ||
+      is_suspicious ||
+      is_private ||
+      review ||
+      reviewDate ||
+      error_details
+    ) {
       if (repoName != undefined) {
         where = {
           [Sequelize.Op.or]: {
@@ -73,58 +94,65 @@ const getAllPublicRepos = async (req, res) => {
 
       if (startDate != undefined && endDate != undefined) {
         where.created_at = {
-          [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
-        }
+          [Sequelize.Op.between]: [new Date(startDate), new Date(endDate)],
+        };
       } else if (endDate != undefined) {
         where.created_at = {
           [Sequelize.Op.lt]: new Date(endDate),
-        }
+        };
       } else if (startDate != undefined) {
         const date = new Date();
         where.created_at = {
-          [Sequelize.Op.between]: [new Date(startDate), date]
-        }
+          [Sequelize.Op.between]: [new Date(startDate), date],
+        };
       }
 
       if (reviewDate != undefined) {
         let endDate = moment(reviewDate).add(24, "hours").toISOString();
         let startDate = reviewDate;
         where.reviewed_at = {
-          [Sequelize.Op.between]: [startDate, endDate]
-        }
+          [Sequelize.Op.between]: [startDate, endDate],
+        };
       }
 
       if (error_details == "true" || error_details == "false") {
         if (error_details == "true") {
           where.error_details = {
-            [Sequelize.Op.ne]: null
-          }
+            [Sequelize.Op.ne]: null,
+          };
         } else if (error_details == "false") {
           where.error_details = {
-            [Sequelize.Op.eq]: null
-          }
+            [Sequelize.Op.eq]: null,
+          };
         }
       }
       return where;
     }
-  }
+  };
   if (userId != undefined) {
-    await yup.object().shape({
-      userId: yup
-        .number()
-    }).validate({
-      userId: userId
-    }, { abortEarly: false })
+    await yup
+      .object()
+      .shape({
+        userId: yup.number(),
+      })
+      .validate(
+        {
+          userId: userId,
+        },
+        {
+          abortEarly: false,
+        }
+      )
       .then(async () => {
         let user = await Users.findOne({
           where: {
-            id: userId
-          }
+            id: userId,
+          },
         });
         if (!user) {
           res.status(404).json({
-            message: "user not found for given id"
-          })
+            message: "user not found for given id",
+          });
         } else {
           let findAllClause = {
             order: [["id", "ASC"]],
@@ -134,31 +162,32 @@ const getAllPublicRepos = async (req, res) => {
                 include: {
                   model: Users,
                   where: {
-                    id: userId
-                  }
+                    id: userId,
+                  },
                 },
               },
               {
                 model: Repositories,
-                as: "parent_of"
+                as: "parent_of",
               },
             ],
             limit: limit,
             offset: offset,
-          }
+          };
 
           const getWhereClauseObject = await getWhereClause();
 
           if (getWhereClauseObject) {
             try {
-              findAllClause.where = getWhereClauseObject
+              findAllClause.where = getWhereClauseObject;
               const repositories = await Repositories.findAll(findAllClause);
               const earliestDate = await Repositories.findAll({
-                attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
-              })
+                attributes: [
+                  [Sequelize.fn("min", Sequelize.col("created_at")), "min"],
+                ],
+              });
               let data = {};
-              data.repositories = repositories,
-                data.date = earliestDate[0];
+              (data.repositories = repositories), (data.date = earliestDate[0]);
               if (userId != undefined) {
                 const user = await Users.findOne({ where: { id: userId } });
                 data.userName = user.name;
@@ -166,21 +195,21 @@ const getAllPublicRepos = async (req, res) => {
               } else {
                 res.status(200).json(data);
               }
-
             } catch {
               res.status(500).json({
-                message: "internal server error"
-              })
+                message: "internal server error",
+              });
             }
           } else {
             try {
               const repositories = await Repositories.findAll(findAllClause);
               const earliestDate = await Repositories.findAll({
-                attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
-              })
+                attributes: [
+                  [Sequelize.fn("min", Sequelize.col("created_at")), "min"],
+                ],
+              });
               let data = {};
-              data.repositories = repositories,
-                data.date = earliestDate[0];
+              (data.repositories = repositories), (data.date = earliestDate[0]);
               if (userId != undefined) {
                 const user = await Users.findOne({ where: { id: userId } });
                 data.userName = user.name;
@@ -190,16 +219,16 @@ const getAllPublicRepos = async (req, res) => {
               }
             } catch {
               res.status(500).json({
-                message: "internal server error"
-              })
+                message: "internal server error",
+              });
             }
           }
         }
       })
       .catch(() => {
         res.status(400).json({
-          message: "user Id must be number"
-        })
+          message: "user Id must be number",
+        });
       });
   } else {
     const getUsersWhereClause = () => {
@@ -209,10 +238,10 @@ const getAllPublicRepos = async (req, res) => {
           include: {
             model: Users,
             where: {
-              name: userName
-            }
+              name: userName,
+            },
           },
-        }
+        };
         return findUserWhereClause;
       } else {
         findUserWhereClause = {
@@ -220,10 +249,10 @@ const getAllPublicRepos = async (req, res) => {
           include: {
             model: Users,
           },
-        }
+        };
         return findUserWhereClause;
       }
-    }
+    };
     const getIncludeUsersModel = await getUsersWhereClause();
     let findAllClause = {
       order: [["id", "ASC"]],
@@ -231,25 +260,26 @@ const getAllPublicRepos = async (req, res) => {
         getIncludeUsersModel,
         {
           model: Repositories,
-          as: "parent_of"
+          as: "parent_of",
         },
       ],
       limit: limit,
       offset: offset,
-    }
+    };
 
     const getWhereClauseObject = await getWhereClause();
 
     if (getWhereClauseObject) {
       try {
-        findAllClause.where = getWhereClauseObject
+        findAllClause.where = getWhereClauseObject;
         const repositories = await Repositories.findAll(findAllClause);
         const earliestDate = await Repositories.findAll({
-          attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
-        })
+          attributes: [
+            [Sequelize.fn("min", Sequelize.col("created_at")), "min"],
+          ],
+        });
         let data = {};
-        data.repositories = repositories,
-          data.date = earliestDate[0];
+        (data.repositories = repositories), (data.date = earliestDate[0]);
         if (userId != undefined) {
           const user = await Users.findOne({ where: { id: userId } });
           data.userName = user.name;
@@ -257,21 +287,21 @@ const getAllPublicRepos = async (req, res) => {
         } else {
           res.status(200).json(data);
         }
-
       } catch {
         res.status(500).json({
-          message: "internal server error"
-        })
+          message: "internal server error",
+        });
       }
     } else {
       try {
         const repositories = await Repositories.findAll(findAllClause);
         const earliestDate = await Repositories.findAll({
-          attributes: [[Sequelize.fn('min', Sequelize.col("created_at")), 'min']]
-        })
+          attributes: [
+            [Sequelize.fn("min", Sequelize.col("created_at")), "min"],
+          ],
+        });
         let data = {};
-        data.repositories = repositories,
-          data.date = earliestDate[0];
+        (data.repositories = repositories), (data.date = earliestDate[0]);
         if (userId != undefined) {
           const user = await Users.findOne({ where: { id: userId } });
           data.userName = user.name;
@@ -281,8 +311,8 @@ const getAllPublicRepos = async (req, res) => {
         }
       } catch {
         res.status(500).json({
-          message: "internal server error"
-        })
+          message: "internal server error",
+        });
       }
     }
   }

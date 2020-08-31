@@ -12,15 +12,15 @@ export default async function insertUsers(req, res) {
       .get("https://stage-intranet.joshsoftware.com/api/v1/users")
       .set({
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        Accept: "application/json",
       });
     const listOfUsers = await JSON.parse(intranetUsersList.text);
     const insertUsersList = await listOfUsers.users.map(async (item) => {
       const find_user = await Users.findOne({
         where: {
           email: item.email,
-        }
-      })
+        },
+      });
       if (!find_user) {
         const get_github_handle = () => {
           if (item.public_profile) {
@@ -41,24 +41,24 @@ export default async function insertUsers(req, res) {
           } else {
             return null;
           }
-        }
+        };
         try {
           const github_handle = await get_github_handle();
           const role = await Roles.findOne({
             where: {
               role: item.role,
-            }
-          })
+            },
+          });
 
           await Users.create({
             name: item.name ? item.name : "unknown",
             role_id: role.dataValues.id,
             email: item.email,
             github_handle: github_handle,
-            org_user_id: item.id
-          })
+            org_user_id: item.id,
+          });
         } catch {
-         return;
+          return;
         }
       } else if (find_user && item.public_profile) {
         try {
@@ -81,30 +81,33 @@ export default async function insertUsers(req, res) {
             } else {
               return null;
             }
-          }
+          };
           const github_handle = await get_github_handle();
           if (find_user.dataValues.github_handle != github_handle) {
-            await Users.update({
-              name: item.name ? item.name : "unknown",
-              github_handle: item.public_profile ? github_handle : null,
-            }, {
-              returning: true,
-              where: { email: item.email },
-            })
+            await Users.update(
+              {
+                name: item.name ? item.name : "unknown",
+                github_handle: item.public_profile ? github_handle : null,
+              },
+              {
+                returning: true,
+                where: { email: item.email },
+              }
+            );
           }
         } catch {
-          return
+          return;
         }
       }
     });
 
-    await Promise.all(insertUsersList)
-  }
-   cron.schedule(process.env.INSERT_USERS_FROM_INTRANET, async () => {
-     insertUsersFunction();
-   });
-   insertUsersFunction();
-   res.status(200).json({
-    message: "cron Job Activated successfully for inserting users"
-  })
-};
+    await Promise.all(insertUsersList);
+  };
+  cron.schedule(process.env.INSERT_USERS_FROM_INTRANET, async () => {
+    insertUsersFunction();
+  });
+  insertUsersFunction();
+  res.status(200).json({
+    message: "cron Job Activated successfully for inserting users",
+  });
+}

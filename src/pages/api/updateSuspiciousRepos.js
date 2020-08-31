@@ -8,66 +8,80 @@ const updateSuspiciousRepos = async (req, res) => {
   const repoId = req.query.id;
   const updatedAt = req.query.updatedAt;
   let suspeciousRepo;
-  await yup.object().shape({
-    repoId: yup
-      .number()
-      .required({ repoId: "required" }),
-    updatedAt: yup
-      .string()
-      .required({ updatedAt: "required" }),
-  }).validate({
-    repoId: req.query.id,
-    updatedAt: updatedAt
-  }, { abortEarly: false }).then(async () => {
-    try {
-      let repo = await Repositories.findOne({ where: { id: repoId } });
-      if (!repo) {
-        res.status(404).json({
-          message: "repository not found for given id"
-        })
-      } else {
-        suspeciousRepo = await Repositories.update({
-          is_suspicious: true,
-          review: "suspicious manual",
-          reviewed_at: updatedAt,
-        }, {
-          returning: true,
-          plain: true,
-          where: { id: repoId },
-        });
-        if (suspeciousRepo[1].dataValues.parent_repo_id) {
-          await Repositories.update({
-            is_suspicious: true,
-            review: "suspicious manual",
-            reviewed_at: updatedAt,
-          }, {
-            returning: true,
-            where: { parent_repo_id: suspeciousRepo[1].dataValues.parent_repo_id },
+  await yup
+    .object()
+    .shape({
+      repoId: yup.number().required({ repoId: "required" }),
+      updatedAt: yup.string().required({ updatedAt: "required" }),
+    })
+    .validate(
+      {
+        repoId: req.query.id,
+        updatedAt: updatedAt,
+      },
+      { abortEarly: false }
+    )
+    .then(async () => {
+      try {
+        let repo = await Repositories.findOne({ where: { id: repoId } });
+        if (!repo) {
+          res.status(404).json({
+            message: "repository not found for given id",
+          });
+        } else {
+          suspeciousRepo = await Repositories.update(
+            {
+              is_suspicious: true,
+              review: "suspicious manual",
+              reviewed_at: updatedAt,
+            },
+            {
+              returning: true,
+              plain: true,
+              where: { id: repoId },
+            }
+          );
+          if (suspeciousRepo[1].dataValues.parent_repo_id) {
+            await Repositories.update(
+              {
+                is_suspicious: true,
+                review: "suspicious manual",
+                reviewed_at: updatedAt,
+              },
+              {
+                returning: true,
+                where: {
+                  parent_repo_id: suspeciousRepo[1].dataValues.parent_repo_id,
+                },
+              }
+            );
+          }
+          await Repositories.update(
+            {
+              is_suspicious: true,
+              review: "suspicious manual",
+              reviewed_at: updatedAt,
+            },
+            {
+              returning: true,
+              where: { parent_repo_id: suspeciousRepo[1].dataValues.id },
+            }
+          );
+          res.status(200).json({
+            message: "repository updated successfully",
           });
         }
-        await Repositories.update({
-          is_suspicious: true,
-          review: "suspicious manual",
-          reviewed_at: updatedAt,
-        }, {
-          returning: true,
-          where: { parent_repo_id: suspeciousRepo[1].dataValues.id },
+      } catch {
+        res.status(500).json({
+          message: "internal server error",
         });
-        res.status(200).json({
-          message: "repository updated successfully"
-        })
       }
-    } catch {
-      res.status(500).json({
-        message: "internal server error"
-      })
-    }
-  })
+    })
     .catch((err) => {
       res.status(400).json({
-        message: err
-      })
-    })
+        message: err,
+      });
+    });
 
   // try {
   //   suspeciousRepo = await Repositories.update({
@@ -121,6 +135,6 @@ const updateSuspiciousRepos = async (req, res) => {
   // res.status(200).json({
   //   message: "repository updated successfully"
   // })
-}
+};
 
 export default updateSuspiciousRepos;

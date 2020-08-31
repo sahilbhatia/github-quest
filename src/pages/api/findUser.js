@@ -6,17 +6,15 @@ const yup = require("yup");
 const Sequelize = require("sequelize");
 const findUser = async (req, res) => {
   try {
-    const userName = req.query.userName;
-    const githubHandle = req.query.githubHandle;
-    const userId = req.query.userId;
+    const { userName, githubHandle, userId } = req.query;
     if (userName) {
       let userList = await Users.findAll({
         where: {
           name: {
             [Sequelize.Op.iLike]: "%" + userName + "%",
           },
-        }
-      })
+        },
+      });
       res.status(200).json(userList);
     } else if (githubHandle) {
       let userList = await Users.findAll({
@@ -24,46 +22,50 @@ const findUser = async (req, res) => {
           github_handle: {
             [Sequelize.Op.iLike]: "%" + githubHandle + "%",
           },
-        }
-      })
+        },
+      });
       res.status(200).json(userList);
     } else if (userId) {
-      await yup.object().shape({
-        userId: yup
-          .number()
-          .required({ userId: "required" }),
-      }).validate({
-        userId: userId
-      }, { abortEarly: false })
+      await yup
+        .object()
+        .shape({
+          userId: yup.number().required({ userId: "required" }),
+        })
+        .validate(
+          {
+            userId: userId,
+          },
+          { abortEarly: false }
+        )
         .then(async () => {
           let user = await Users.findOne({
             where: {
-              id: userId
-            }
+              id: userId,
+            },
           });
           if (user) {
             res.status(200).json(user);
           } else {
             res.status(404).json({
-              message: "user not found for given id"
-            })
+              message: "user not found for given id",
+            });
           }
         })
         .catch(() => {
           res.status(400).json({
-            message: "user Id must be number"
-          })
+            message: "user Id must be number",
+          });
         });
     } else {
       res.status(400).json({
-        message: "key value required"
-      })
+        message: "key value required",
+      });
     }
   } catch {
     res.status(500).json({
-      message: "internal server error"
-    })
+      message: "internal server error",
+    });
   }
-}
+};
 
 export default findUser;
