@@ -176,7 +176,7 @@ export default function Index({ filter, setFilter, minDate }) {
   );
 }
 
-Index.prototype = {
+Index.propTypes = {
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
   minDate: PropTypes.string.isRequired,

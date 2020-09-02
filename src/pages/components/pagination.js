@@ -41,7 +41,7 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
   );
 }
 
-Index.prototype = {
+Index.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,

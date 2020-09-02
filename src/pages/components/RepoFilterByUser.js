@@ -337,7 +337,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
   );
 }
 
-Index.prototype = {
+Index.propTypes = {
   minDate: PropTypes.string.isRequired,
   userId: PropTypes.number.isRequired,
   filter: PropTypes.object.isRequired,

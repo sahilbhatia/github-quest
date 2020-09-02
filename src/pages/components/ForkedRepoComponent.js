@@ -16,7 +16,6 @@ export default function ForkedRepoComponent({ data }) {
         return <a href={d.url}>{d.name}</a>;
       },
     },
-
     {
       name: "forked child count",
       selector: (d) => d.children.length,
@@ -74,6 +73,6 @@ export default function ForkedRepoComponent({ data }) {
   );
 }
 
-ForkedRepoComponent.prototype = {
-  data: PropTypes.object.isRequired,
+ForkedRepoComponent.propTypes = {
+  data: PropTypes.array.isRequired,
 };

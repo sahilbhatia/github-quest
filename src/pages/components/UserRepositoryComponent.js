@@ -301,7 +301,7 @@ export default function UserRepositoryComponent({
   );
 }
 
-UserRepositoryComponent.prototype = {
+UserRepositoryComponent.propTypes = {
   userId: PropTypes.number.isRequired,
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,

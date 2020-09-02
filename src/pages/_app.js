@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import "../../node_modules/bootstrap/scss/bootstrap.scss";
 import "../../node_modules/react-datepicker/dist/react-datepicker.css";
 /**
@@ -13,3 +14,8 @@ export default function Index({ Component, pageProps }) {
     </main>
   );
 }
+
+Index.propTypes = {
+  Component: PropTypes,
+  pageProps: PropTypes,
+};

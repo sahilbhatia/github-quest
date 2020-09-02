@@ -76,7 +76,7 @@ export default function ProjectRepositoryComponent({
   );
 }
 
-ProjectRepositoryComponent.prototype = {
+ProjectRepositoryComponent.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,

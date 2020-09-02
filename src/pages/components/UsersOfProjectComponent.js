@@ -106,7 +106,7 @@ export default function UsersOfProjectComponent({
   );
 }
 
-UsersOfProjectComponent.prototype = {
+UsersOfProjectComponent.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,

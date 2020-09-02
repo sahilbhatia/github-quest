@@ -106,6 +106,6 @@ export default function ProjectsOfUserComponent({ data }) {
   );
 }
 
-ProjectsOfUserComponent.prototype = {
+ProjectsOfUserComponent.propTypes = {
   data: PropTypes.array.isRequired,
 };

@@ -140,7 +140,7 @@ export default function UserListComponent({
   );
 }
 
-UserListComponent.prototype = {
+UserListComponent.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,

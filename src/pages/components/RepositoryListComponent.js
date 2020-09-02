@@ -309,7 +309,7 @@ export default function RepositoryListComponent({
   );
 }
 
-RepositoryListComponent.prototype = {
+RepositoryListComponent.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,

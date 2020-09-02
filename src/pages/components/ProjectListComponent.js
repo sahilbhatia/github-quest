@@ -136,7 +136,7 @@ export default function ProjectListComponent({
   );
 }
 
-ProjectListComponent.prototype = {
+ProjectListComponent.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,
