@@ -43,12 +43,8 @@ export default async function insertUsers(req, res) {
                 if (data.role) {
                   updateObject.role = data.role;
                 }
-
-                if (data.public_profile) {
-                  if (data.public_profile.github_handle) {
-                    updateObject.github_handle =
-                      data.public_profile.github_handle;
-                  }
+                if (data.github_handle) {
+                  updateObject.github_handle = data.github_handle;
                 }
                 await Users.update(updateObject, {
                   where: { org_user_id: data.user_id },

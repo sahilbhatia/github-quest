@@ -25,7 +25,7 @@ export default function UserListComponent({
     {
       name: "Github Handle",
       selector: function func(d) {
-        d.github_handle ? <>{d.github_handle}</> : "not provided";
+        return d.github_handle ? <>{d.github_handle}</> : "not provided";
       },
     },
     {
