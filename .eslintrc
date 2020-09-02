@@ -24,12 +24,14 @@
   ],
   "globals": {
     "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
+    "SharedArrayBuffer": "readonly",
+    "window":true,
+    "fetch":true,
+    "process": true
   },
   "parserOptions": {
     "ecmaFeatures": {
-      "jsx": true,
-      "modules": true
+      "jsx": true
     },
     "ecmaVersion": 2018,
     "sourceType": "module"
@@ -51,7 +53,9 @@
     "no-multi-spaces": "error",
     "no-self-compare": "error",
     "no-unused-vars": "error",
-    "react/jsx-uses-react": "error",   
-     "react/jsx-uses-vars": "error" 
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error",
+    "react/prop-types": 0,
+    "react/react-in-jsx-scope": "off"
   }
 }

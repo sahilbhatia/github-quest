@@ -3,22 +3,25 @@ import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 import PropTypes from "prop-types";
-import moment from "moment";
 export default function Index({ filter, setFilter, minDate }) {
   let [userName, setuserName] = useState(null);
   let userList = [];
-  let userData = fetch(`/api/findUser?userName=${userName}`)
+  let userData = fetch(`/api/findUser?userName=${userName}`);
   let [githubHandle, setgithubHandle] = useState(null);
   let githubHandleList = [];
-  let githubHandleData = fetch(`/api/findUser?githubHandle=${githubHandle}`)
-  userData.then((response) => { return response.json() }).then((res) => {
-    res.map((user) =>
-      userList.push({
-        value: user.name,
-        label: user.name,
-      })
-    );
-  })
+  let githubHandleData = fetch(`/api/findUser?githubHandle=${githubHandle}`);
+  userData
+    .then((response) => {
+      return response.json();
+    })
+    .then((res) => {
+      res.map((user) =>
+        userList.push({
+          value: user.name,
+          label: user.name,
+        })
+      );
+    });
 
   const filterOptionsUsers = (inputValue) => {
     return userList.filter((i) =>
@@ -27,7 +30,7 @@ export default function Index({ filter, setFilter, minDate }) {
   };
 
   const promiseOptionsUsers = (inputValue, callback) => {
-    setuserName(inputValue)
+    setuserName(inputValue);
     setTimeout(() => {
       callback(filterOptionsUsers(inputValue));
     }, 1000);
@@ -38,23 +41,25 @@ export default function Index({ filter, setFilter, minDate }) {
     setFilter(data);
   };
 
-  githubHandleData.then((response) => { return response.json() }).then((res) => {
-    res.map((user) =>
-      githubHandleList.push({
-        value: user.github_handle,
-        label: user.github_handle,
-      })
-    );
-  })
+  githubHandleData
+    .then((response) => {
+      return response.json();
+    })
+    .then((res) => {
+      res.map((user) =>
+        githubHandleList.push({
+          value: user.github_handle,
+          label: user.github_handle,
+        })
+      );
+    });
 
   const filterOptionsGithubHandle = (inputValue) => {
-    return githubHandleList.filter((i) =>
-      i.label.includes(inputValue)
-    );
+    return githubHandleList.filter((i) => i.label.includes(inputValue));
   };
 
   const promiseOptionsGithubHandle = (inputValue, callback) => {
-    setgithubHandle(inputValue)
+    setgithubHandle(inputValue);
     setTimeout(() => {
       callback(filterOptionsGithubHandle(inputValue));
     }, 1000);
@@ -83,13 +88,16 @@ export default function Index({ filter, setFilter, minDate }) {
   const errorStatus = (value) => {
     let data = { ...filter };
     data.error_details = value;
-    setFilter(data)
+    setFilter(data);
   };
   const setColor = (status) => {
     switch (status != undefined ? status.toString() : status) {
-      case "false": return "danger"
-      case "true": return "success"
-      default: return "dark"
+      case "false":
+        return "danger";
+      case "true":
+        return "success";
+      default:
+        return "dark";
     }
   };
 
@@ -122,7 +130,9 @@ export default function Index({ filter, setFilter, minDate }) {
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date from"
-          className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
+          className={`${
+            filter.startDate != undefined ? "border-success" : ""
+          } mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateTo(e)}
@@ -130,20 +140,44 @@ export default function Index({ filter, setFilter, minDate }) {
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date to"
-          className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
+          className={`${
+            filter.endDate != undefined ? "border-success" : ""
+          } mx-1`}
         />
-        <DropdownButton className="mx-2" variant={setColor(filter.error_details)} title="Error Status">
-          <Dropdown.Item onClick={(e => errorStatus(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => errorStatus(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => errorStatus(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="mx-2"
+          variant={setColor(filter.error_details)}
+          title="Error Status"
+        >
+          <Dropdown.Item
+            onClick={() => errorStatus(true)}
+            className="bg-success"
+          >
+            true
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => errorStatus(false)}
+            className="bg-danger"
+          >
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => errorStatus(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
+        <Button className="ml-2" variant="dark" onClick={reset}>
+          ↺
+        </Button>
       </div>
-    </div>)
-};
+    </div>
+  );
+}
 
 Index.prototype = {
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
-  minDate: PropTypes.string.isRequired
-}
+  minDate: PropTypes.string.isRequired,
+};

@@ -6,4 +6,4 @@ test("test case for index page", () => {
   const component = renderer.create(<Index />);
   let tree = component.toJSON();
   expect(tree).toMatchSnapshot();
-})
+});

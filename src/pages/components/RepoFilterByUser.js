@@ -7,16 +7,22 @@ import PropTypes from "prop-types";
 export default function Index({ filter, setFilter, minDate, userId }) {
   let [repositoryName, setRepositoryName] = useState(null);
   let repositoryList = [];
-  let reposData = fetch(`/api/findRepository?userId=${userId}&repositoryName=${repositoryName}`)
-  
-  reposData.then((response) => { return response.json() }).then((res) => {
-    res.map((repo) =>
-    repositoryList.push({
-        value: repo.name,
-        label: repo.name,
-      })
-    );
-  })
+  let reposData = fetch(
+    `/api/findRepository?userId=${userId}&repositoryName=${repositoryName}`
+  );
+
+  reposData
+    .then((response) => {
+      return response.json();
+    })
+    .then((res) => {
+      res.map((repo) =>
+        repositoryList.push({
+          value: repo.name,
+          label: repo.name,
+        })
+      );
+    });
 
   const filterOptionsRepos = (inputValue) => {
     return repositoryList.filter((i) =>
@@ -25,7 +31,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
   };
 
   const promiseOptionsRepos = (inputValue, callback) => {
-    setRepositoryName(inputValue)
+    setRepositoryName(inputValue);
     setTimeout(() => {
       callback(filterOptionsRepos(inputValue));
     }, 1000);
@@ -52,7 +58,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
   };
   const setDateReview = (value) => {
     let data = { ...filter };
-    data.reviewDate =moment(value).toISOString();
+    data.reviewDate = moment(value).toISOString();
     setFilter(data);
   };
   const forked = (value) => {
@@ -63,43 +69,51 @@ export default function Index({ filter, setFilter, minDate, userId }) {
   const archived = (value) => {
     let data = { ...filter };
     data.is_archived = value;
-    setFilter(data)
+    setFilter(data);
   };
   const disabled = (value) => {
     let data = { ...filter };
     data.is_disabled = value;
-    setFilter(data)
+    setFilter(data);
   };
   const suspicious = (value) => {
     let data = { ...filter };
     data.is_suspicious = value;
-    setFilter(data)
+    setFilter(data);
   };
   const privateRepo = (value) => {
     let data = { ...filter };
     data.is_private = value;
-    setFilter(data)
+    setFilter(data);
   };
   const review = (value) => {
     let data = { ...filter };
     data.review = value;
-    setFilter(data)
+    setFilter(data);
   };
   const errorStatus = (value) => {
     let data = { ...filter };
     data.error_details = value;
-    setFilter(data)
+    setFilter(data);
   };
   const setColor = (status) => {
-    switch (status!=undefined?status.toString():status) {
-      case "suspicious auto" : return "danger"
-      case "suspicious manual": return "warning"
-      case "approved": return "success"
-      case "no action": return "secondary"
-      case "pending": return "primary"
-      case "false" : return "danger"
-      case "true" : return "success"  
-      default : return "dark"
+    switch (status != undefined ? status.toString() : status) {
+      case "suspicious auto":
+        return "danger";
+      case "suspicious manual":
+        return "warning";
+      case "approved":
+        return "success";
+      case "no action":
+        return "secondary";
+      case "pending":
+        return "primary";
+      case "false":
+        return "danger";
+      case "true":
+        return "success";
+      default:
+        return "dark";
     }
   };
   return (
@@ -111,7 +125,9 @@ export default function Index({ filter, setFilter, minDate, userId }) {
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date from"
-          className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
+          className={`${
+            filter.startDate != undefined ? "border-success" : ""
+          } mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateTo(e)}
@@ -119,19 +135,23 @@ export default function Index({ filter, setFilter, minDate, userId }) {
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date to"
-          className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
+          className={`${
+            filter.endDate != undefined ? "border-success" : ""
+          } mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateReview(e)}
-          selected={filter.reviewDate?new Date(filter.reviewDate):""}
+          selected={filter.reviewDate ? new Date(filter.reviewDate) : ""}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select reviewed date"
-          className={`${filter.reviewDate != undefined ? "border-success" : ""} mx-1`}
+          className={`${
+            filter.reviewDate != undefined ? "border-success" : ""
+          } mx-1`}
         />
       </div>
       <div className="d-flex">
-          <div style={{width:"150px"}}>
+        <div style={{ width: "150px" }}>
           <AsyncSelect
             loadOptions={promiseOptionsRepos}
             name="select repository"
@@ -140,49 +160,182 @@ export default function Index({ filter, setFilter, minDate, userId }) {
             onChange={setRepoName}
             className="w-100"
           />
-          </div>
-        <DropdownButton className="ml-2" variant={setColor(filter.is_forked)} title="Forked">
-          <Dropdown.Item onClick={(e => forked(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => forked(false))} className="bg-danger" >false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => forked(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        </div>
+        <DropdownButton
+          className="ml-2"
+          variant={setColor(filter.is_forked)}
+          title="Forked"
+        >
+          <Dropdown.Item onClick={() => forked(true)} className="bg-success">
+            true
+          </Dropdown.Item>
+          <Dropdown.Item onClick={() => forked(false)} className="bg-danger">
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => forked(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="ml-2" variant={setColor(filter.is_archived)} title="Archived">
-          <Dropdown.Item onClick={(e => archived(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => archived(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => archived(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="ml-2"
+          variant={setColor(filter.is_archived)}
+          title="Archived"
+        >
+          <Dropdown.Item onClick={() => archived(true)} className="bg-success">
+            true
+          </Dropdown.Item>
+          <Dropdown.Item onClick={() => archived(false)} className="bg-danger">
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => archived(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="mx-2" variant={setColor(filter.is_disabled)} title="Disabled">
-          <Dropdown.Item onClick={(e => disabled(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => disabled(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => disabled(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="mx-2"
+          variant={setColor(filter.is_disabled)}
+          title="Disabled"
+        >
+          <Dropdown.Item onClick={() => disabled(true)} className="bg-success">
+            true
+          </Dropdown.Item>
+          <Dropdown.Item onClick={() => disabled(false)} className="bg-danger">
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => disabled(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="mx-2" variant={setColor(filter.is_suspicious)} title="Suspicious">
-          <Dropdown.Item onClick={(e => suspicious(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => suspicious(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => suspicious(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="mx-2"
+          variant={setColor(filter.is_suspicious)}
+          title="Suspicious"
+        >
+          <Dropdown.Item
+            onClick={() => suspicious(true)}
+            className="bg-success"
+          >
+            true
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => suspicious(false)}
+            className="bg-danger"
+          >
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => suspicious(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="mx-2" variant={setColor(filter.is_private)} title="Private">
-          <Dropdown.Item onClick={(e => privateRepo(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => privateRepo(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => privateRepo(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="mx-2"
+          variant={setColor(filter.is_private)}
+          title="Private"
+        >
+          <Dropdown.Item
+            onClick={() => privateRepo(true)}
+            className="bg-success"
+          >
+            true
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => privateRepo(false)}
+            className="bg-danger"
+          >
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => privateRepo(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="mx-2" variant={setColor(filter.review)} title="Review Status">
-          <Dropdown.Item onClick={(e => review("suspicious auto"))} className="bg-danger">suspicious(auto)</Dropdown.Item>
-          <Dropdown.Item onClick={(e => review("suspicious manual"))} className="bg-warning">suspicious(manual)</Dropdown.Item>
-          <Dropdown.Item onClick={(e => review("approved"))} className="bg-success">approved</Dropdown.Item>
-          <Dropdown.Item onClick={(e => review("pending"))} className="bg-primary">pending</Dropdown.Item>
-          <Dropdown.Item onClick={(e => review("no action"))} className="bg-secondary">no action</Dropdown.Item>
-          <Dropdown.Item onClick={(e => review(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="mx-2"
+          variant={setColor(filter.review)}
+          title="Review Status"
+        >
+          <Dropdown.Item
+            onClick={() => review("suspicious auto")}
+            className="bg-danger"
+          >
+            suspicious(auto)
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => review("suspicious manual")}
+            className="bg-warning"
+          >
+            suspicious(manual)
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => review("approved")}
+            className="bg-success"
+          >
+            approved
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => review("pending")}
+            className="bg-primary"
+          >
+            pending
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => review("no action")}
+            className="bg-secondary"
+          >
+            no action
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => review(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <DropdownButton className="mx-2" variant={setColor(filter.error_details)} title="Error Status">
-          <Dropdown.Item onClick={(e => errorStatus(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => errorStatus(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => errorStatus(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="mx-2"
+          variant={setColor(filter.error_details)}
+          title="Error Status"
+        >
+          <Dropdown.Item
+            onClick={() => errorStatus(true)}
+            className="bg-success"
+          >
+            true
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => errorStatus(false)}
+            className="bg-danger"
+          >
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => errorStatus(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
+        <Button className="ml-2" variant="dark" onClick={reset}>
+          ↺
+        </Button>
       </div>
-    </div>)
-};
+    </div>
+  );
+}
 
 Index.prototype = {
   minDate: PropTypes.string.isRequired,

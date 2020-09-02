@@ -8,14 +8,18 @@ export default function Index({ filter, setFilter, minDate }) {
   let [projectName, setProjectName] = useState(null);
   let projectList = [];
   let projectData = fetch(`/api/findProject?projectName=${projectName}`);
-  projectData.then((response) => { return response.json() }).then((res) => {
-    res.map((project) =>
-      projectList.push({
-        value: project.name,
-        label: project.name,
-      })
-    );
-  })
+  projectData
+    .then((response) => {
+      return response.json();
+    })
+    .then((res) => {
+      res.map((project) =>
+        projectList.push({
+          value: project.name,
+          label: project.name,
+        })
+      );
+    });
 
   const filterOptionsProjects = (inputValue) => {
     return projectList.filter((i) =>
@@ -24,7 +28,7 @@ export default function Index({ filter, setFilter, minDate }) {
   };
 
   const promiseOptionsProjects = (inputValue, callback) => {
-    setProjectName(inputValue)
+    setProjectName(inputValue);
     setTimeout(() => {
       callback(filterOptionsProjects(inputValue));
     }, 1000);
@@ -34,7 +38,7 @@ export default function Index({ filter, setFilter, minDate }) {
     data.projectName = projectName.value;
     setFilter(data);
   };
-  
+
   const reset = () => {
     setFilter({});
     window.location.reload();
@@ -53,14 +57,17 @@ export default function Index({ filter, setFilter, minDate }) {
   const active = (value) => {
     let data = { ...filter };
     data.is_active = value;
-    setFilter(data)
+    setFilter(data);
   };
 
   const setColor = (status) => {
     switch (status != undefined ? status.toString() : status) {
-      case "false": return "danger"
-      case "true": return "success"
-      default: return "dark"
+      case "false":
+        return "danger";
+      case "true":
+        return "success";
+      default:
+        return "dark";
     }
   };
   return (
@@ -78,11 +85,13 @@ export default function Index({ filter, setFilter, minDate }) {
         </div>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
-           selected={filter.startDate ? new Date(filter.startDate) : undefined} 
+          selected={filter.startDate ? new Date(filter.startDate) : undefined}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select from"
-          className={`${filter.startDate != undefined ? "border-success" : ""} mx-1`}
+          className={`${
+            filter.startDate != undefined ? "border-success" : ""
+          } mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateTo(e)}
@@ -90,20 +99,38 @@ export default function Index({ filter, setFilter, minDate }) {
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select to"
-          className={`${filter.endDate != undefined ? "border-success" : ""} mx-1`}
+          className={`${
+            filter.endDate != undefined ? "border-success" : ""
+          } mx-1`}
         />
-        <DropdownButton className="ml-2" variant={setColor(filter.is_active)} title="active">
-          <Dropdown.Item onClick={(e => active(true))} className="bg-success">true</Dropdown.Item>
-          <Dropdown.Item onClick={(e => active(false))} className="bg-danger">false</Dropdown.Item>
-          <Dropdown.Item onClick={(e => active(undefined))} className="bg-dark text-white">all</Dropdown.Item>
+        <DropdownButton
+          className="ml-2"
+          variant={setColor(filter.is_active)}
+          title="active"
+        >
+          <Dropdown.Item onClick={() => active(true)} className="bg-success">
+            true
+          </Dropdown.Item>
+          <Dropdown.Item onClick={() => active(false)} className="bg-danger">
+            false
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => active(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
         </DropdownButton>
-        <Button className="ml-2" variant="dark" onClick={reset}>↺</Button>
+        <Button className="ml-2" variant="dark" onClick={reset}>
+          ↺
+        </Button>
       </div>
-    </div>)
-};
+    </div>
+  );
+}
 
-Index.prototype={
+Index.prototype = {
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
-  minDate: PropTypes.string.isRequired
+  minDate: PropTypes.string.isRequired,
 };

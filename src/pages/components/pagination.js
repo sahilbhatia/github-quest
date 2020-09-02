@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import PropTypes from "prop-types";
 import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 export default function Index({ limit, offset, setLimit, setOffset, data }) {
@@ -17,21 +17,34 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
         <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
         <Dropdown.Item onClick={() => setLimit(20)}>20</Dropdown.Item>
       </DropdownButton>
-      
-        {offset == 0 
-          ? <></>
-          : <Button onClick={prev} className=" ml-5 bg-white text-dark">&laquo; {offset - limit < 0 ? <>{`0 - ${limit}`}</> : <>{`${offset - limit + 1} - ${offset}`}</>}</Button>}
-        {data.length < limit 
-          ? <></>
-          : <Button onClick={next} className="mx-5 bg-white text-dark">{`${offset + limit + 1} - ${limit + offset + limit}`} &raquo;</Button>}
-    </div>
-  )
-};
 
-Index.prototype={
+      {offset == 0 ? (
+        <></>
+      ) : (
+        <Button onClick={prev} className=" ml-5 bg-white text-dark">
+          &laquo;{" "}
+          {offset - limit < 0 ? (
+            <>{`0 - ${limit}`}</>
+          ) : (
+            <>{`${offset - limit + 1} - ${offset}`}</>
+          )}
+        </Button>
+      )}
+      {data.length < limit ? (
+        <></>
+      ) : (
+        <Button onClick={next} className="mx-5 bg-white text-dark">
+          {`${offset + limit + 1} - ${limit + offset + limit}`} &raquo;
+        </Button>
+      )}
+    </div>
+  );
+}
+
+Index.prototype = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,
   setOffset: PropTypes.func.isRequired,
-  setLimit: PropTypes.func.isRequired
-}
+  setLimit: PropTypes.func.isRequired,
+};

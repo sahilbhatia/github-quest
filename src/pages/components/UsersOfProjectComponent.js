@@ -1,6 +1,6 @@
 import DataTable from "react-data-table-component";
 import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
-import Pagination from "../components/pagination"
+import Pagination from "../components/pagination";
 import Link from "next/link";
 import PropTypes from "prop-types";
 export default function UsersOfProjectComponent({
@@ -14,33 +14,42 @@ export default function UsersOfProjectComponent({
   data = data.users;
   const columns = [
     {
-      name: 'Name',
-      selector: d => <div>
-        <OverlayTrigger
-          placement="top"
-          delay={{ show: 250, hide: 400 }}
-          overlay={
-            <Tooltip>
-              {d.name}
-            </Tooltip>
-          }
-        >
-          <span>
-            {d.name}
-          </span>
-        </OverlayTrigger></div>
+      name: "Name",
+      selector: function func(d) {
+        return (
+          <div>
+            <OverlayTrigger
+              placement="top"
+              delay={{ show: 250, hide: 400 }}
+              overlay={<Tooltip>{d.name}</Tooltip>}
+            >
+              <span>{d.name}</span>
+            </OverlayTrigger>
+          </div>
+        );
+      },
     },
     {
       name: "Github Handle",
-      selector: d => d.github_handle ? d.github_handle : "not provided"
+      selector: (d) => (d.github_handle ? d.github_handle : "not provided"),
     },
     {
       name: "Email",
-      selector: "email"
+      selector: "email",
     },
     {
       name: "Projects",
-      selector: d => d.users_projects.length != 0 ? <Link href="/getProjects/[userId]" as={`/getProjects/${d.id}`}><a>{d.users_projects[0].user.users_projects.length}</a></Link> : <>✘</>,
+      selector: function func(d) {
+        return d.users_projects.length != 0 ? (
+          <Link href="/getProjects/[userId]" as={`/getProjects/${d.id}`}>
+            <Button className="bg-white border-white text-primary btn-sm">
+              {d.users_projects[0].user.users_projects.length}
+            </Button>
+          </Link>
+        ) : (
+          <>✘</>
+        );
+      },
     },
   ];
   const customStyles = {
@@ -55,7 +64,7 @@ export default function UsersOfProjectComponent({
         backgroundColor: "blue",
         fontWeight: "800",
         fontSize: "18px",
-        color: "white"
+        color: "white",
       },
     },
     cells: {
@@ -67,13 +76,21 @@ export default function UsersOfProjectComponent({
   return (
     <div>
       <DataTable
-        title={<div className="text-right text-primary"><h3>Users of project <a className="text-success">{projectName}</a></h3></div>}
+        title={
+          <div className="text-right text-primary">
+            <h3>
+              Users of project{" "}
+              <span className="text-success">{projectName}</span>
+            </h3>
+          </div>
+        }
         columns={columns}
         customStyles={customStyles}
         data={data}
       />
-      {data.length == 0 ?
-        <></> :
+      {data.length == 0 ? (
+        <></>
+      ) : (
         <Pagination
           limit={limit}
           offset={offset}
@@ -81,10 +98,13 @@ export default function UsersOfProjectComponent({
           setLimit={setLimit}
           data={data}
         />
-      }
-      <Button href="/projects" className="m-3 bg-dark">Back</Button>
-    </div>)
-};
+      )}
+      <Button href="/projects" className="m-3 bg-dark">
+        Back
+      </Button>
+    </div>
+  );
+}
 
 UsersOfProjectComponent.prototype = {
   data: PropTypes.array.isRequired,
@@ -93,4 +113,3 @@ UsersOfProjectComponent.prototype = {
   setOffset: PropTypes.func.isRequired,
   setLimit: PropTypes.func.isRequired,
 };
-
