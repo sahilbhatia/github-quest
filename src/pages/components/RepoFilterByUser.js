@@ -339,7 +339,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
 
 Index.propTypes = {
   minDate: PropTypes.string.isRequired,
-  userId: PropTypes.number.isRequired,
+  userId: PropTypes.string.isRequired,
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
 };

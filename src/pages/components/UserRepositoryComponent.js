@@ -302,8 +302,8 @@ export default function UserRepositoryComponent({
 }
 
 UserRepositoryComponent.propTypes = {
-  userId: PropTypes.number.isRequired,
-  data: PropTypes.array.isRequired,
+  userId: PropTypes.string.isRequired,
+  data: PropTypes.object.isRequired,
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,
   setOffset: PropTypes.func.isRequired,

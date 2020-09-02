@@ -16,6 +16,6 @@ export default function Index({ Component, pageProps }) {
 }
 
 Index.propTypes = {
-  Component: PropTypes,
-  pageProps: PropTypes,
+  Component: PropTypes.func.isRequired,
+  pageProps: PropTypes.object.isRequired,
 };
