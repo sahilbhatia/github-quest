@@ -122,7 +122,7 @@ export default function UserRepositoryComponent({
     {
       name: "Action",
       selector: function func(d) {
-        d.review == "pending" ? (
+        return d.review == "pending" ? (
           <div className="d-flex">
             <OverlayTrigger
               placement="top"
