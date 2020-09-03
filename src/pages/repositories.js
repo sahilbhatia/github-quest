@@ -10,6 +10,7 @@ const fetcher = (url) =>
     code = res.status;
     return res.json();
   });
+
 export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
@@ -33,7 +34,8 @@ export default function Index() {
   if (!data) return <LoadingComponent />;
   const onSelectManualReview = (id) => {
     fetch(
-      `/api/updateManualReview?id=${id}&updatedAt=${moment().toISOString()}`
+      `/api/updateManualReview?id=${id}&updatedAt=${moment().toISOString()}`,
+      { data: null }
     );
     window.location.reload(false);
   };
