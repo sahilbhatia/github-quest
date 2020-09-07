@@ -20,6 +20,14 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING(50),
         allowNull: true,
       },
+      gitlab_handle: {
+        type: Sequelize.STRING(50),
+        allowNull: true,
+      },
+      bitbucket_handle: {
+        type: Sequelize.STRING(50),
+        allowNull: true,
+      },
       error_details: {
         type: Sequelize.TEXT,
         allowNull: true,

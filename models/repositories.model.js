@@ -8,10 +8,15 @@ module.exports = (sequelize, Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      github_repo_id: {
+      source_repo_id: {
         type: Sequelize.BIGINT,
         allowNull: false,
         unique: true,
+      },
+      source_type: {
+        type: Sequelize.ENUM,
+        values: ["github", "gitlab", "bitbucket"],
+        allowNull: true,
       },
       name: {
         type: Sequelize.STRING(50),
