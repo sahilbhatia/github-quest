@@ -12,8 +12,7 @@ module.exports = {
         allowNull: true,
       }),
       queryInterface.addColumn("repositories", "source_type", {
-        type: Sequelize.ENUM,
-        values: ["github", "gitlab", "bitbucket"],
+        type: Sequelize.STRING(50),
         allowNull: true,
       }),
       queryInterface.renameColumn(
