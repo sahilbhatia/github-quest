@@ -12,12 +12,11 @@ const Users_repositories = db.users_repositories;
 export default async function insertPublicRepos(req, res) {
   const insertRepos = async () => {
     const usersList = await Users.findAll({
-      attributes: ["id", "github_handle", "last_fetched_at"],
+      attributes: ["id", "github_handle", "gitlab_handle", "last_fetched_at"],
       order: [["id", "ASC"]],
     });
 
     let iterator = 0;
-
     const getRepoForSpecificUser = async () => {
       let usersRepos;
       if (usersList[iterator].dataValues.last_fetched_at) {
@@ -68,21 +67,20 @@ export default async function insertPublicRepos(req, res) {
         }
       }
     };
-
     while (iterator < usersList.length) {
       if (usersList[iterator].dataValues.github_handle) {
         const data = await getRepoForSpecificUser();
         if (data) {
           const mapData = await data.body.map(async (item) => {
             const result = await Repositories.findAll({
-              where: { github_repo_id: item.id },
+              where: { source_repo_id: item.id.toString() },
               order: [["id", "ASC"]],
             });
-
             if (result.length === 0 && item.fork === false) {
               try {
                 const insertRepos = await Repositories.create({
-                  github_repo_id: item.id,
+                  source_type: "github",
+                  source_repo_id: item.id,
                   name: item.name,
                   url: item.url,
                   description: item.description,
@@ -122,12 +120,15 @@ export default async function insertPublicRepos(req, res) {
                   .set(headers);
 
                 insertParentRepositories = await Repositories.findOne({
-                  where: { github_repo_id: parentRepo.body.parent.id },
+                  where: {
+                    source_repo_id: parentRepo.body.parent.id.toString(),
+                  },
                 });
                 if (insertParentRepositories) {
                   try {
                     const insertRepos = await Repositories.create({
-                      github_repo_id: item.id,
+                      source_type: "github",
+                      source_repo_id: item.id,
                       name: item.name,
                       url: item.url,
                       description: item.description,
@@ -174,7 +175,8 @@ export default async function insertPublicRepos(req, res) {
                           await childRepo.body.map(async (value) => {
                             try {
                               await Repositories.create({
-                                github_repo_id: value.id,
+                                source_type: "github",
+                                source_repo_id: value.id,
                                 name: value.name,
                                 url: value.url,
                                 description: value.description,
@@ -276,7 +278,8 @@ export default async function insertPublicRepos(req, res) {
                 } else {
                   try {
                     insertParentRepositories = await Repositories.create({
-                      github_repo_id: parentRepo.body.parent.id,
+                      source_type: "github",
+                      source_repo_id: parentRepo.body.parent.id,
                       name: parentRepo.body.name,
                       url: parentRepo.body.parent.url,
                       description: parentRepo.body.parent.description,
@@ -318,7 +321,8 @@ export default async function insertPublicRepos(req, res) {
                     }
 
                     const insertRepos = await Repositories.create({
-                      github_repo_id: item.id,
+                      source_type: "github",
+                      source_repo_id: item.id,
                       name: item.name,
                       url: item.url,
                       description: item.description,
@@ -359,7 +363,8 @@ export default async function insertPublicRepos(req, res) {
                           await childRepo.body.map(async (value) => {
                             try {
                               await Repositories.create({
-                                github_repo_id: value.id,
+                                source_type: "github",
+                                source_repo_id: value.id,
                                 name: value.name,
                                 url: value.url,
                                 description: value.description,
@@ -443,7 +448,7 @@ export default async function insertPublicRepos(req, res) {
                       {
                         where: {
                           where: {
-                            github_repo_id: result[0].dataValues.github_repo_id,
+                            source_repo_id: result[0].dataValues.source_repo_id.toString(),
                           },
                         },
                       }
@@ -453,7 +458,8 @@ export default async function insertPublicRepos(req, res) {
                 }
               } catch (err) {
                 const insertRepos = await Repositories.create({
-                  github_repo_id: item.id,
+                  source_type: "github",
+                  source_repo_id: item.id,
                   name: item.name,
                   url: item.url,
                   description: item.description,
@@ -491,7 +497,7 @@ export default async function insertPublicRepos(req, res) {
                   {
                     returning: true,
                     where: {
-                      github_repo_id: result[0].dataValues.github_repo_id,
+                      source_repo_id: result[0].dataValues.source_repo_id.toString(),
                     },
                   }
                 );
@@ -503,7 +509,7 @@ export default async function insertPublicRepos(req, res) {
                   {
                     where: {
                       where: {
-                        github_repo_id: result[0].dataValues.github_repo_id,
+                        source_repo_id: result[0].dataValues.source_repo_id.toString(),
                       },
                     },
                   }
@@ -527,13 +533,16 @@ export default async function insertPublicRepos(req, res) {
                       .set(headers);
 
                     let findParent = await Repositories.findOne({
-                      where: { github_repo_id: parentRepo.body.parent.id },
+                      where: {
+                        source_repo_id: parentRepo.body.parent.id.toString(),
+                      },
                     });
                     if (findParent) {
                       return findParent;
                     } else {
                       let insertParent = await Repositories.create({
-                        github_repo_id: parentRepo.body.parent.id,
+                        source_type: "github",
+                        source_repo_id: parentRepo.body.parent.id,
                         name: parentRepo.body.name,
                         url: parentRepo.body.parent.url,
                         description: parentRepo.body.parent.description,
@@ -585,7 +594,7 @@ export default async function insertPublicRepos(req, res) {
                   {
                     returning: true,
                     where: {
-                      github_repo_id: result[0].dataValues.github_repo_id,
+                      source_repo_id: result[0].dataValues.source_repo_id.toString(),
                     },
                   }
                 );
@@ -597,7 +606,7 @@ export default async function insertPublicRepos(req, res) {
                   {
                     where: {
                       where: {
-                        github_repo_id: result[0].dataValues.github_repo_id,
+                        source_repo_id: result[0].dataValues.source_repo_id.toString(),
                       },
                     },
                   }

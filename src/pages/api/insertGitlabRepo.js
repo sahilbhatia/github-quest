@@ -28,7 +28,7 @@ export default async function insertPublicRepos(req, res) {
             await gitlabRepos.body.map(async (repo) => {
               const findRepo = await Repositories.findOne({
                 where: {
-                  source_repo_id: repo.id,
+                  source_repo_id: repo.id.toString(),
                 },
               });
               if (!findRepo) {
@@ -58,7 +58,7 @@ export default async function insertPublicRepos(req, res) {
                     .set({ "PRIVATE-TOKEN": "WeSGbGjMw6NXZVz6E_K7" });
                   const findRepo = await Repositories.findOne({
                     where: {
-                      source_repo_id: ParentRepo.body.id,
+                      source_repo_id: ParentRepo.body.id.toString(),
                     },
                   });
                   if (!findRepo) {
@@ -88,6 +88,22 @@ export default async function insertPublicRepos(req, res) {
                     await Repositories.update(
                       {
                         parent_repo_id: insertParentRepo.dataValues.id,
+                        is_suspicious:
+                          ParentRepo.body.visibility == "private" &&
+                          repo.visibility != "private"
+                            ? true
+                            : false,
+                        review:
+                          ParentRepo.body.visibility == "private" &&
+                          repo.visibility != "private"
+                            ? "suspicious auto"
+                            : "no action",
+                        reviewed_at:
+                          ParentRepo.body.visibility == "private" &&
+                          repo.visibility != "private"
+                            ? moment.utc().format()
+                            : null,
+                        manual_review: false,
                       },
                       {
                         where: {
@@ -115,7 +131,7 @@ export default async function insertPublicRepos(req, res) {
                   forkedRepos.body.map(async (forkRepo) => {
                     const findRepo = await Repositories.findOne({
                       where: {
-                        source_repo_id: forkRepo.id,
+                        source_repo_id: forkRepo.id.toString(),
                       },
                     });
                     if (findRepo) {
@@ -123,25 +139,28 @@ export default async function insertPublicRepos(req, res) {
                         is_forked: true,
                         parent_repo_id: insertRepos.dataValues.id,
                         is_suspicious:
-                          repo.visibility == "private" &&
-                          forkRepo.visibility != "private"
+                          (repo.visibility == "private" &&
+                            forkRepo.visibility != "private") ||
+                          insertRepos.dataValues.is_suspicious
                             ? true
                             : false,
                         review:
-                          repo.visibility == "private" &&
-                          forkRepo.visibility != "private"
+                          (repo.visibility == "private" &&
+                            forkRepo.visibility != "private") ||
+                          insertRepos.dataValues.is_suspicious
                             ? "suspicious auto"
                             : "no action",
                         reviewed_at:
-                          repo.visibility == "private" &&
-                          forkRepo.visibility != "private"
+                          (repo.visibility == "private" &&
+                            forkRepo.visibility != "private") ||
+                          insertRepos.dataValues.is_suspicious
                             ? moment.utc().format()
                             : null,
                         manual_review: false,
                       };
                       await Repositories.update(updateObject, {
                         where: {
-                          source_repo_id: forkRepo.id,
+                          source_repo_id: forkRepo.id.toString(),
                         },
                       });
                     } else {
@@ -160,18 +179,21 @@ export default async function insertPublicRepos(req, res) {
                         updated_at: forkRepo.last_activity_at,
                         parent_repo_id: insertRepos.dataValues.id,
                         is_suspicious:
-                          repo.visibility == "private" &&
-                          forkRepo.visibility != "private"
+                          (repo.visibility == "private" &&
+                            forkRepo.visibility != "private") ||
+                          insertRepos.dataValues.is_suspicious
                             ? true
                             : false,
                         review:
-                          repo.visibility == "private" &&
-                          forkRepo.visibility != "private"
+                          (repo.visibility == "private" &&
+                            forkRepo.visibility != "private") ||
+                          insertRepos.dataValues.is_suspicious
                             ? "suspicious auto"
                             : "no action",
                         reviewed_at:
-                          repo.visibility == "private" &&
-                          forkRepo.visibility != "private"
+                          (repo.visibility == "private" &&
+                            forkRepo.visibility != "private") ||
+                          insertRepos.dataValues.is_suspicious
                             ? moment.utc().format()
                             : null,
                       });
@@ -203,7 +225,7 @@ export default async function insertPublicRepos(req, res) {
                   };
                   await Repositories.update(updateRepo, {
                     where: {
-                      source_repo_id: repo.id,
+                      source_repo_id: repo.id.toString(),
                     },
                   });
                 }
@@ -214,7 +236,7 @@ export default async function insertPublicRepos(req, res) {
                   forkedRepos.body.map(async (forkRepo) => {
                     const findForkedRepo = await Repositories.findOne({
                       where: {
-                        source_repo_id: forkRepo.id,
+                        source_repo_id: forkRepo.id.toString(),
                       },
                     });
                     if (findForkedRepo) {
@@ -237,10 +259,11 @@ export default async function insertPublicRepos(req, res) {
                             ? moment.utc().format()
                             : null,
                         manual_review: false,
+                        updated_at: forkRepo.last_activity_at,
                       };
                       await Repositories.update(updateObject, {
                         where: {
-                          source_repo_id: forkRepo.id,
+                          source_repo_id: forkRepo.id.toString(),
                         },
                       });
                     } else {

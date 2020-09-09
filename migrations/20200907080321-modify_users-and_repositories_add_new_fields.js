@@ -15,24 +15,26 @@ module.exports = {
         type: Sequelize.STRING(50),
         allowNull: true,
       }),
-      queryInterface.renameColumn(
-        "repositories",
-        "github_repo_id",
-        "source_repo_id"
-      ),
+      queryInterface.removeColumn("repositories", "github_repo_id"),
+      queryInterface.addColumn("repositories", "source_repo_id", {
+        type: Sequelize.STRING(50),
+        allowNull: false,
+        unique: true,
+      }),
     ]);
   },
 
-  down: (queryInterface) => {
+  down: (queryInterface, Sequelize) => {
     return Promise.all([
       queryInterface.removeColumn("users", "gitlab_handle"),
       queryInterface.removeColumn("users", "bitbucket_handle"),
       queryInterface.removeColumn("repositories", "source_type"),
-      queryInterface.renameColumn(
-        "repositories",
-        "source_repo_id",
-        "github_repo_id"
-      ),
+      queryInterface.addColumn("repositories", "github_repo_id", {
+        type: Sequelize.BIGINT,
+        allowNull: true,
+        unique: true,
+      }),
+      queryInterface.removeColumn("repositories", "source_repo_id"),
     ]);
   },
 };

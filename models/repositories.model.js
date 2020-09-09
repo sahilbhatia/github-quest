@@ -9,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
         autoIncrement: true,
       },
       source_repo_id: {
-        type: Sequelize.BIGINT,
+        type: Sequelize.STRING(50),
         allowNull: false,
         unique: true,
       },
