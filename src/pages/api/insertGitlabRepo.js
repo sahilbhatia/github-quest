@@ -229,6 +229,80 @@ export default async function insertPublicRepos(req, res) {
                     },
                   });
                 }
+                if (repo.forked_from_project) {
+                  const ParentRepo = await request
+                    .get(
+                      `https://gitlab.com/api/v4/projects/${repo.forked_from_project.id}`
+                    )
+                    .set({ "PRIVATE-TOKEN": "WeSGbGjMw6NXZVz6E_K7" });
+                  const findParentRepo = await Repositories.findOne({
+                    where: {
+                      source_repo_id: ParentRepo.body.id.toString(),
+                    },
+                  });
+                  if (!findParentRepo) {
+                    const insertParentRepo = await Repositories.create({
+                      source_type: "gitlab",
+                      source_repo_id: ParentRepo.body.id,
+                      name: ParentRepo.body.name,
+                      url: ParentRepo.body.web_url,
+                      description: ParentRepo.body.description,
+                      is_disabled: !ParentRepo.body.packages_enabled,
+                      is_archived: ParentRepo.body.archived,
+                      is_private:
+                        ParentRepo.body.visibility == "private" ? true : false,
+                      is_forked: ParentRepo.body.forked_from_project
+                        ? true
+                        : false,
+                      created_at: ParentRepo.body.created_at,
+                      updated_at: ParentRepo.body.last_activity_at,
+                      review: "pending",
+                    });
+                    if (gitlabUser.body[0].id == ParentRepo.creator_id) {
+                      await Users_repositories.create({
+                        user_id: databaseUser.dataValues.id,
+                        repository_id: insertParentRepo.dataValues.id,
+                      });
+                    }
+                    await Repositories.update(
+                      {
+                        parent_repo_id: insertParentRepo.dataValues.id,
+                        is_suspicious:
+                          ParentRepo.body.visibility == "private" &&
+                          repo.visibility != "private"
+                            ? true
+                            : false,
+                        review:
+                          ParentRepo.body.visibility == "private" &&
+                          repo.visibility != "private"
+                            ? "suspicious auto"
+                            : "no action",
+                        reviewed_at:
+                          ParentRepo.body.visibility == "private" &&
+                          repo.visibility != "private"
+                            ? moment.utc().format()
+                            : null,
+                        manual_review: false,
+                      },
+                      {
+                        where: {
+                          id: insertRepos.dataValues.id,
+                        },
+                      }
+                    );
+                  } else {
+                    await Repositories.update(
+                      {
+                        parent_repo_id: findParentRepo.dataValues.id,
+                      },
+                      {
+                        where: {
+                          id: findRepo.dataValues.id,
+                        },
+                      }
+                    );
+                  }
+                }
                 if (repo.forks_count != 0) {
                   const forkedRepos = await request
                     .get(`https://gitlab.com/api/v4/projects/${repo.id}/forks`)
@@ -306,6 +380,19 @@ export default async function insertPublicRepos(req, res) {
                     }
                   });
                 }
+                await Users_repositories.findOne({
+                  where: {
+                    user_id: databaseUser.dataValues.id,
+                    repository_id: findRepo.dataValues.id,
+                  },
+                }).then((res) => {
+                  if (!res) {
+                    Users_repositories.create({
+                      user_id: databaseUser.dataValues.id,
+                      repository_id: findRepo.dataValues.id,
+                    });
+                  }
+                });
               }
             });
             await Users.update(

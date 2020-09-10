@@ -188,108 +188,167 @@ export default async function insertPublicRepos(req, res) {
                     }
                   });
                 }
+              } else {
+                if (repo.parent) {
+                  const ParentRepo = await request.get(
+                    `https://api.bitbucket.org/2.0/repositories/${databaseUser.dataValues.bitbucket_handle}/${repo.parent.name}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
+                  );
+                  const findParentRepo = await Repositories.findOne({
+                    where: {
+                      source_repo_id: ParentRepo.body.uuid,
+                    },
+                  });
+                  if (!findParentRepo) {
+                    const insertParentRepo = await Repositories.create({
+                      source_type: "gitlab",
+                      source_repo_id: ParentRepo.body.uuid,
+                      name: ParentRepo.body.name,
+                      url: ParentRepo.body.links.html.href,
+                      description: ParentRepo.body.description,
+                      is_private: ParentRepo.body.is_private,
+                      is_forked: ParentRepo.body.parent ? true : false,
+                      created_at: ParentRepo.body.created_on,
+                      updated_at: ParentRepo.body.updated_on,
+                      review: "pending",
+                    });
+                    if (
+                      bitbucketRepos.body.values[0].owner.uuid ==
+                      ParentRepo.body.owner.uuid
+                    ) {
+                      await Users_repositories.create({
+                        user_id: databaseUser.dataValues.id,
+                        repository_id: insertParentRepo.dataValues.id,
+                      });
+                    }
+                    await Repositories.update(
+                      {
+                        parent_repo_id: insertParentRepo.dataValues.id,
+                        is_suspicious:
+                          ParentRepo.body.is_private && !repo.is_private
+                            ? true
+                            : false,
+                        review:
+                          ParentRepo.body.is_private && !repo.is_private
+                            ? "suspicious auto"
+                            : "no action",
+                        reviewed_at:
+                          ParentRepo.body.is_private && !repo.is_private
+                            ? moment.utc().format()
+                            : null,
+                        manual_review: false,
+                      },
+                      {
+                        where: {
+                          id: insertRepos.dataValues.id,
+                        },
+                      }
+                    );
+                  } else {
+                    await Repositories.update(
+                      {
+                        parent_repo_id: findParentRepo.dataValues.id,
+                      },
+                      {
+                        where: {
+                          id: findRepo.dataValues.id,
+                        },
+                      }
+                    );
+                  }
+                }
+                const forkedRepos = await request.get(
+                  `https://api.bitbucket.org/2.0/repositories/${databaseUser.dataValues.bitbucket_handle}/${repo.name}/forks?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
+                );
+                if (forkedRepos.body.size != 0) {
+                  forkedRepos.body.values.map(async (forkRepo) => {
+                    const findChildRepo = await Repositories.findOne({
+                      where: {
+                        source_repo_id: forkRepo.uuid,
+                      },
+                    });
+                    if (findChildRepo) {
+                      const updateObject = {
+                        is_forked: true,
+                        parent_repo_id: findRepo.dataValues.id,
+                        is_suspicious:
+                          (repo.is_private && !forkRepo.is_private) ||
+                          findRepo.dataValues.is_suspicious
+                            ? true
+                            : false,
+                        review:
+                          (repo.is_private && !forkRepo.is_private) ||
+                          findRepo.dataValues.is_suspicious
+                            ? "suspicious auto"
+                            : "no action",
+                        reviewed_at:
+                          (repo.is_private && !forkRepo.is_private) ||
+                          findRepo.dataValues.is_suspicious
+                            ? moment.utc().format()
+                            : null,
+                        manual_review: false,
+                      };
+                      await Repositories.update(updateObject, {
+                        where: {
+                          source_repo_id: forkRepo.uuid,
+                        },
+                      });
+                    } else {
+                      const insertForkedRepo = await Repositories.create({
+                        source_type: "gitlab",
+                        source_repo_id: forkRepo.uuid,
+                        name: forkRepo.name,
+                        url: forkRepo.web_url,
+                        description: forkRepo.description,
+                        is_disabled: !forkRepo.packages_enabled,
+                        is_archived: forkRepo.archived,
+                        is_private: forkRepo.is_private ? true : false,
+                        is_forked: true,
+                        created_at: forkRepo.created_at,
+                        updated_at: forkRepo.last_activity_at,
+                        parent_repo_id: insertRepos.dataValues.id,
+                        is_suspicious:
+                          (repo.is_private && !forkRepo.is_private) ||
+                          insertRepos.dataValues.is_suspicious
+                            ? true
+                            : false,
+                        review:
+                          (repo.is_private && !forkRepo.is_private) ||
+                          insertRepos.dataValues.is_suspicious
+                            ? "suspicious auto"
+                            : "no action",
+                        reviewed_at:
+                          (repo.is_private && !forkRepo.is_private) ||
+                          insertRepos.dataValues.is_suspicious
+                            ? moment.utc().format()
+                            : null,
+                      });
+                      if (
+                        bitbucketRepos.body.values[0].owner.uuid ==
+                        forkRepo.owner.uuid
+                      ) {
+                        await Users_repositories.create({
+                          user_id: databaseUser.dataValues.id,
+                          repository_id: insertForkedRepo.dataValues.id,
+                        });
+                      }
+                    }
+                  });
+                }
+
+                await Users_repositories.findOne({
+                  where: {
+                    user_id: databaseUser.dataValues.id,
+                    repository_id: findRepo.dataValues.id,
+                  },
+                }).then((res) => {
+                  if (!res) {
+                    Users_repositories.create({
+                      user_id: databaseUser.dataValues.id,
+                      repository_id: findRepo.dataValues.id,
+                    });
+                  }
+                });
               }
-              // } else {
-              //   if (
-              //     new Date(
-              //       moment(databaseUser.dataValues.last_fetched_at)
-              //         .add(330, "minutes")
-              //         .toISOString()
-              //     ).valueOf() < new Date(repo.last_activity_at).valueOf()
-              //   ) {
-              //     const updateRepo = {
-              //       name: repo.name,
-              //       url: repo.web_url,
-              //       description: repo.description,
-              //       is_disabled: !repo.packages_enabled,
-              //       is_archived: repo.archived,
-              //       is_private: repo.visibility == "private" ? true : false,
-              //       updated_at: repo.last_activity_at,
-              //     };
-              //     await Repositories.update(updateRepo, {
-              //       where: {
-              //         source_repo_id: repo.id,
-              //       },
-              //     });
-              //   }
-              //   if (repo.forks_count != 0) {
-              //     const forkedRepos = await request
-              //       .get(`https://gitlab.com/api/v4/projects/${repo.id}/forks`)
-              //       .set({ "PRIVATE-TOKEN": "WeSGbGjMw6NXZVz6E_K7" });
-              //     forkedRepos.body.map(async (forkRepo) => {
-              //       const findForkedRepo = await Repositories.findOne({
-              //         where: {
-              //           source_repo_id: forkRepo.id,
-              //         },
-              //       });
-              //       if (findForkedRepo) {
-              //         const updateObject = {
-              //           is_forked: true,
-              //           parent_repo_id: findRepo.dataValues.id,
-              //           is_suspicious:
-              //             repo.visibility == "private" &&
-              //               forkRepo.visibility != "private"
-              //               ? true
-              //               : false,
-              //           review:
-              //             repo.visibility == "private" &&
-              //               forkRepo.visibility != "private"
-              //               ? "suspicious auto"
-              //               : "no action",
-              //           reviewed_at:
-              //             repo.visibility == "private" &&
-              //               forkRepo.visibility != "private"
-              //               ? moment.utc().format()
-              //               : null,
-              //           manual_review: false,
-              //           updated_at: forkRepo.last_activity_at,
-              //         };
-              //         await Repositories.update(updateObject, {
-              //           where: {
-              //             source_repo_id: forkRepo.id,
-              //           },
-              //         });
-              //       } else {
-              //         const insertForkedRepo = await Repositories.create({
-              //           source_type: "gitlab",
-              //           source_repo_id: forkRepo.id,
-              //           name: forkRepo.name,
-              //           url: forkRepo.web_url,
-              //           description: forkRepo.description,
-              //           is_disabled: !forkRepo.packages_enabled,
-              //           is_archived: forkRepo.archived,
-              //           is_private:
-              //             forkRepo.visibility == "private" ? true : false,
-              //           is_forked: true,
-              //           created_at: forkRepo.created_at,
-              //           updated_at: forkRepo.last_activity_at,
-              //           parent_repo_id: findRepo.dataValues.id,
-              //           is_suspicious:
-              //             repo.visibility == "private" &&
-              //               forkRepo.visibility != "private"
-              //               ? true
-              //               : false,
-              //           review:
-              //             repo.visibility == "private" &&
-              //               forkRepo.visibility != "private"
-              //               ? "suspicious auto"
-              //               : "no action",
-              //           reviewed_at:
-              //             repo.visibility == "private" &&
-              //               forkRepo.visibility != "private"
-              //               ? moment.utc().format()
-              //               : null,
-              //         });
-              //         if (gitlabUser.body[0].id == forkRepo.creator_id) {
-              //           await Users_repositories.create({
-              //             user_id: databaseUser.dataValues.id,
-              //             repository_id: insertForkedRepo.dataValues.id,
-              //           });
-              //         }
-              //       }
-              //     });
-              //   }
-              // }
             });
           } else {
             await Users.update(
