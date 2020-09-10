@@ -66,14 +66,14 @@ export default function RepositoryListComponent({
             delay={{ show: 250, hide: 400 }}
             overlay={
               <Tooltip>
-                {d.description == null
+                {d.description == null || d.description == ""
                   ? "description not provided"
                   : d.description}
               </Tooltip>
             }
           >
             <span>
-              {d.description == null
+              {d.description == null || d.description == ""
                 ? "description not provided"
                 : d.description}
             </span>
@@ -114,13 +114,6 @@ export default function RepositoryListComponent({
       maxWidth: "10px",
     },
     {
-      name: "Private",
-      selector: function func(d) {
-        return d.is_private ? <>✔</> : <>✘</>;
-      },
-      maxWidth: "10px",
-    },
-    {
       name: "Review Status",
       selector: function func(d) {
         return (
@@ -130,6 +123,21 @@ export default function RepositoryListComponent({
             overlay={<Tooltip>{d.review}</Tooltip>}
           >
             <span>{d.review}</span>
+          </OverlayTrigger>
+        );
+      },
+      maxWidth: "40px",
+    },
+    {
+      name: "Source Type",
+      selector: function func(d) {
+        return (
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>{d.source_type}</Tooltip>}
+          >
+            <span>{d.source_type}</span>
           </OverlayTrigger>
         );
       },

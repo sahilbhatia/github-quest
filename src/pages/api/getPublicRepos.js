@@ -40,7 +40,7 @@ const getAllPublicRepos = async (req, res) => {
     reviewDate,
     endDate,
     is_suspicious,
-    is_private,
+    source_type,
     review,
     error_details,
     userId,
@@ -55,7 +55,7 @@ const getAllPublicRepos = async (req, res) => {
       startDate ||
       endDate ||
       is_suspicious ||
-      is_private ||
+      source_type ||
       review ||
       reviewDate ||
       error_details
@@ -72,6 +72,9 @@ const getAllPublicRepos = async (req, res) => {
       if (review != undefined && review != "undefined") {
         where.review = review;
       }
+      if (source_type != undefined && source_type != "undefined") {
+        where.source_type = source_type;
+      }
       if (is_forked == "true" || is_forked == "false") {
         where.is_forked = is_forked;
       }
@@ -86,10 +89,6 @@ const getAllPublicRepos = async (req, res) => {
 
       if (is_suspicious == "true" || is_suspicious == "false") {
         where.is_suspicious = is_suspicious;
-      }
-
-      if (is_private == "true" || is_private == "false") {
-        where.is_private = is_private;
       }
 
       if (startDate != undefined && endDate != undefined) {

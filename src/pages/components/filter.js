@@ -121,14 +121,14 @@ export default function Index({ filter, setFilter, minDate }) {
     data.is_suspicious = value;
     setFilter(data);
   };
-  const privateRepo = (value) => {
-    let data = { ...filter };
-    data.is_private = value;
-    setFilter(data);
-  };
   const review = (value) => {
     let data = { ...filter };
     data.review = value;
+    setFilter(data);
+  };
+  const source_type = (value) => {
+    let data = { ...filter };
+    data.source_type = value;
     setFilter(data);
   };
   const errorStatus = (value) => {
@@ -152,6 +152,12 @@ export default function Index({ filter, setFilter, minDate }) {
         return "danger";
       case "true":
         return "success";
+      case "github":
+        return "success";
+      case "gitlab":
+        return "warning";
+      case "bitbucket":
+        return "primary";
       default:
         return "dark";
     }
@@ -291,30 +297,6 @@ export default function Index({ filter, setFilter, minDate }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter.is_private)}
-          title="Private"
-        >
-          <Dropdown.Item
-            onClick={() => privateRepo(true)}
-            className="bg-success"
-          >
-            true
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => privateRepo(false)}
-            className="bg-danger"
-          >
-            false
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => privateRepo(undefined)}
-            className="bg-dark text-white"
-          >
-            all
-          </Dropdown.Item>
-        </DropdownButton>
-        <DropdownButton
-          className="mx-2"
           variant={setColor(filter.review)}
           title="Review Status"
         >
@@ -350,6 +332,36 @@ export default function Index({ filter, setFilter, minDate }) {
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => review(undefined)}
+            className="bg-dark text-white"
+          >
+            all
+          </Dropdown.Item>
+        </DropdownButton>
+        <DropdownButton
+          className="mx-2"
+          variant={setColor(filter.source_type)}
+          title="Source Type"
+        >
+          <Dropdown.Item
+            onClick={() => source_type("gitlab")}
+            className="bg-warning"
+          >
+            gitlab
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => source_type("github")}
+            className="bg-success"
+          >
+            github
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => source_type("bitbucket")}
+            className="bg-primary"
+          >
+            bitbucket
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => source_type(undefined)}
             className="bg-dark text-white"
           >
             all
