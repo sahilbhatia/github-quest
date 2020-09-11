@@ -18,9 +18,13 @@ module.exports = {
       queryInterface.removeColumn("repositories", "github_repo_id"),
       queryInterface.addColumn("repositories", "source_repo_id", {
         type: Sequelize.STRING(50),
+        default: "default",
         allowNull: false,
         unique: true,
       }),
+      queryInterface.sequelize.query(
+        `ALTER TABLE repositories ALTER COLUMN source_repo_id DROP DEFAULT;`
+      ),
     ]);
   },
 
@@ -31,10 +35,14 @@ module.exports = {
       queryInterface.removeColumn("repositories", "source_type"),
       queryInterface.addColumn("repositories", "github_repo_id", {
         type: Sequelize.BIGINT,
-        allowNull: true,
+        allowNull: false,
+        default: 123,
         unique: true,
       }),
       queryInterface.removeColumn("repositories", "source_repo_id"),
+      queryInterface.sequelize.query(
+        `ALTER TABLE repositories ALTER COLUMN github_repo_id DROP DEFAULT;`
+      ),
     ]);
   },
 };
