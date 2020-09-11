@@ -11,7 +11,7 @@ export default async function insertUsers(req, res) {
     const data = req.body;
     switch (data.event_type) {
       //user update
-      case "User updated":
+      case "User Updated":
         await yup
           .object()
           .shape({
@@ -45,6 +45,12 @@ export default async function insertUsers(req, res) {
                 }
                 if (data.github_handle) {
                   updateObject.github_handle = data.github_handle;
+                }
+                if (data.gitlab_handle) {
+                  updateObject.gitlab_handle = data.gitlab_handle;
+                }
+                if (data.bitbucket_handle) {
+                  updateObject.bitbucket_handle = data.bitbucket_handle;
                 }
                 await Users.update(updateObject, {
                   where: { org_user_id: data.user_id },
