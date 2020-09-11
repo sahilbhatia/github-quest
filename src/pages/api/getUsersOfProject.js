@@ -3,6 +3,7 @@ dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Projects = db.projects;
 const Users_projects = db.users_projects;
+const Users_repositories = db.users_repositories;
 const Users = db.users;
 const yup = require("yup");
 Users_projects.belongsTo(Projects, {
@@ -11,14 +12,18 @@ Users_projects.belongsTo(Projects, {
 Projects.hasMany(Users_projects, {
   foreignKey: { name: "project_id", allowNull: true },
 });
-
 Users_projects.belongsTo(Users, {
   foreignKey: { name: "user_id", allowNull: true },
 });
 Users.hasMany(Users_projects, {
   foreignKey: { name: "user_id", allowNull: true },
 });
-
+Users_repositories.belongsTo(Users, {
+  foreignKey: { name: "user_id", allowNull: true },
+});
+Users.hasMany(Users_repositories, {
+  foreignKey: { name: "user_id", allowNull: true },
+});
 const getUsers = async (req, res) => {
   let { projectId, limit, offset } = req.query;
   await yup
@@ -43,18 +48,24 @@ const getUsers = async (req, res) => {
           });
         } else {
           let users = await Users.findAll({
-            include: {
-              model: Users_projects,
-              attributes: ["id"],
-              where: { project_id: projectId },
-              include: {
-                model: Users,
+            include: [
+              {
+                model: Users_projects,
                 attributes: ["id"],
+                where: { project_id: projectId },
                 include: {
-                  model: Users_projects,
+                  model: Users,
+                  attributes: ["id"],
+                  include: {
+                    model: Users_projects,
+                  },
                 },
               },
-            },
+              {
+                model: Users_repositories,
+                attributes: ["id"],
+              },
+            ],
             limit: limit,
             offset: offset,
           });

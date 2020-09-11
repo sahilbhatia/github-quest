@@ -60,6 +60,23 @@ export default function UsersOfProjectComponent({
         );
       },
     },
+    {
+      name: "Repositories",
+      selector: function func(d) {
+        return d.users_repositories.length != 0 ? (
+          <Link
+            href="/getPublicRepositories/[userId]"
+            as={`/getPublicRepositories/${d.id}`}
+          >
+            <Button className="bg-white border-white text-primary btn-sm">
+              {d.users_repositories.length}
+            </Button>
+          </Link>
+        ) : (
+          <>✘</>
+        );
+      },
+    },
   ];
   const customStyles = {
     rows: {

@@ -2,29 +2,15 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const Sequelize = require("sequelize");
 const db = require("../../../models/sequelize");
-const Projects = db.projects;
 const Users_projects = db.users_projects;
 const Users = db.users;
-const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
-Users_projects.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Users_projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
 Users_projects.belongsTo(Users, {
   foreignKey: { name: "user_id", allowNull: true },
 });
 Users.hasMany(Users_projects, {
   foreignKey: { name: "user_id", allowNull: true },
-});
-Users_repositories.belongsTo(Repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-Repositories.hasMany(Users_repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
 });
 Users_repositories.belongsTo(Users, {
   foreignKey: { name: "user_id", allowNull: true },
