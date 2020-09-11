@@ -50,19 +50,19 @@ export default function Index({ filter, setFilter, minDate }) {
         if (user.github_handle) {
           gitHandleList.push({
             value: user.github_handle,
-            label: `Github - ${user.github_handle}`,
+            label: `Github- ${user.github_handle}`,
           });
         }
         if (user.gitlab_handle) {
           gitHandleList.push({
             value: user.gitlab_handle,
-            label: `Gitlab - ${user.gitlab_handle}`,
+            label: `Gitlab- ${user.gitlab_handle}`,
           });
         }
         if (user.bitbucket_handle) {
           gitHandleList.push({
             value: user.bitbucket_handle,
-            label: `Bitbucket - ${user.bitbucket_handle}`,
+            label: `Bitbucket- ${user.bitbucket_handle}`,
           });
         }
       });
@@ -124,7 +124,6 @@ export default function Index({ filter, setFilter, minDate }) {
           : data.label.includes("Gitlab")
           ? "orange"
           : "blue",
-        border: "black",
       };
     },
   };
