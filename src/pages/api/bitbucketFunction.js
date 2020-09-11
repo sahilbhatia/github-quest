@@ -25,8 +25,9 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
           },
         }
       );
+      return;
     }
-    await bitbucketRepos.body.values.map(async (repo) => {
+    const data = await bitbucketRepos.body.values.map(async (repo) => {
       const findRepo = await Repositories.findOne({
         where: {
           source_repo_id: repo.uuid,
@@ -385,6 +386,7 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
         });
       }
     });
+    await Promise.all(data);
     await Users.update(
       { last_fetched_at: moment.utc().format() },
       {

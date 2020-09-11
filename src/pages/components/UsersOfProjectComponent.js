@@ -34,6 +34,15 @@ export default function UsersOfProjectComponent({
       selector: (d) => (d.github_handle ? d.github_handle : "not provided"),
     },
     {
+      name: "Gitlab Handle",
+      selector: (d) => (d.gitlab_handle ? d.gitlab_handle : "not provided"),
+    },
+    {
+      name: "Github Handle",
+      selector: (d) =>
+        d.bitbucket_handle ? d.bitbucket_handle : "not provided",
+    },
+    {
       name: "Email",
       selector: "email",
     },

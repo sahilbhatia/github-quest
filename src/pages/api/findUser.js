@@ -6,7 +6,7 @@ const yup = require("yup");
 const Sequelize = require("sequelize");
 const findUser = async (req, res) => {
   try {
-    const { userName, githubHandle, userId } = req.query;
+    const { userName, gitHandle, userId } = req.query;
     if (userName) {
       let userList = await Users.findAll({
         where: {
@@ -16,12 +16,26 @@ const findUser = async (req, res) => {
         },
       });
       res.status(200).json(userList);
-    } else if (githubHandle) {
+    } else if (gitHandle) {
       let userList = await Users.findAll({
         where: {
-          github_handle: {
-            [Sequelize.Op.iLike]: "%" + githubHandle + "%",
-          },
+          [Sequelize.Op.or]: [
+            {
+              gitlab_handle: {
+                [Sequelize.Op.iLike]: "%" + gitHandle + "%",
+              },
+            },
+            {
+              github_handle: {
+                [Sequelize.Op.iLike]: "%" + gitHandle + "%",
+              },
+            },
+            {
+              bitbucket_handle: {
+                [Sequelize.Op.iLike]: "%" + gitHandle + "%",
+              },
+            },
+          ],
         },
       });
       res.status(200).json(userList);

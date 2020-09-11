@@ -18,7 +18,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
           `https://gitlab.com/api/v4/users/${gitlabUser.body[0].id}/projects`
         )
         .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
-      await gitlabRepos.body.map(async (repo) => {
+      const data = await gitlabRepos.body.map(async (repo) => {
         const findRepo = await Repositories.findOne({
           where: {
             source_repo_id: repo.id.toString(),
@@ -415,6 +415,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
           });
         }
       });
+      await Promise.all(data);
       await Users.update(
         { last_fetched_at: moment.utc().format() },
         {

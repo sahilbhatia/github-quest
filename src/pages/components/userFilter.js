@@ -7,9 +7,9 @@ export default function Index({ filter, setFilter, minDate }) {
   let [userName, setuserName] = useState(null);
   let userList = [];
   let userData = fetch(`/api/findUser?userName=${userName}`);
-  let [githubHandle, setgithubHandle] = useState(null);
-  let githubHandleList = [];
-  let githubHandleData = fetch(`/api/findUser?githubHandle=${githubHandle}`);
+  let [gitHandle, setgitHandle] = useState(null);
+  let gitHandleList = [];
+  let gitHandleData = fetch(`/api/findUser?gitHandle=${gitHandle}`);
   userData
     .then((response) => {
       return response.json();
@@ -41,32 +41,46 @@ export default function Index({ filter, setFilter, minDate }) {
     setFilter(data);
   };
 
-  githubHandleData
+  gitHandleData
     .then((response) => {
       return response.json();
     })
     .then((res) => {
-      res.map((user) =>
-        githubHandleList.push({
-          value: user.github_handle,
-          label: user.github_handle,
-        })
-      );
+      res.map((user) => {
+        if (user.github_handle) {
+          gitHandleList.push({
+            value: user.github_handle,
+            label: `Github - ${user.github_handle}`,
+          });
+        }
+        if (user.gitlab_handle) {
+          gitHandleList.push({
+            value: user.gitlab_handle,
+            label: `Gitlab - ${user.gitlab_handle}`,
+          });
+        }
+        if (user.bitbucket_handle) {
+          gitHandleList.push({
+            value: user.bitbucket_handle,
+            label: `Bitbucket - ${user.bitbucket_handle}`,
+          });
+        }
+      });
     });
 
-  const filterOptionsGithubHandle = (inputValue) => {
-    return githubHandleList.filter((i) => i.label.includes(inputValue));
+  const filterOptionsGitHandle = (inputValue) => {
+    return gitHandleList.filter((i) => i.label.includes(inputValue));
   };
 
-  const promiseOptionsGithubHandle = (inputValue, callback) => {
-    setgithubHandle(inputValue);
+  const promiseOptionsGitHandle = (inputValue, callback) => {
+    setgitHandle(inputValue);
     setTimeout(() => {
-      callback(filterOptionsGithubHandle(inputValue));
+      callback(filterOptionsGitHandle(inputValue));
     }, 1000);
   };
-  const setGithubHandle = (githubHandle) => {
+  const setGitHandle = (gitHandle) => {
     let data = { ...filter };
-    data.githubHandle = githubHandle.value;
+    data.gitHandle = gitHandle.value;
     setFilter(data);
   };
 
@@ -116,11 +130,11 @@ export default function Index({ filter, setFilter, minDate }) {
         </div>
         <div style={{ width: "150px" }}>
           <AsyncSelect
-            loadOptions={promiseOptionsGithubHandle}
-            name="select github handel"
-            placeholder="github handel..."
-            defaultInputValue={filter.githubHandle}
-            onChange={setGithubHandle}
+            loadOptions={promiseOptionsGitHandle}
+            name="select git handel"
+            placeholder="git handel..."
+            defaultInputValue={filter.gitHandle}
+            onChange={setGitHandle}
             className="w-100"
           />
         </div>

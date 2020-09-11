@@ -39,7 +39,7 @@ const getUsers = async (req, res) => {
       limit,
       offset,
       userName,
-      githubHandle,
+      gitHandle,
       startDate,
       endDate,
       error_details,
@@ -54,9 +54,25 @@ const getUsers = async (req, res) => {
         [Sequelize.Op.eq]: userName,
       };
     }
-    if (githubHandle != undefined) {
-      where.github_handle = {
-        [Sequelize.Op.eq]: githubHandle,
+    if (gitHandle != undefined) {
+      where = {
+        [Sequelize.Op.or]: [
+          {
+            gitlab_handle: {
+              [Sequelize.Op.iLike]: "%" + gitHandle + "%",
+            },
+          },
+          {
+            github_handle: {
+              [Sequelize.Op.iLike]: "%" + gitHandle + "%",
+            },
+          },
+          {
+            bitbucket_handle: {
+              [Sequelize.Op.iLike]: "%" + gitHandle + "%",
+            },
+          },
+        ],
       };
     }
     if (error_details == "true" || error_details == "false") {

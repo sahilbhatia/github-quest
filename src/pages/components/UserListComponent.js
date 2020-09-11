@@ -29,6 +29,18 @@ export default function UserListComponent({
       },
     },
     {
+      name: "Gitlab Handle",
+      selector: function func(d) {
+        return d.gitlab_handle ? <>{d.gitlab_handle}</> : "not provided";
+      },
+    },
+    {
+      name: "Bitbucket Handle",
+      selector: function func(d) {
+        return d.bitbucket_handle ? <>{d.bitbucket_handle}</> : "not provided";
+      },
+    },
+    {
       name: "Email",
       selector: "email",
     },
