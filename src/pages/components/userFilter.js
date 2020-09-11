@@ -115,6 +115,20 @@ export default function Index({ filter, setFilter, minDate }) {
     }
   };
 
+  const colourStyles = {
+    option: (styles, { data }) => {
+      return {
+        ...styles,
+        color: data.label.includes("Github")
+          ? "green"
+          : data.label.includes("Gitlab")
+          ? "orange"
+          : "blue",
+        border: "black",
+      };
+    },
+  };
+
   return (
     <div>
       <div className="d-flex">
@@ -135,6 +149,7 @@ export default function Index({ filter, setFilter, minDate }) {
             placeholder="git handel..."
             defaultInputValue={filter.gitHandle}
             onChange={setGitHandle}
+            styles={colourStyles}
             className="w-100"
           />
         </div>
