@@ -49,7 +49,7 @@ describe("test cases for web hooks to update user", function () {
       .request(app)
       .get("/api/webhooks")
       .send({
-        event_type: "User updated",
+        event_type: "User Updated",
         user_id: userId,
         name: "xyz",
       })
@@ -65,7 +65,7 @@ describe("test cases for web hooks to update user", function () {
       .request(app)
       .get("/api/webhooks")
       .send({
-        event_type: "User updated",
+        event_type: "User Updated",
         user_id: "1a2b",
         name: "xyz",
       })

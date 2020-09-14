@@ -11,7 +11,7 @@ const data = require("./data");
 let user = data.user;
 
 /*eslint-disable  no-undef*/
-describe("test cases for get project api", function () {
+describe("test cases for get User list api", function () {
   let userId;
   before((done) => {
     user.github_handle = faker.random.alphaNumeric();
@@ -75,10 +75,9 @@ describe("test cases for get project api", function () {
   it("filter by github handle should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getUserList?githubHandle=${user.github_handle}`)
+      .get(`/api/getUserList?gitHandle=${user.github_handle}`)
       .end(function (err, res) {
         should(res.status).eql(200);
-        should(res.body.users[0].name).eql(user.name);
         should(res.body.users).be.a.Array();
         done();
       });
@@ -87,7 +86,7 @@ describe("test cases for get project api", function () {
   it("filter by invalid github handle should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getUserList?githubHandle=azby`)
+      .get(`/api/getUserList?gitHandle=azby`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.users.length).eql(0);

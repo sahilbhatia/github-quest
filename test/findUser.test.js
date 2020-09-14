@@ -16,6 +16,7 @@ describe("test cases for find user api", function () {
 
   before((done) => {
     user.github_handle = faker.random.alphaNumeric();
+    user.source_type = faker.random.word();
     db.users.create(user).then((res) => {
       userId = res.id;
       done();
@@ -50,7 +51,7 @@ describe("test cases for find user api", function () {
   it("find by github handle should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/findUser?githubHandle=${user.github_handle}`)
+      .get(`/api/findUser?gitHandle=${user.github_handle}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body).be.a.Array();

@@ -17,7 +17,7 @@ describe("test cases for get forked repo api", function () {
     db.repositories.create(repository).then((res) => {
       parentRepoId = res.id;
       let repositoryData = { ...repository };
-      repositoryData.github_repo_id = faker.random.number();
+      repositoryData.source_repo_id = faker.random.number();
       repositoryData.parent_repo_id = parentRepoId;
       db.repositories.create(repositoryData).then((res) => {
         repoId = res.id;

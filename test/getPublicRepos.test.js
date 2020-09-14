@@ -14,7 +14,7 @@ let user = data.user;
 describe("test cases for get public repo api", function () {
   let userRes, repoRes1, repoRes2;
   let repositoryData1 = {
-    github_repo_id: faker.random.number(),
+    source_repo_id: faker.random.number(),
     url: faker.internet.url(),
     name: faker.random.word(),
     is_forked: false,
@@ -26,7 +26,7 @@ describe("test cases for get public repo api", function () {
     is_private: false,
   };
   let repositoryData2 = {
-    github_repo_id: faker.random.number(),
+    source_repo_id: faker.random.number(),
     url: faker.internet.url(),
     name: faker.random.word(),
     is_forked: true,

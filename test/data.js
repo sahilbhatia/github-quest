@@ -19,7 +19,7 @@ data.project_repository = {
 };
 
 data.user_repository = {
-  github_repo_id: faker.random.number(),
+  source_repo_id: faker.random.number(),
   url: faker.internet.url(),
   is_forked: false,
   is_archived: false,
