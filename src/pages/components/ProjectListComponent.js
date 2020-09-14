@@ -14,8 +14,8 @@ export default function ProjectListComponent({
   setLimit,
   data,
 }) {
-  const minDate = data.date.min;
-  data = data.projects;
+  const minDate = data ? data.date.min : undefined;
+  data = data ? data.projects : undefined;
   const columns = [
     {
       name: "Name",
@@ -103,7 +103,7 @@ export default function ProjectListComponent({
     },
   };
   return (
-    <div data-testid="projectList">
+    <div>
       <DataTable
         title={
           <div className="text-right text-primary">
@@ -118,16 +118,20 @@ export default function ProjectListComponent({
         customStyles={customStyles}
         data={data}
       />
-      {data.length == 0 ? (
-        <></>
+      {data ? (
+        data.length == 0 ? (
+          <></>
+        ) : (
+          <Pagination
+            limit={limit}
+            offset={offset}
+            setOffset={setOffset}
+            setLimit={setLimit}
+            data={data}
+          />
+        )
       ) : (
-        <Pagination
-          limit={limit}
-          offset={offset}
-          setOffset={setOffset}
-          setLimit={setLimit}
-          data={data}
-        />
+        <></>
       )}
       <Button href="/" className="m-3 bg-dark">
         Back

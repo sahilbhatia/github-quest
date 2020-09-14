@@ -7,7 +7,7 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
     setOffset(offset);
   };
   const next = () => {
-    offset = data.length < limit ? offset : offset + limit;
+    offset = data ? (data.length < limit ? offset : offset + limit) : 0;
     setOffset(offset);
   };
   return (
@@ -30,12 +30,16 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
           )}
         </Button>
       )}
-      {data.length < limit ? (
-        <></>
+      {data ? (
+        data.length < limit ? (
+          <></>
+        ) : (
+          <Button onClick={next} className="mx-5 bg-white text-dark">
+            {`${offset + limit + 1} - ${limit + offset + limit}`} &raquo;
+          </Button>
+        )
       ) : (
-        <Button onClick={next} className="mx-5 bg-white text-dark">
-          {`${offset + limit + 1} - ${limit + offset + limit}`} &raquo;
-        </Button>
+        <></>
       )}
     </div>
   );

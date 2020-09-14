@@ -3,8 +3,8 @@ import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import Link from "next/link";
 import PropTypes from "prop-types";
 export default function ProjectsOfUserComponent({ data }) {
-  let name = data.name;
-  data = data.users_projects;
+  let name = data ? data.name : undefined;
+  data = data ? data.users_projects : undefined;
   const columns = [
     {
       name: "Name",

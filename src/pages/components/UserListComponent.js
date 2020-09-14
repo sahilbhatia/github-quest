@@ -15,8 +15,8 @@ export default function UserListComponent({
   setLimit,
   data,
 }) {
-  const minDate = data.date.min;
-  data = data.users;
+  const minDate = data ? data.date.min : undefined;
+  data = data ? data.users : undefined;
   const columns = [
     {
       name: "Name",
@@ -134,16 +134,20 @@ export default function UserListComponent({
         customStyles={customStyles}
         data={data}
       />
-      {data.length == 0 ? (
-        <></>
+      {data ? (
+        data.length == 0 ? (
+          <></>
+        ) : (
+          <Pagination
+            limit={limit}
+            offset={offset}
+            setOffset={setOffset}
+            setLimit={setLimit}
+            data={data}
+          />
+        )
       ) : (
-        <Pagination
-          limit={limit}
-          offset={offset}
-          setOffset={setOffset}
-          setLimit={setLimit}
-          data={data}
-        />
+        <></>
       )}
       <Button href="/" className="m-3 bg-dark">
         Back

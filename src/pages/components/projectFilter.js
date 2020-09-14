@@ -78,34 +78,50 @@ export default function Index({ filter, setFilter, minDate }) {
             loadOptions={promiseOptionsProjects}
             name="select project"
             placeholder="project..."
-            defaultInputValue={filter.projectName}
+            defaultInputValue={filter ? filter.projectName : ""}
             onChange={setProject}
             className="w-100"
           />
         </div>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
-          selected={filter.startDate ? new Date(filter.startDate) : undefined}
+          selected={
+            filter
+              ? filter.startDate
+                ? new Date(filter.startDate)
+                : undefined
+              : undefined
+          }
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select from"
           className={`${
-            filter.startDate != undefined ? "border-success" : ""
+            filter
+              ? filter.startDate != undefined
+                ? "border-success"
+                : ""
+              : ""
           } mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateTo(e)}
-          selected={filter.endDate ? new Date(filter.endDate) : undefined}
+          selected={
+            filter
+              ? filter.endDate
+                ? new Date(filter.endDate)
+                : undefined
+              : undefined
+          }
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select to"
           className={`${
-            filter.endDate != undefined ? "border-success" : ""
+            filter ? (filter.endDate != undefined ? "border-success" : "") : ""
           } mx-1`}
         />
         <DropdownButton
           className="ml-2"
-          variant={setColor(filter.is_active)}
+          variant={setColor(filter ? filter.is_active : "all")}
           title="active"
         >
           <Dropdown.Item onClick={() => active(true)} className="bg-success">

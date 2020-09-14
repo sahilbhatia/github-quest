@@ -136,7 +136,7 @@ export default function Index({ filter, setFilter, minDate }) {
             loadOptions={promiseOptionsUsers}
             name="select User"
             placeholder="Users..."
-            defaultInputValue={filter.userName}
+            defaultInputValue={filter ? filter.userName : ""}
             onChange={setUser}
             className="w-100"
           />
@@ -146,7 +146,7 @@ export default function Index({ filter, setFilter, minDate }) {
             loadOptions={promiseOptionsGitHandle}
             name="select git handel"
             placeholder="git handel..."
-            defaultInputValue={filter.gitHandle}
+            defaultInputValue={filter ? filter.gitHandle : ""}
             onChange={setGitHandle}
             styles={colourStyles}
             className="w-100"
@@ -154,27 +154,31 @@ export default function Index({ filter, setFilter, minDate }) {
         </div>
         <DatePicker
           onSelect={(e) => setDateFrom(e)}
-          selected={filter.startDate}
+          selected={filter ? filter.startDate : ""}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date from"
           className={`${
-            filter.startDate != undefined ? "border-success" : ""
+            filter
+              ? filter.startDate != undefined
+                ? "border-success"
+                : ""
+              : ""
           } mx-1`}
         />
         <DatePicker
           onSelect={(e) => setDateTo(e)}
-          selected={filter.endDate}
+          selected={filter ? filter.endDate : ""}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date to"
           className={`${
-            filter.endDate != undefined ? "border-success" : ""
+            filter ? (filter.endDate != undefined ? "border-success" : "") : ""
           } mx-1`}
         />
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter.error_details)}
+          variant={setColor(filter ? filter.error_details : "")}
           title="Error Status"
         >
           <Dropdown.Item

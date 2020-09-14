@@ -18,8 +18,8 @@ export default function RepositoryListComponent({
   onSelectManualReview,
   onSelectSuspeciousMark,
 }) {
-  const minDate = data.date.min;
-  data = data.repositories;
+  const minDate = data ? data.date.min : undefined;
+  data = data ? data.repositories : undefined;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
   const columns = [
@@ -299,16 +299,20 @@ export default function RepositoryListComponent({
         data={data}
         conditionalRowStyles={conditionalRowStyles}
       />
-      {data.length == 0 ? (
-        <></>
+      {data ? (
+        data.length == 0 ? (
+          <></>
+        ) : (
+          <Pagination
+            limit={limit}
+            offset={offset}
+            setOffset={setOffset}
+            setLimit={setLimit}
+            data={data}
+          />
+        )
       ) : (
-        <Pagination
-          limit={limit}
-          offset={offset}
-          setOffset={setOffset}
-          setLimit={setLimit}
-          data={data}
-        />
+        <></>
       )}
       <Button href="/" className="m-3 bg-dark">
         Back
