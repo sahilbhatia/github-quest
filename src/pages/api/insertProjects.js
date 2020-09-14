@@ -54,7 +54,8 @@ export default async function insertProjects(req, res) {
                         user_id: User.id,
                         project_id: createdProject.id,
                       });
-                    } catch {
+                    } catch(err) {
+                      console.log("while inserting active users when project not found", err)
                       return;
                     }
                   }
@@ -86,7 +87,8 @@ export default async function insertProjects(req, res) {
                         user_id: user.id,
                         project_id: createdProject.id,
                       });
-                    } catch {
+                    } catch(err) {
+                      console.log("while inserting active users when project found", err)
                       return;
                     }
                   }
@@ -98,7 +100,8 @@ export default async function insertProjects(req, res) {
         }
       );
       await Promise.all(insertUsersList);
-    } catch {
+    } catch (err){
+      console.log("in main catch", err)
       return;
     }
   };
