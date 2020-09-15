@@ -1,6 +1,5 @@
 var cron = require("node-cron");
 const request = require("superagent");
-const Sentry = require("@sentry/node");
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
@@ -8,12 +7,6 @@ const Users = db.users;
 const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Users_projects = db.users_projects;
-
-Sentry.init({
-  dsn:
-    "https://6d1a4bd600574f6292f752c7985b73bd@o448218.ingest.sentry.io/5429202",
-  tracesSampleRate: 1.0,
-});
 
 export default async function insertProjects(req, res) {
   //function for insert repositories
@@ -26,8 +19,7 @@ export default async function insertProjects(req, res) {
             host: item.host ? item.host : null,
             project_id: projectId,
           });
-        } catch (err) {
-          Sentry.captureException(err);
+        } catch {
           return false;
         }
       });
@@ -50,8 +42,7 @@ export default async function insertProjects(req, res) {
               project_id: projectId,
             });
           }
-        } catch (err) {
-          Sentry.captureException(err);
+        } catch {
           return false;
         }
       });
@@ -84,15 +75,13 @@ export default async function insertProjects(req, res) {
             });
             await insertRepository(item, insertProject.id);
             await insertUsers(item, insertProject.id);
-          } catch (err) {
-            Sentry.captureException(err);
+          } catch {
             return false;
           }
         }
       });
-    } catch (err) {
-      Sentry.captureException(err);
-      return;
+    } catch {
+      return false;
     }
   };
 
