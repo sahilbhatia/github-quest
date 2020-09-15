@@ -1,5 +1,6 @@
 var cron = require("node-cron");
 const request = require("superagent");
+const Sentry = require("@sentry/node");
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
@@ -8,8 +9,13 @@ const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Users_projects = db.users_projects;
 
-export default async function insertProjects(req, res) {
+Sentry.init({
+  dsn:
+    "https://6d1a4bd600574f6292f752c7985b73bd@o448218.ingest.sentry.io/5429202",
+  tracesSampleRate: 1.0,
+});
 
+export default async function insertProjects(req, res) {
   //function for insert repositories
   const insertRepository = async (item, projectId) => {
     if (item.repositories.length > 0) {
@@ -21,38 +27,36 @@ export default async function insertProjects(req, res) {
             project_id: projectId,
           });
         } catch (err) {
-          console.log("while inserting repositories", err)
+          Sentry.captureException(err);
           return false;
         }
       });
     }
-  }
+  };
 
   //function for insert users
   const insertUsers = async (item, projectId) => {
     if (item.active_users.length > 0) {
-      await item.active_users.map(
-        async (item) => {
-          try {
-            const User = await Users.findOne({
-              where: {
-                org_user_id: item.id,
-              },
+      await item.active_users.map(async (item) => {
+        try {
+          const User = await Users.findOne({
+            where: {
+              org_user_id: item.id,
+            },
+          });
+          if (User) {
+            await Users_projects.create({
+              user_id: User.id,
+              project_id: projectId,
             });
-            if (User) {
-              await Users_projects.create({
-                user_id: User.id,
-                project_id: projectId,
-              });
-            }
-          } catch (err) {
-            console.log("while inserting users", err)
-            return false;
           }
+        } catch (err) {
+          Sentry.captureException(err);
+          return false;
         }
-      );
+      });
     }
-  }
+  };
 
   //function for insert intranet projects
   const addProjects = async () => {
@@ -66,30 +70,28 @@ export default async function insertProjects(req, res) {
       const listOfProjects = await JSON.parse(intranetProjects.text);
 
       //insert projects
-      await listOfProjects.projects.map(
-        async (item) => {
-          const findProject = await Projects.findOne({
-            where: {
+      await listOfProjects.projects.map(async (item) => {
+        const findProject = await Projects.findOne({
+          where: {
+            org_project_id: item.id,
+          },
+        });
+        if (!findProject) {
+          try {
+            const insertProject = await Projects.create({
+              name: item.name ? item.name : "unknown",
               org_project_id: item.id,
-            },
-          });
-          if (!findProject) {
-            try {
-              const insertProject = await Projects.create({
-                name: item.name ? item.name : "unknown",
-                org_project_id: item.id,
-              });
-              await insertRepository(item, insertProject.id);
-              await insertUsers(item, insertProject.id);
-            } catch (err) {
-              console.log("while inserting project", err);
-              return false;
-            }
+            });
+            await insertRepository(item, insertProject.id);
+            await insertUsers(item, insertProject.id);
+          } catch (err) {
+            Sentry.captureException(err);
+            return false;
           }
         }
-      );
+      });
     } catch (err) {
-      console.log("in main catch", err)
+      Sentry.captureException(err);
       return;
     }
   };
