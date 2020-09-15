@@ -35,7 +35,7 @@ module.exports = {
       queryInterface.removeColumn("repositories", "source_type"),
       queryInterface.addColumn("repositories", "github_repo_id", {
         type: Sequelize.BIGINT,
-        allowNull: false,
+        allowNull: true,
         default: 123,
         unique: true,
       }),
