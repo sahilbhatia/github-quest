@@ -35,3 +35,10 @@ module.exports.repositoryInsertSchema = () => {
       .required({ Repository_details: "required" }),
   });
 };
+
+module.exports.reviewSchema = () => {
+  return yup.object().shape({
+    repoId: yup.number().required({ repoId: "required" }),
+    updatedAt: yup.string().required({ updatedAt: "required" }),
+  });
+};

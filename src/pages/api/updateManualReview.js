@@ -2,18 +2,47 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
-const yup = require("yup");
+const validation = require("../utils/validationSchema");
 
-const updateManualRepos = async (req, res) => {
+//function for update repository
+const updateRepo = async (repoId, updatedAt) => {
+  const updateRepo = await Repositories.update(
+    {
+      manual_review: false,
+      review: "approved",
+      reviewed_at: updatedAt,
+    },
+    {
+      returning: true,
+      plain: true,
+      where: { id: repoId },
+    }
+  );
+  return updateRepo;
+};
+//function for update parent repository
+const updateParentRepo = async (repoId, updatedAt) => {
+  await Repositories.update(
+    {
+      manual_review: false,
+      review: "approved",
+      reviewed_at: updatedAt,
+    },
+    {
+      returning: true,
+      where: {
+        parent_repo_id: repoId,
+      },
+    }
+  );
+};
+
+//function for manual review
+const updateManualRepo = async (req, res) => {
   const repoId = req.query.id;
   const updatedAt = req.query.updatedAt;
-  let manualRepoReview;
-  await yup
-    .object()
-    .shape({
-      repoId: yup.number().required({ repoId: "required" }),
-      updatedAt: yup.string().required({ updatedAt: "required" }),
-    })
+  await validation
+    .reviewSchema()
     .validate(
       {
         repoId: req.query.id,
@@ -26,63 +55,35 @@ const updateManualRepos = async (req, res) => {
         let repo = await Repositories.findOne({ where: { id: repoId } });
         if (!repo) {
           res.status(404).json({
-            message: "repository not found for given id",
+            message: "Repository Not Found For Given Id",
           });
         } else {
-          manualRepoReview = await Repositories.update(
-            {
-              manual_review: false,
-              review: "approved",
-              reviewed_at: updatedAt,
-            },
-            {
-              returning: true,
-              plain: true,
-              where: { id: repoId },
-            }
-          );
-          if (manualRepoReview[1].dataValues.parent_repo_id) {
-            await Repositories.update(
-              {
-                manual_review: false,
-                review: "approved",
-                reviewed_at: updatedAt,
-              },
-              {
-                returning: true,
-                where: {
-                  parent_repo_id: manualRepoReview[1].dataValues.parent_repo_id,
-                },
-              }
+          const updatedRepo = await updateRepo(repoId, updatedAt);
+          if (updatedRepo[1].dataValues.parent_repo_id) {
+            await updateParentRepo(
+              updatedRepo[1].dataValues.parent_repo_id,
+              updatedAt
             );
           }
-          await Repositories.update(
-            {
-              manual_review: false,
-              review: "approved",
-              reviewed_at: updatedAt,
-            },
-            {
-              returning: true,
-              where: { parent_repo_id: manualRepoReview[1].dataValues.id },
-            }
-          );
+          await updateParentRepo(updatedRepo[1].dataValues.id, updatedAt);
 
           res.status(200).json({
-            message: "repository updated successfully",
+            message: "Repository Updated Successfully",
           });
         }
       } catch {
         res.status(500).json({
-          message: "Internal server error",
+          message: "Internal Server Error",
         });
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: "repo Id must be number",
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
-export default updateManualRepos;
+export default updateManualRepo;

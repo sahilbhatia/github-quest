@@ -106,6 +106,6 @@ export default async function insertProjects(req, res) {
 
   addProjects();
   res.status(200).json({
-    message: "cron Job Activated successfully for inserting projects",
+    message: "Cron Job Activated Successfully For Inserting Projects",
   });
 }
