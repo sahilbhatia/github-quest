@@ -1,82 +1,111 @@
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
-const yup = require("yup");
 const db = require("../../../models/sequelize");
 const Users = db.users;
 const UsersProjects = db.users_projects;
 const Projects = db.projects;
 const ProjectsRepositories = db.projects_repositories;
+const validation = require("./validationSchema");
+const userSchema = validation.userIdSchema();
+const projectSchema = validation.projectIdSchema();
+const userProjectSchema = validation.userProjectSchema();
+const repositoryProjectSchema = validation.repositoryProjectSchema();
+
+//find user
+const findUser = async (id) => {
+  const user = await Users.findOne({
+    where: { org_user_id: id },
+  });
+  if (!user) {
+    return false;
+  } else {
+    return user;
+  }
+};
+
+//find manager
+const findManager = async (userId, projectId) => {
+  const manager = await Projects.findOne({
+    where: { org_project_id: projectId, project_manager: userId },
+  });
+  if (!manager) {
+    return false;
+  } else {
+    return true;
+  }
+};
+
+//find project
+const findProject = async (id) => {
+  const project = await Projects.findOne({
+    where: { org_project_id: id },
+  });
+  if (!project) {
+    return false;
+  } else {
+    return project;
+  }
+};
+
+//find repository
+const findRepository = async (url) => {
+  const repo = await ProjectsRepositories.findOne({
+    where: { repository_url: url },
+  });
+  if (!repo) {
+    return false;
+  } else {
+    return repo;
+  }
+};
 
 //update user information
 module.exports.updateUser = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      user_id: yup.string().required({ user_id: "required" }),
+  userSchema
+    .validate({
+      user_id: data.user_id,
     })
-    .validate(
-      {
-        user_id: data.user_id,
-      },
-      { abortEarly: false }
-    )
     .then(async () => {
       try {
-        const user = await Users.findOne({
-          where: { org_user_id: data.user_id },
-        });
+        const user = findUser(data.user_id);
         if (!user) {
           res.status(404).json({
             message: "User Not Found For Specified Id",
           });
         } else {
-          let updateObject = {};
-          if (data.email) {
-            updateObject.email = data.email;
-          }
-          if (data.name) {
-            updateObject.name = data.name;
-          }
-          if (data.role) {
-            updateObject.role = data.role;
-          }
-          if (data.github_handle) {
-            updateObject.github_handle = data.github_handle;
-          }
-          if (data.gitlab_handle) {
-            updateObject.gitlab_handle = data.gitlab_handle;
-          }
-          if (data.bitbucket_handle) {
-            updateObject.bitbucket_handle = data.bitbucket_handle;
-          }
+          let updateObject = {
+            email: data.email,
+            name: data.name,
+            role: data.role,
+            github_handle: data.github_handle,
+            gitlab_handle: data.gitlab_handle,
+            bitbucket_handle: data.bitbucket_handle,
+          };
           await Users.update(updateObject, {
             where: { org_user_id: data.user_id },
           });
           res.status(200).json({
-            message: "user update successfully",
+            message: "User Updated Successfully",
           });
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: "User id required",
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
 //add user in project
 module.exports.addUserInProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      user_id: yup.string().required({ user_id: "required" }),
-      project_id: yup.string().required({ project_id: "required" }),
-    })
+  userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -86,53 +115,46 @@ module.exports.addUserInProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const projectAddUser = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectAddUser) {
+        const project = findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
-          const user = await Users.findOne({
-            where: { org_user_id: data.user_id },
-          });
+          const user = findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "user not found",
+              message: "User Not Found",
             });
           } else {
             const insertObj = {
-              project_id: projectAddUser.id,
+              project_id: project.id,
               user_id: user.id,
             };
-            await UsersProjects.create(insertObj).then(() => {
-              res.status(200).json({
-                message: "added user in project successfully",
-              });
+            await UsersProjects.create(insertObj);
+            res.status(200).json({
+              message: "Added User In Project Successfully",
             });
           }
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };
+
 //remove user from project
 module.exports.removeUserFromProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      user_id: yup.string().required({ user_id: "required" }),
-      project_id: yup.string().required({ project_id: "required" }),
-    })
+  userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -142,199 +164,136 @@ module.exports.removeUserFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const projectRemoveUser = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectRemoveUser) {
+        const project = findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
-          const user = await Users.findOne({
-            where: { org_user_id: data.user_id },
-          });
+          const user = findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "user not found",
+              message: "User Not Found",
             });
           } else {
             await UsersProjects.destroy({
               where: {
-                project_id: projectRemoveUser.id,
+                project_id: project.id,
                 user_id: user.id,
               },
-            }).then(() => {
-              res.status(200).json({
-                message: "removed user in project successfully",
-              });
+            });
+            res.status(200).json({
+              message: "Removed User From Project Successfully",
             });
           }
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
-//change project status to active
-module.exports.activeProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      project_id: yup.string().required({ project_id: "required" }),
+//change project status
+module.exports.changeStatusOfProject = async (res, data, is_active) => {
+  projectSchema
+    .validate({
+      project_id: data.project_id,
     })
-    .validate(
-      {
-        project_id: data.project_id,
-      },
-      { abortEarly: false }
-    )
     .then(async () => {
       try {
-        const projectActive = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectActive) {
+        const project = findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
-          let projectData = { is_active: true };
+          let projectData = { is_active: is_active };
           await Projects.update(projectData, {
             where: { org_project_id: data.project_id },
-          }).then(() => {
-            res.status(200).json({
-              message: "project activated successfully",
-            });
           });
+          if (is_active) {
+            res.status(200).json({
+              message: "Project Activated Successfully",
+            });
+          } else {
+            res.status(200).json({
+              message: "Project Inactivated Successfully",
+            });
+          }
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
-      });
-    });
-};
-
-//change project status to inactive
-module.exports.inactiveProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      project_id: yup.string().required({ project_id: "required" }),
-    })
-    .validate(
-      {
-        project_id: data.project_id,
-      },
-      { abortEarly: false }
-    )
-    .then(async () => {
-      try {
-        const projectInactive = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectInactive) {
-          res.status(404).json({
-            message: "project not found",
-          });
-        } else {
-          let projectData = { is_active: false };
-          await Projects.update(projectData, {
-            where: { org_project_id: data.project_id },
-          }).then(() => {
-            res.status(200).json({
-              message: "project Inactivated successfully",
-            });
-          });
-        }
-      } catch {
-        res.status(500).json({
-          message: "internal server error",
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
 //project deleted
 module.exports.deleteProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      project_id: yup.string().required({ project_id: "required" }),
+  projectSchema
+    .validate({
+      project_id: data.project_id,
     })
-    .validate(
-      {
-        project_id: data.project_id,
-      },
-      { abortEarly: false }
-    )
     .then(async () => {
       try {
-        const projectDelete = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectDelete) {
+        const project = findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
           await UsersProjects.destroy({
             where: {
-              project_id: projectDelete.id,
+              project_id: project.id,
             },
           });
           await ProjectsRepositories.destroy({
             where: {
-              project_id: projectDelete.id,
+              project_id: project.id,
             },
           });
           await Projects.destroy({
             where: { org_project_id: data.project_id },
-          }).then(() => {
-            res.status(200).json({
-              message: "project deleted successfully",
-            });
+          });
+          res.status(200).json({
+            message: "Project Deleted Successfully",
           });
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
 //add project manager
 module.exports.addManagerInProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      user_id: yup.string().required({ user_id: "required" }),
-      project_id: yup.string().required({ project_id: "required" }),
-    })
+  userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -344,53 +303,45 @@ module.exports.addManagerInProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const projectAddManager = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectAddManager) {
+        const project = await findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
-          const user = await Users.findOne({
-            where: { org_user_id: data.user_id },
-          });
+          const user = findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "user not found",
+              message: "User Not Found",
             });
           } else {
             let projectData = { project_manager: user.id };
             await Projects.update(projectData, {
               where: { org_project_id: data.project_id },
-            }).then(() => {
-              res.status(200).json({
-                message: "added project manager successfully",
-              });
+            });
+            res.status(200).json({
+              message: "Added Project Manager Successfully",
             });
           }
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
 //remove project manager
 module.exports.removeManagerFromProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      user_id: yup.string().required({ user_id: "required" }),
-      project_id: yup.string().required({ project_id: "required" }),
-    })
+  userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -400,53 +351,52 @@ module.exports.removeManagerFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const projectRemoveManager = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectRemoveManager) {
+        const project = await findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
-          const user = await Users.findOne({
-            where: { org_user_id: data.user_id },
-          });
+          const user = findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "user not found",
+              message: "User Not Found",
             });
           } else {
-            let projectData = { project_manager: null };
-            await Projects.update(projectData, {
-              where: { org_project_id: data.project_id },
-            }).then(() => {
-              res.status(200).json({
-                message: "remove project manager successfully",
+            const manager = findManager(data.user_id);
+            if (!manager) {
+              res.status(404).json({
+                message: "Manager Not Assigned To Specified Project Id",
               });
-            });
+            } else {
+              let projectData = { project_manager: null };
+              await Projects.update(projectData, {
+                where: { org_project_id: data.project_id },
+              });
+              res.status(200).json({
+                message: "Remove Project Manager Successfully",
+              });
+            }
           }
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
 //Repository is Removed from Project
 module.exports.removeRepositoryFromProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      project_id: yup.string().required({ project_id: "required" }),
-      repository_url: yup.string().required({ repository_url: "required" }),
-    })
+  repositoryProjectSchema
     .validate(
       {
         project_id: data.project_id,
@@ -456,55 +406,48 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const projectRemoveRepository = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectRemoveRepository) {
+        const project = findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
-          const repo = await ProjectsRepositories.findOne({
-            where: { repository_url: data.repository_url },
-          });
+          const repo = await findRepository(data.repository_url);
           if (!repo) {
             res.status(404).json({
-              message: "repository not found",
+              message: "Repository Not Found",
             });
           } else {
             await ProjectsRepositories.destroy({
               where: {
-                project_id: projectRemoveRepository.id,
+                project_id: project.id,
                 repository_url: data.repository_url,
               },
             }).then(() => {
               res.status(200).json({
-                message: "repository removed successfully",
+                message: "Repository Removed Successfully",
               });
             });
           }
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
 //Repository is Added to Project
 module.exports.addRepositoryInProject = async (res, data) => {
-  yup
-    .object()
-    .shape({
-      project_id: yup.string().required({ project_id: "required" }),
-      repository_url: yup.string().required({ repository_url: "required" }),
-    })
+  repositoryProjectSchema
     .validate(
       {
         project_id: data.project_id,
@@ -514,34 +457,34 @@ module.exports.addRepositoryInProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const projectAddRepository = await Projects.findOne({
-          where: { org_project_id: data.project_id },
-        });
-        if (!projectAddRepository) {
+        const project = findProject(data.project_id);
+        if (!project) {
           res.status(404).json({
-            message: "project not found",
+            message: "Project Not Found",
           });
         } else {
           const repoDetails = {
             repository_url: data.repository_url,
             host: data.Repository_details.host,
-            project_id: projectAddRepository.id,
+            project_id: project.id,
           };
           await ProjectsRepositories.create(repoDetails).then(() => {
             res.status(201).json({
-              message: "repository added successfully",
+              message: "Repository Added Successfully",
             });
           });
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: { err },
+        message: "Validation Error",
+        errors,
       });
     });
 };

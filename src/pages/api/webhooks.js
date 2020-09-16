@@ -23,12 +23,12 @@ export default async function insertUsers(req, res) {
 
       //change project status to active
       case "Project Active":
-        await webHooks.activeProject(res, data);
+        await webHooks.changeStatusOfProject(res, data, true);
         break;
 
       //change project status to inactive
       case "Project Inactive":
-        await webHooks.inactiveProject(res, data);
+        await webHooks.changeStatusOfProject(res, data, false);
         break;
 
       //project deleted
