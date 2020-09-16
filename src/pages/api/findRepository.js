@@ -21,6 +21,57 @@ Users.hasMany(Users_repositories, {
   foreignKey: { name: "user_id", allowNull: true },
 });
 
+//function for get repository list by user id
+const getRepositoriesByUserId = async (userId, repositoryName) => {
+  const repoList = await Repositories.findAll({
+    include: {
+      model: Users_repositories,
+      include: {
+        model: Users,
+        where: { id: userId },
+      },
+    },
+    where: {
+      name: {
+        [Sequelize.Op.iLike]: "%" + repositoryName + "%",
+      },
+    },
+  });
+  let arr = [];
+  repoList.map((item) => {
+    if (item.users_repositories.length != 0) {
+      arr.push(item);
+    }
+  });
+  return arr;
+};
+
+//function for get repository list by username
+const getRepositoriesByUserName = async (userName, repositoryName) => {
+  const repoList = await Repositories.findAll({
+    include: {
+      model: Users_repositories,
+      include: {
+        model: Users,
+        where: { name: userName },
+      },
+    },
+    where: {
+      name: {
+        [Sequelize.Op.iLike]: "%" + repositoryName + "%",
+      },
+    },
+  });
+  let arr = [];
+  repoList.map((item) => {
+    if (item.users_repositories.length != 0) {
+      arr.push(item);
+    }
+  });
+  return arr;
+};
+
+//function for find repositories
 const findRepository = async (req, res) => {
   try {
     const { repositoryName, userName, userId } = req.query;
@@ -30,12 +81,9 @@ const findRepository = async (req, res) => {
         .shape({
           userId: yup.number().required({ userId: "required" }),
         })
-        .validate(
-          {
-            userId: userId,
-          },
-          { abortEarly: false }
-        )
+        .validate({
+          userId: userId,
+        })
         .then(async () => {
           let user = await Users.findOne({
             where: {
@@ -43,39 +91,20 @@ const findRepository = async (req, res) => {
             },
           });
           if (user) {
-            const repoList = await Repositories.findAll({
-              include: {
-                model: Users_repositories,
-                include: {
-                  model: Users,
-                  where: { id: userId },
-                },
-              },
-              where: {
-                name: {
-                  [Sequelize.Op.iLike]: "%" + repositoryName + "%",
-                },
-              },
-            });
-            const getList = (repoList) => {
-              let arr = [];
-              repoList.map((item) => {
-                if (item.users_repositories.length != 0) {
-                  arr.push(item);
-                }
-              });
-              return arr;
-            };
-            res.status(200).json(getList(repoList));
+            const repoList = await getRepositoriesByUserId(
+              userId,
+              repositoryName
+            );
+            res.status(200).json(repoList);
           } else {
             res.status(404).json({
-              message: "user not found for given id",
+              message: "User Not Found For Specified Id",
             });
           }
         })
         .catch(() => {
           res.status(400).json({
-            message: "user Id must be number",
+            message: "User Id Must Be Number",
           });
         });
     } else if (
@@ -92,30 +121,11 @@ const findRepository = async (req, res) => {
       });
       res.status(200).json(repoList);
     } else {
-      const repoList = await Repositories.findAll({
-        include: {
-          model: Users_repositories,
-          include: {
-            model: Users,
-            where: { name: userName },
-          },
-        },
-        where: {
-          name: {
-            [Sequelize.Op.iLike]: "%" + repositoryName + "%",
-          },
-        },
-      });
-      const getList = (repoList) => {
-        let arr = [];
-        repoList.map((item) => {
-          if (item.users_repositories.length != 0) {
-            arr.push(item);
-          }
-        });
-        return arr;
-      };
-      res.status(200).json(getList(repoList));
+      const repoList = await getRepositoriesByUserName(
+        userName,
+        repositoryName
+      );
+      res.status(200).json(repoList);
     }
   } catch {
     res.status(500).json({
