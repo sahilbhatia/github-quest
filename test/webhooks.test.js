@@ -612,6 +612,7 @@ describe("test cases for web hooks to add repository in project", function () {
         event_type: "Repository Added",
         project_id: "1a2b",
         repository_url: faker.internet.url(),
+        Repository_details: {}
       })
       .end(function (err, res) {
         should(res.status).eql(404);
