@@ -62,7 +62,7 @@ const findRepository = async (url) => {
 
 //update user information
 module.exports.updateUser = async (res, data) => {
-  userSchema
+  await userSchema
     .validate({
       user_id: data.user_id,
     })
@@ -106,7 +106,7 @@ module.exports.updateUser = async (res, data) => {
 
 //add user in project
 module.exports.addUserInProject = async (res, data) => {
-  userProjectSchema
+  await userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -155,7 +155,7 @@ module.exports.addUserInProject = async (res, data) => {
 
 //remove user from project
 module.exports.removeUserFromProject = async (res, data) => {
-  userProjectSchema
+  await userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -205,7 +205,7 @@ module.exports.removeUserFromProject = async (res, data) => {
 
 //change project status
 module.exports.changeStatusOfProject = async (res, data, is_active) => {
-  projectSchema
+  await projectSchema
     .validate({
       project_id: data.project_id,
     })
@@ -248,7 +248,7 @@ module.exports.changeStatusOfProject = async (res, data, is_active) => {
 
 //project deleted
 module.exports.deleteProject = async (res, data) => {
-  projectSchema
+  await projectSchema
     .validate({
       project_id: data.project_id,
     })
@@ -294,7 +294,7 @@ module.exports.deleteProject = async (res, data) => {
 
 //add project manager
 module.exports.addManagerInProject = async (res, data) => {
-  userProjectSchema
+  await userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -342,7 +342,7 @@ module.exports.addManagerInProject = async (res, data) => {
 
 //remove project manager
 module.exports.removeManagerFromProject = async (res, data) => {
-  userProjectSchema
+  await userProjectSchema
     .validate(
       {
         user_id: data.user_id,
@@ -397,7 +397,7 @@ module.exports.removeManagerFromProject = async (res, data) => {
 
 //Repository is Removed from Project
 module.exports.removeRepositoryFromProject = async (res, data) => {
-  repositoryRemoveSchema
+  await repositoryRemoveSchema
     .validate(
       {
         project_id: data.project_id,
@@ -448,7 +448,7 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
 
 //Repository is Added to Project
 module.exports.addRepositoryInProject = async (res, data) => {
-  repositoryInsertSchema
+  await repositoryInsertSchema
     .validate(
       {
         project_id: data.project_id,

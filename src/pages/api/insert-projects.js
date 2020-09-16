@@ -8,47 +8,65 @@ const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Users_projects = db.users_projects;
 
-export default async function insertProjects(req, res) {
-  //function for insert repositories
-  const insertRepository = async (item, projectId) => {
-    if (item.repositories.length > 0) {
-      await item.repositories.map(async (item) => {
-        try {
-          await Projects_Repositories.create({
-            repository_url: item.url ? item.url : null,
-            host: item.host ? item.host : null,
+//function for insert repositories
+const insertRepository = async (item, projectId) => {
+  if (item.repositories.length > 0) {
+    await item.repositories.map(async (item) => {
+      try {
+        await Projects_Repositories.create({
+          repository_url: item.url ? item.url : null,
+          host: item.host ? item.host : null,
+          project_id: projectId,
+        });
+      } catch {
+        return false;
+      }
+    });
+  }
+};
+
+//function for insert users
+const insertUsers = async (item, projectId) => {
+  if (item.active_users.length > 0) {
+    await item.active_users.map(async (item) => {
+      try {
+        const User = await Users.findOne({
+          where: {
+            org_user_id: item.id,
+          },
+        });
+        if (User) {
+          await Users_projects.create({
+            user_id: User.id,
             project_id: projectId,
           });
-        } catch {
-          return false;
         }
-      });
-    }
-  };
+      } catch {
+        return false;
+      }
+    });
+  }
+};
 
-  //function for insert users
-  const insertUsers = async (item, projectId) => {
-    if (item.active_users.length > 0) {
-      await item.active_users.map(async (item) => {
-        try {
-          const User = await Users.findOne({
-            where: {
-              org_user_id: item.id,
-            },
-          });
-          if (User) {
-            await Users_projects.create({
-              user_id: User.id,
-              project_id: projectId,
-            });
-          }
-        } catch {
-          return false;
-        }
-      });
+//function for find project
+const findProject = async (id) => {
+  try {
+    const project = await Projects.findOne({
+      where: {
+        org_project_id: id,
+      },
+    });
+    if (!project) {
+      return false;
+    } else {
+      return project;
     }
-  };
+  } catch {
+    return false;
+  }
+};
 
+export default async function insertProjects(req, res) {
   //function for insert intranet projects
   const addProjects = async () => {
     try {
@@ -60,14 +78,10 @@ export default async function insertProjects(req, res) {
         });
       const listOfProjects = await JSON.parse(intranetProjects.text);
 
-      //insert projects
+      //iterate projects
       await listOfProjects.projects.map(async (item) => {
-        const findProject = await Projects.findOne({
-          where: {
-            org_project_id: item.id,
-          },
-        });
-        if (!findProject) {
+        const project = await findProject(item.id);
+        if (!project) {
           try {
             const insertProject = await Projects.create({
               name: item.name ? item.name : "unknown",
