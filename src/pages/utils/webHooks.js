@@ -9,7 +9,8 @@ const validation = require("./validationSchema");
 const userSchema = validation.userIdSchema();
 const projectSchema = validation.projectIdSchema();
 const userProjectSchema = validation.userProjectSchema();
-const repositoryProjectSchema = validation.repositoryProjectSchema();
+const repositoryRemoveSchema = validation.repositoryRemoveSchema();
+const repositoryInsertSchema = validation.repositoryInsertSchema();
 
 //find user
 const findUser = async (id) => {
@@ -67,7 +68,7 @@ module.exports.updateUser = async (res, data) => {
     })
     .then(async () => {
       try {
-        const user = findUser(data.user_id);
+        const user = await findUser(data.user_id);
         if (!user) {
           res.status(404).json({
             message: "User Not Found For Specified Id",
@@ -115,13 +116,13 @@ module.exports.addUserInProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = findProject(data.project_id);
+        const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found",
           });
         } else {
-          const user = findUser(data.user_id);
+          const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
               message: "User Not Found",
@@ -164,13 +165,13 @@ module.exports.removeUserFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = findProject(data.project_id);
+        const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found",
           });
         } else {
-          const user = findUser(data.user_id);
+          const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
               message: "User Not Found",
@@ -210,7 +211,7 @@ module.exports.changeStatusOfProject = async (res, data, is_active) => {
     })
     .then(async () => {
       try {
-        const project = findProject(data.project_id);
+        const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found",
@@ -253,7 +254,7 @@ module.exports.deleteProject = async (res, data) => {
     })
     .then(async () => {
       try {
-        const project = findProject(data.project_id);
+        const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found",
@@ -309,7 +310,7 @@ module.exports.addManagerInProject = async (res, data) => {
             message: "Project Not Found",
           });
         } else {
-          const user = findUser(data.user_id);
+          const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
               message: "User Not Found",
@@ -357,13 +358,13 @@ module.exports.removeManagerFromProject = async (res, data) => {
             message: "Project Not Found",
           });
         } else {
-          const user = findUser(data.user_id);
+          const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
               message: "User Not Found",
             });
           } else {
-            const manager = findManager(data.user_id);
+            const manager = await findManager(data.user_id, data.project_id);
             if (!manager) {
               res.status(404).json({
                 message: "Manager Not Assigned To Specified Project Id",
@@ -396,7 +397,7 @@ module.exports.removeManagerFromProject = async (res, data) => {
 
 //Repository is Removed from Project
 module.exports.removeRepositoryFromProject = async (res, data) => {
-  repositoryProjectSchema
+  repositoryRemoveSchema
     .validate(
       {
         project_id: data.project_id,
@@ -406,7 +407,7 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = findProject(data.project_id);
+        const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found",
@@ -447,17 +448,18 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
 
 //Repository is Added to Project
 module.exports.addRepositoryInProject = async (res, data) => {
-  repositoryProjectSchema
+  repositoryInsertSchema
     .validate(
       {
         project_id: data.project_id,
         repository_url: data.repository_url,
+        repository_details: data.Repository_details,
       },
       { abortEarly: false }
     )
     .then(async () => {
       try {
-        const project = findProject(data.project_id);
+        const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found",
