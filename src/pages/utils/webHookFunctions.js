@@ -119,13 +119,13 @@ module.exports.addUserInProject = async (res, data) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "User Not Found",
+              message: "User Not Found For Specified Id",
             });
           } else {
             const insertObj = {
@@ -168,13 +168,13 @@ module.exports.removeUserFromProject = async (res, data) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "User Not Found",
+              message: "User Not Found For Specified Id",
             });
           } else {
             await UsersProjects.destroy({
@@ -214,7 +214,7 @@ module.exports.changeStatusOfProject = async (res, data, is_active) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           let projectData = { is_active: is_active };
@@ -257,7 +257,7 @@ module.exports.deleteProject = async (res, data) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           await UsersProjects.destroy({
@@ -307,13 +307,13 @@ module.exports.addManagerInProject = async (res, data) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "User Not Found",
+              message: "User Not Found For Specified Id",
             });
           } else {
             let projectData = { project_manager: user.id };
@@ -355,13 +355,13 @@ module.exports.removeManagerFromProject = async (res, data) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           const user = await findUser(data.user_id);
           if (!user) {
             res.status(404).json({
-              message: "User Not Found",
+              message: "User Not Found For Specified Id",
             });
           } else {
             const manager = await findManager(data.user_id, data.project_id);
@@ -410,13 +410,13 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           const repo = await findRepository(data.repository_url);
           if (!repo) {
             res.status(404).json({
-              message: "Repository Not Found",
+              message: "Repository Not Found For Specified Url",
             });
           } else {
             await ProjectsRepositories.destroy({
@@ -462,7 +462,7 @@ module.exports.addRepositoryInProject = async (res, data) => {
         const project = await findProject(data.project_id);
         if (!project) {
           res.status(404).json({
-            message: "Project Not Found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
           const repoDetails = {

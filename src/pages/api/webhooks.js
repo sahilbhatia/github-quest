@@ -1,6 +1,6 @@
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
-const webHooks = require("../utils/webHooks");
+const webHooks = require("../utils/webHookFunctions");
 
 export default async function insertUsers(req, res) {
   try {
