@@ -11,8 +11,7 @@ const Users_projects = db.users_projects;
 
 //configure sentry
 Sentry.init({
-  dsn:
-    "https://6d1a4bd600574f6292f752c7985b73bd@o448218.ingest.sentry.io/5429202",
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   tracesSampleRate: 1.0,
 });
 
