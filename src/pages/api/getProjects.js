@@ -26,6 +26,12 @@ Project_Repositories.belongsTo(Projects, {
 Projects.hasMany(Project_Repositories, {
   foreignKey: { name: "project_id", allowNull: true },
 });
+Projects.belongsTo(Users, {
+  foreignKey: { name: "project_manager", allowNull: true },
+});
+Users.hasMany(Projects, {
+  foreignKey: { name: "project_manager", allowNull: true },
+});
 
 const getProjects = async (req, res) => {
   try {
@@ -61,6 +67,9 @@ const getProjects = async (req, res) => {
         getUserName,
         {
           model: Project_Repositories,
+        },
+        {
+          model: Users,
         },
       ],
       limit: req.query.limit,

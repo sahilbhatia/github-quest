@@ -1,9 +1,16 @@
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const webHooks = require("../utils/webHookFunctions");
+const Sentry = require("@sentry/node");
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
 
 export default async function insertUsers(req, res) {
   try {
+    Sentry.captureException(req.body);
     const data = req.body;
     switch (data.event_type) {
       //user update

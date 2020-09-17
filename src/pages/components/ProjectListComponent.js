@@ -34,6 +34,24 @@ export default function ProjectListComponent({
       },
     },
     {
+      name: "Manager",
+      selector: function func(d) {
+        return (
+          <div>
+            <OverlayTrigger
+              placement="top"
+              delay={{ show: 250, hide: 400 }}
+              overlay={
+                <Tooltip>{d.user ? d.user.name : "Not Assigned"}</Tooltip>
+              }
+            >
+              <span>{d.user ? d.user.name : "Not Assigned"}</span>
+            </OverlayTrigger>
+          </div>
+        );
+      },
+    },
+    {
       name: "Active Users",
       selector: function func(d) {
         return d.users_projects.length != 0 ? (
