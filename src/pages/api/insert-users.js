@@ -3,8 +3,15 @@ const request = require("superagent");
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
+const Sentry = require("@sentry/node");
 const Users = db.users;
 const Roles = db.roles;
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+});
+Sentry.captureException("in insert user api");
 
 //function for get valid git handle
 const getValidGitHandle = (gitHandle) => {
@@ -73,7 +80,7 @@ const newUser = async (item) => {
   }
 };
 
-//existing user
+//function for existing user
 const existUser = async (item, find_user) => {
   try {
     //get valid git handles
@@ -118,6 +125,7 @@ export default async function insertUsers(req, res) {
         "Content-Type": "application/json",
         Accept: "application/json",
       });
+
     const listOfUsers = await JSON.parse(intranetUsersList.text);
 
     //iterate user list
