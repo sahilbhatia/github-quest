@@ -3,15 +3,8 @@ const request = require("superagent");
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
-const Sentry = require("@sentry/node");
 const Users = db.users;
 const Roles = db.roles;
-
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
-});
-Sentry.captureException("in insert user api");
 
 //function for get valid git handle
 const getValidGitHandle = (gitHandle) => {
