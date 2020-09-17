@@ -364,7 +364,7 @@ module.exports.removeManagerFromProject = async (res, data) => {
               message: "User Not Found For Specified Id",
             });
           } else {
-            const manager = await findManager(data.user_id, data.project_id);
+            const manager = await findManager(user.id, data.project_id);
             if (!manager) {
               res.status(404).json({
                 message: "Manager Not Assigned To Specified Project Id",
