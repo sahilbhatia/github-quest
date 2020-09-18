@@ -102,9 +102,11 @@ const findRepository = async (req, res) => {
             });
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          const errors = err.errors;
           res.status(400).json({
-            message: "User Id Must Be Number",
+            message: "Validation Error",
+            errors,
           });
         });
     } else if (
@@ -129,7 +131,7 @@ const findRepository = async (req, res) => {
     }
   } catch {
     res.status(500).json({
-      message: "internal server error",
+      message: "Internal Server Error",
     });
   }
 };

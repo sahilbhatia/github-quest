@@ -67,9 +67,11 @@ const findUserByUserId = async (res, userId) => {
         });
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: "User Id Must Be Number",
+        message: "Validation Error",
+        errors,
       });
     });
 };
