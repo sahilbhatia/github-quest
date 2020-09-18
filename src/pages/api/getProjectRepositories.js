@@ -13,6 +13,20 @@ Projects.hasMany(Projects_Repositories, {
   foreignKey: { name: "project_id", allowNull: true },
 });
 
+//function for get repositories
+const getRepositories = async (limit, offset, projectId) => {
+  let repoList = await Projects_Repositories.findAll({
+    where: { project_id: projectId },
+    limit: limit,
+    offset: offset,
+  });
+  let data = {};
+  const project = await Projects.findOne({ where: { id: projectId } });
+  data.repositories = repoList;
+  data.projectName = project.name;
+  return data;
+};
+
 const getProjectRepository = async (req, res) => {
   let { projectId, limit, offset } = req.query;
   await yup
@@ -20,14 +34,9 @@ const getProjectRepository = async (req, res) => {
     .shape({
       projectId: yup.number().required({ repoId: "required" }),
     })
-    .validate(
-      {
-        projectId: projectId,
-      },
-      {
-        abortEarly: false,
-      }
-    )
+    .validate({
+      projectId: projectId,
+    })
     .then(async () => {
       try {
         const project = await Projects.findOne({
@@ -35,29 +44,23 @@ const getProjectRepository = async (req, res) => {
         });
         if (!project) {
           res.status(404).json({
-            message: "project id not found",
+            message: "Project Not Found For Specified Id",
           });
         } else {
-          let repos = await Projects_Repositories.findAll({
-            where: { project_id: req.query.projectId },
-            limit: limit,
-            offset: offset,
-          });
-          let data = {};
-          const project = await Projects.findOne({ where: { id: projectId } });
-          data.repositories = repos;
-          data.projectName = project.name;
+          const data = await getRepositories(limit, offset, projectId);
           res.status(200).json(data);
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: "project Id must be number",
+        message: "Validation Error",
+        errors,
       });
     });
 };
