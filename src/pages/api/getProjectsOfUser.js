@@ -26,21 +26,38 @@ Projects.hasMany(Projects_Repositories, {
   foreignKey: { name: "project_id", allowNull: true },
 });
 
-const getUsers = async (req, res) => {
+//function for get projects of user
+const getProjectsByUserId = async (userId) => {
+  let data = await Users.findOne({
+    where: { id: userId },
+    include: {
+      model: Users_projects,
+      attributes: ["id"],
+      include: [
+        {
+          model: Projects,
+          include: [
+            { model: Users_projects },
+            { model: Projects_Repositories },
+          ],
+        },
+      ],
+    },
+  });
+  return data;
+};
+
+//get projects
+const getProjects = async (req, res) => {
   let { userId } = req.query;
   await yup
     .object()
     .shape({
       userId: yup.number().required({ repoId: "required" }),
     })
-    .validate(
-      {
-        userId: userId,
-      },
-      {
-        abortEarly: false,
-      }
-    )
+    .validate({
+      userId: userId,
+    })
     .then(async () => {
       try {
         const user = await Users.findOne({
@@ -48,38 +65,25 @@ const getUsers = async (req, res) => {
         });
         if (!user) {
           res.status(404).json({
-            message: "user id not found",
+            message: "User Not Found For Specified Id",
           });
         } else {
-          let data = await Users.findOne({
-            where: { id: userId },
-            include: {
-              model: Users_projects,
-              attributes: ["id"],
-              include: [
-                {
-                  model: Projects,
-                  include: [
-                    { model: Users_projects },
-                    { model: Projects_Repositories },
-                  ],
-                },
-              ],
-            },
-          });
+          const data = await getProjectsByUserId(userId);
           res.status(200).json(data);
         }
       } catch {
         res.status(500).json({
-          message: "internal server error",
+          message: "Internal Server Error",
         });
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      const errors = err.errors;
       res.status(400).json({
-        message: "repo Id must be number",
+        message: "Validation Error",
+        errors,
       });
     });
 };
 
-export default getUsers;
+export default getProjects;
