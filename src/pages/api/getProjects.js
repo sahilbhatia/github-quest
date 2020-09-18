@@ -33,87 +33,81 @@ Users.hasMany(Projects, {
   foreignKey: { name: "project_manager", allowNull: true },
 });
 
-const getProjects = async (req, res) => {
-  try {
-    let findUserWhereClause = {};
-    let { userName, projectName, startDate, endDate, is_active } = req.query;
-    let where = {};
-    let findAllClause = {};
-    const getUserNameFilter = () => {
-      if (userName != undefined) {
-        findUserWhereClause = {
-          model: Users_projects,
-          include: {
-            model: Users,
-            where: {
-              name: userName,
-            },
-          },
-        };
-        return findUserWhereClause;
-      } else {
-        findUserWhereClause = {
-          model: Users_projects,
-          include: {
-            model: Users,
-          },
-        };
-        return findUserWhereClause;
-      }
-    };
-    const getUserName = getUserNameFilter();
-    findAllClause = {
-      include: [
-        getUserName,
-        {
-          model: Project_Repositories,
-        },
-        {
+//function for get project model
+const getProjectModel = (limit, offset) => {
+  let findAllClause = {
+    include: [
+      {
+        model: Users_projects,
+        include: {
           model: Users,
         },
-      ],
-      limit: req.query.limit,
-      offset: req.query.offset,
-    };
+      },
+      {
+        model: Project_Repositories,
+      },
+      {
+        model: Users,
+      },
+    ],
+    limit: limit,
+    offset: offset,
+  };
+  return findAllClause;
+};
 
-    const getWhereClause = () => {
-      if (projectName || startDate || endDate || is_active) {
-        if (projectName != undefined) {
-          where.name = projectName;
-        }
-        if (is_active != undefined) {
-          if (is_active != "undefined") {
-            where.is_active = is_active;
-          }
-        }
-
-        if (startDate != undefined && endDate != undefined) {
-          const endDateFormat = moment(endDate).add(1, "days");
-          where.created_at = {
-            [Sequelize.Op.between]: [
-              new Date(startDate),
-              new Date(endDateFormat),
-            ],
-          };
-        } else if (endDate != undefined) {
-          const endDateFormat = moment(endDate).add(1, "days");
-          where.created_at = {
-            [Sequelize.Op.lt]: new Date(endDateFormat),
-          };
-        } else if (startDate != undefined) {
-          const date = new Date();
-          where.created_at = {
-            [Sequelize.Op.between]: [new Date(startDate), date],
-          };
-        }
-
-        return where;
-      } else {
-        return null;
+//function for get where clause
+const getWhereClause = (projectName, startDate, endDate, is_active) => {
+  let where = {};
+  if (projectName || startDate || endDate || is_active) {
+    if (projectName != undefined) {
+      where.name = projectName;
+    }
+    if (is_active != undefined) {
+      if (is_active != "undefined") {
+        where.is_active = is_active;
       }
-    };
+    }
+    if (startDate != undefined && endDate != undefined) {
+      const endDateFormat = moment(endDate).add(1, "days");
+      where.created_at = {
+        [Sequelize.Op.between]: [new Date(startDate), new Date(endDateFormat)],
+      };
+    } else if (endDate != undefined) {
+      const endDateFormat = moment(endDate).add(1, "days");
+      where.created_at = {
+        [Sequelize.Op.lt]: new Date(endDateFormat),
+      };
+    } else if (startDate != undefined) {
+      const date = new Date();
+      where.created_at = {
+        [Sequelize.Op.between]: [new Date(startDate), date],
+      };
+    }
+    return where;
+  } else {
+    return null;
+  }
+};
 
-    const whereClauseData = getWhereClause();
+//get projects
+const getProjects = async (req, res) => {
+  try {
+    let {
+      projectName,
+      startDate,
+      endDate,
+      is_active,
+      limit,
+      offset,
+    } = req.query;
+    const whereClauseData = getWhereClause(
+      projectName,
+      startDate,
+      endDate,
+      is_active
+    );
+    const findAllClause = getProjectModel(limit, offset);
 
     if (whereClauseData) {
       findAllClause.where = whereClauseData;
@@ -135,7 +129,7 @@ const getProjects = async (req, res) => {
     }
   } catch {
     res.status(500).json({
-      message: "internal server error",
+      message: "Internal Server Error",
     });
   }
 };
