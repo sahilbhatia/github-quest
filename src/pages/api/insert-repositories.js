@@ -3,8 +3,8 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const github = require("./githubFunction");
-const gitlab = require("./gitlabFunction");
-const bitbucket = require("./bitbucketFunction");
+const gitlab = require("../utils/gitlabFunction");
+const bitbucket = require("../utils/bitbucketFunction");
 const Users = db.users;
 
 export default async function insertPublicRepos(req, res) {

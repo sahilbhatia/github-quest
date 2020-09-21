@@ -159,6 +159,7 @@ const updateForkedRepo = async (insertRepos, forkRepo, repo) => {
   return null;
 };
 
+//insert gitlab repositories
 module.exports.insertGitlabRepos = async (databaseUser) => {
   try {
     const gitlabUser = await request.get(
@@ -171,14 +172,11 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
         )
         .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
       const data = await gitlabRepos.body.map(async (repo) => {
-        //check repo already present or not
         const findRepo = await findRepoFunction(repo.id);
         if (!findRepo) {
           let insertRepos;
           if (repo.visibility != "private") {
-            //insert new repo
             insertRepos = await insertNewRepo(insertRepos, repo);
-            //link repo to the user
             await linkUserRepository(databaseUser.dataValues, insertRepos.dataValues);
           }
           //get parent repo
@@ -188,20 +186,16 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
                 `https://gitlab.com/api/v4/projects/${repo.forked_from_project.id}`
               )
               .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
-            //check parent repo already present or not
             const findRepo = await findRepoFunction(ParentRepo.body.id);
             if (!findRepo) {
               let insertParentRepo;
               if (ParentRepo.body.visibility != "private") {
-                //insert parent repo
                 insertRepos = await insertNewRepo(insertParentRepo, ParentRepo.body);
                 if (gitlabUser.body[0].id == ParentRepo.creator_id) {
-                  // parent repo to the user
                   await linkUserRepository(databaseUser.dataValues, insertParentRepo.dataValues);
                 }
               }
               if (repo.visibility != "private") {
-                //update repository
                 await updateRepo(insertParentRepo.dataValues, insertRepos.dataValues, ParentRepo.body, repo);
               }
             } else {
@@ -219,7 +213,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
               }
             }
           }
-          //get child repo
+          //get forked repositories
           if (repo.forks_count != 0) {
             const forkedRepos = await request
               .get(`https://gitlab.com/api/v4/projects/${repo.id}/forks`)
@@ -228,16 +222,13 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
               const findRepo = await findRepoFunction(forkRepo.id);
               if (findRepo) {
                 if (repo.visibility != "private") {
-                  //update forked repo
                   await updateForkedRepo(insertRepos.dataValues, forkRepo, repo);
                 }
               } else {
                 if (forkRepo.visibility != "private") {
-                  //insert forked repo
                   const insertForkedRepo = await insertForkedRepoFunction(forkRepo, repo, insertRepos);
 
                   if (gitlabUser.body[0].id == forkRepo.creator_id) {
-                    //linked forked repo to user
                     await linkUserRepository(databaseUser.dataValues, insertForkedRepo.dataValues);
                   }
                 }
@@ -245,6 +236,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
             });
           }
         } else {
+          //check repositories updated or not
           if (
             new Date(
               moment(databaseUser.dataValues.last_fetched_at)
@@ -303,6 +295,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
               }
             }
           }
+          //get forked repositories
           if (repo.forks_count != 0) {
             const forkedRepos = await request
               .get(`https://gitlab.com/api/v4/projects/${repo.id}/forks`)
@@ -310,7 +303,6 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
             forkedRepos.body.map(async (forkRepo) => {
               const findForkedRepo = await findRepoFunction(forkRepo.id);
               if (findForkedRepo) {
-                //update forked repo
                 await updateForkedRepo(findRepo.dataValues, forkRepo, repo);
                 if (repo.visibility != "private") {
                 }
@@ -329,7 +321,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
               user_id: databaseUser.dataValues.id,
               repository_id: findRepo.dataValues.id,
             },
-          }).then(async(res) => {
+          }).then(async (res) => {
             if (!res) {
               await Users_repositories.create({
                 user_id: databaseUser.dataValues.id,
