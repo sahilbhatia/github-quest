@@ -38,22 +38,20 @@ const insertForkedRepoFunction = async (forkRepo, repo, insertRepos) => {
     is_forked: true,
     created_at: forkRepo.created_at,
     updated_at: forkRepo.last_activity_at,
-    parent_repo_id: insertRepos
-      ? insertRepos.dataValues.id
-      : null,
+    parent_repo_id: insertRepos ? insertRepos.dataValues.id : null,
     is_suspicious:
       (repo.is_private && !forkRepo.is_private) ||
-        (insertRepos ? insertRepos.dataValues.is_suspicious : false)
+      (insertRepos ? insertRepos.dataValues.is_suspicious : false)
         ? true
         : false,
     review:
       (repo.is_private && !forkRepo.is_private) ||
-        (insertRepos ? insertRepos.dataValues.is_suspicious : false)
+      (insertRepos ? insertRepos.dataValues.is_suspicious : false)
         ? "suspicious auto"
         : "no action",
     reviewed_at:
       (repo.is_private && !forkRepo.is_private) ||
-        (insertRepos ? insertRepos.dataValues.is_suspicious : false)
+      (insertRepos ? insertRepos.dataValues.is_suspicious : false)
         ? moment.utc().format()
         : null,
   });
@@ -88,10 +86,7 @@ const updateRepo = async (insertParentRepo, insertRepos, ParentRepo, repo) => {
   await Repositories.update(
     {
       parent_repo_id: insertParentRepo.id,
-      is_suspicious:
-        ParentRepo.is_private && !repo.is_private
-          ? true
-          : false,
+      is_suspicious: ParentRepo.is_private && !repo.is_private ? true : false,
       review:
         ParentRepo.is_private && !repo.is_private
           ? "suspicious auto"
@@ -117,18 +112,15 @@ const updateForkedRepo = async (insertRepos, forkRepo, repo) => {
     is_forked: true,
     parent_repo_id: insertRepos.id,
     is_suspicious:
-      (repo.is_private && !forkRepo.is_private) ||
-        insertRepos.is_suspicious
+      (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
         ? true
         : false,
     review:
-      (repo.is_private && !forkRepo.is_private) ||
-        insertRepos.is_suspicious
+      (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
         ? "suspicious auto"
         : "no action",
     reviewed_at:
-      (repo.is_private && !forkRepo.is_private) ||
-        insertRepos.is_suspicious
+      (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
         ? moment.utc().format()
         : null,
     manual_review: false,
@@ -173,7 +165,10 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
         let insertRepos;
         if (!repo.is_private) {
           insertRepos = await insertNewRepo(insertRepos, repo);
-          await linkUserRepository(databaseUser.dataValues, insertRepos.dataValues);
+          await linkUserRepository(
+            databaseUser.dataValues,
+            insertRepos.dataValues
+          );
         }
         //get parent repo
         if (repo.parent) {
@@ -184,16 +179,27 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
           if (!findRepo) {
             let insertParentRepo;
             if (!ParentRepo.body.is_private) {
-              insertRepos = await insertNewRepo(insertParentRepo, ParentRepo.body);
+              insertRepos = await insertNewRepo(
+                insertParentRepo,
+                ParentRepo.body
+              );
               if (
                 bitbucketRepos.body.values[0].owner.uuid ==
                 ParentRepo.body.owner.uuid
               ) {
-                await linkUserRepository(databaseUser.dataValues, insertParentRepo.dataValues);
+                await linkUserRepository(
+                  databaseUser.dataValues,
+                  insertParentRepo.dataValues
+                );
               }
             }
             if (!repo.is_private) {
-              await updateRepo(insertParentRepo.dataValues, insertRepos.dataValues, ParentRepo.body, repo);
+              await updateRepo(
+                insertParentRepo.dataValues,
+                insertRepos.dataValues,
+                ParentRepo.body,
+                repo
+              );
             }
           } else {
             if (!repo.is_private) {
@@ -224,12 +230,19 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
             } else {
               let insertForkedRepo;
               if (!forkRepo.is_private) {
-                insertForkedRepo = await insertForkedRepoFunction(forkRepo, repo, insertRepos);
+                insertForkedRepo = await insertForkedRepoFunction(
+                  forkRepo,
+                  repo,
+                  insertRepos
+                );
                 if (
                   bitbucketRepos.body.values[0].owner.uuid ==
                   forkRepo.owner.uuid
                 ) {
-                  await linkUserRepository(databaseUser.dataValues, insertForkedRepo.dataValues);
+                  await linkUserRepository(
+                    databaseUser.dataValues,
+                    insertForkedRepo.dataValues
+                  );
                 }
               }
             }
@@ -245,16 +258,27 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
           if (!findParentRepo) {
             let insertParentRepo;
             if (!ParentRepo.body.is_private) {
-              insertParentRepo = await insertNewRepo(insertParentRepo, ParentRepo.body);
+              insertParentRepo = await insertNewRepo(
+                insertParentRepo,
+                ParentRepo.body
+              );
               if (
                 bitbucketRepos.body.values[0].owner.uuid ==
                 ParentRepo.body.owner.uuid
               ) {
-                await linkUserRepository(databaseUser.dataValues, insertParentRepo.dataValues);
+                await linkUserRepository(
+                  databaseUser.dataValues,
+                  insertParentRepo.dataValues
+                );
               }
             }
             if (!repo.is_private) {
-              await updateRepo(insertParentRepo.dataValues, findRepo.dataValues, ParentRepo.body, repo);
+              await updateRepo(
+                insertParentRepo.dataValues,
+                findRepo.dataValues,
+                ParentRepo.body,
+                repo
+              );
             }
           } else {
             if (!repo.is_private) {
@@ -285,12 +309,19 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
             } else {
               let insertForkedRepo;
               if (!forkRepo.is_private) {
-                insertForkedRepo = await insertForkedRepoFunction(forkRepo, repo, findRepo);
+                insertForkedRepo = await insertForkedRepoFunction(
+                  forkRepo,
+                  repo,
+                  findRepo
+                );
                 if (
                   bitbucketRepos.body.values[0].owner.uuid ==
                   forkRepo.owner.uuid
                 ) {
-                  await linkUserRepository(databaseUser.dataValues, insertForkedRepo.dataValues);
+                  await linkUserRepository(
+                    databaseUser.dataValues,
+                    insertForkedRepo.dataValues
+                  );
                 }
               }
             }
