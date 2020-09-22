@@ -1,6 +1,6 @@
-const dbConn = require("../../../models/sequelize");
+const dbConn = require("../models/sequelize");
 dbConn.sequelize;
-const db = require("../../../models/sequelize");
+const db = require("../models/sequelize");
 const Users = db.users;
 const UsersProjects = db.users_projects;
 const Projects = db.projects;
@@ -453,7 +453,7 @@ module.exports.addRepositoryInProject = async (res, data) => {
       {
         project_id: data.project_id,
         repository_url: data.repository_url,
-        repository_details: data.Repository_details,
+        repository_details: data.repository_details,
       },
       { abortEarly: false }
     )
@@ -467,7 +467,7 @@ module.exports.addRepositoryInProject = async (res, data) => {
         } else {
           const repoDetails = {
             repository_url: data.repository_url,
-            host: data.Repository_details.host,
+            host: data.repository_details.host,
             project_id: project.id,
           };
           await ProjectsRepositories.create(repoDetails).then(() => {

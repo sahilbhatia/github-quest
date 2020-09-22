@@ -1,7 +1,7 @@
 const request = require("superagent");
-const dbConn = require("../../../models/sequelize");
+const dbConn = require("../models/sequelize");
 dbConn.sequelize;
-const db = require("../../../models/sequelize");
+const db = require("../models/sequelize");
 const Users = db.users;
 const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;

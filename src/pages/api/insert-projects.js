@@ -1,5 +1,5 @@
 var cron = require("node-cron");
-const fetchProjects = require("../utils/fetchProjects");
+const fetchProjects = require("../../../utils/fetchProjects");
 
 export default async function insertProjects(req, res) {
   //cron scheduler

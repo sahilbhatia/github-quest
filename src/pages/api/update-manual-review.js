@@ -2,7 +2,7 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
-const validation = require("../utils/validationSchema");
+const validation = require("../../../utils/validationSchema");
 
 //function for update repository
 const updateRepo = async (repoId, updatedAt) => {

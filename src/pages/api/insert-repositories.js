@@ -2,9 +2,9 @@ var cron = require("node-cron");
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
-const github = require("../utils/githubFunction");
-const gitlab = require("../utils/gitlabFunction");
-const bitbucket = require("../utils/bitbucketFunction");
+const github = require("../../../utils/githubFunction");
+const gitlab = require("../../../utils/gitlabFunction");
+const bitbucket = require("../../../utils/bitbucketFunction");
 const Users = db.users;
 
 export default async function insertPublicRepos(req, res) {

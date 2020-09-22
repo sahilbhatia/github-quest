@@ -1,9 +1,9 @@
 const request = require("superagent");
-const { headers } = require("../../../constants/githubHeader");
+const { headers } = require("../constants/githubHeader");
 const moment = require("moment");
-const dbConn = require("../../../models/sequelize");
+const dbConn = require("../models/sequelize");
 dbConn.sequelize;
-const db = require("../../../models/sequelize");
+const db = require("../models/sequelize");
 const Users = db.users;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
