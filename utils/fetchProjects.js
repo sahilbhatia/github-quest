@@ -76,9 +76,8 @@ module.exports.addProjects = async () => {
       });
 
     const listOfProjects = await JSON.parse(intranetProjects.text);
-
     //iterate projects
-    await listOfProjects.projects.map(async (item) => {
+    const data = await listOfProjects.projects.map(async (item) => {
       const project = await findProject(item.id);
       if (!project) {
         try {
@@ -93,6 +92,7 @@ module.exports.addProjects = async () => {
         }
       }
     });
+    await Promise.all(data);
     return null;
   } catch {
     return false;
