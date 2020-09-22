@@ -1,6 +1,7 @@
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const webHooks = require("../utils/webHookFunctions");
+const fetchProjects = require("../utils/fetchProjects");
 const Sentry = require("@sentry/node");
 
 Sentry.init({
@@ -12,6 +13,7 @@ export default async function insertUsers(req, res) {
   try {
     Sentry.captureException(req.body);
     const data = req.body;
+    await fetchProjects.addProjects();
     switch (data.event_type) {
       //user update
       case "User Updated":
