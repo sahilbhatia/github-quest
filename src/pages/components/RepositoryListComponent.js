@@ -86,7 +86,7 @@ export default function RepositoryListComponent({
       name: "Forked",
       selector: function func(d) {
         return d.parent_of.length > 0 ? (
-          <Link href="/getForkedRepo/[userId]" as={`/getForkedRepo/${d.id}`}>
+          <Link href="/forks/[userId]" as={`/forks/${d.id}`}>
             <Button className="bg-white border-white text-primary btn-sm">
               {d.parent_of.length}
             </Button>

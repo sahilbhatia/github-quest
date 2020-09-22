@@ -25,7 +25,7 @@ export default function Index() {
     return filterString;
   };
   let { data, error } = useSWR(
-    `/api/getPublicRepos?limit=${limit}&offset=${offset}&userId=${userId}${getQueryString(
+    `/api/repositories?limit=${limit}&offset=${offset}&userId=${userId}${getQueryString(
       filter
     )}`,
     fetcher
@@ -35,13 +35,13 @@ export default function Index() {
   if (!data) return <LoadingComponent />;
   const onSelectManualReview = (id) => {
     fetch(
-      `/api/updateManualReview?id=${id}&updatedAt=${moment().toISOString()}`
+      `/api/update-manual-review?id=${id}&updatedAt=${moment().toISOString()}`
     );
     window.location.reload(false);
   };
   const onSelectSuspeciousMark = (id) => {
     fetch(
-      `/api/updateSuspiciousRepos?id=${id}&updatedAt=${moment().toISOString()}`
+      `/api/update-suspicious-repository?id=${id}&updatedAt=${moment().toISOString()}`
     );
     window.location.reload(false);
   };

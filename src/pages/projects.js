@@ -23,7 +23,7 @@ export default function Index() {
     return filterString;
   };
   let { data, error } = useSWR(
-    `/api/getProjects?limit=${limit}&offset=${offset}${getQueryString(filter)}`,
+    `/api/projects?limit=${limit}&offset=${offset}${getQueryString(filter)}`,
     fetcher
   );
   if (error || code == 400 || code == 404 || code == 500)

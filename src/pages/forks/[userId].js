@@ -1,24 +1,23 @@
-import useSWR from "swr";
 import { useRouter } from "next/router";
+import React from "react";
+import useSWR from "swr";
 import ErrorComponent from "../components/errorpage";
 import LoadingComponent from "../components/loaderpage";
-import ProjectsOfUserComponent from "../components/ProjectsOfUserComponent";
+import ForkedRepoComponent from "../components/ForkedRepoComponent";
 let code;
 const fetcher = (url) =>
   fetch(url).then((res) => {
     code = res.status;
     return res.json();
   });
-export default function Index() {
+
+export default function Post() {
   const router = useRouter();
   const { userId } = router.query;
-  let { data, error } = useSWR(
-    `/api/getProjectsOfUser?&userId=${userId}`,
-    fetcher
-  );
+  let { data, error } = useSWR(`/api/forks?id=${userId}`, fetcher);
   if (error || code == 400 || code == 404 || code == 500)
     return <ErrorComponent code={code} />;
   if (!data) return <LoadingComponent />;
 
-  return <ProjectsOfUserComponent data={data} />;
+  return <ForkedRepoComponent data={data} />;
 }

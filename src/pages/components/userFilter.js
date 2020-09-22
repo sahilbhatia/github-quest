@@ -6,10 +6,10 @@ import PropTypes from "prop-types";
 export default function Index({ filter, setFilter, minDate }) {
   let [userName, setuserName] = useState(null);
   let userList = [];
-  let userData = fetch(`/api/findUser?userName=${userName}`);
+  let userData = fetch(`/api/find-user?userName=${userName}`);
   let [gitHandle, setgitHandle] = useState(null);
   let gitHandleList = [];
-  let gitHandleData = fetch(`/api/findUser?gitHandle=${gitHandle}`);
+  let gitHandleData = fetch(`/api/find-user?gitHandle=${gitHandle}`);
   userData
     .then((response) => {
       return response.json();

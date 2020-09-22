@@ -7,7 +7,7 @@ import moment from "moment";
 export default function Index({ filter, setFilter, minDate }) {
   let [projectName, setProjectName] = useState(null);
   let projectList = [];
-  let projectData = fetch(`/api/findProject?projectName=${projectName}`);
+  let projectData = fetch(`/api/find-project?projectName=${projectName}`);
   projectData
     .then((response) => {
       return response.json();

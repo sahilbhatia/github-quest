@@ -14,10 +14,10 @@ export default function Index({ filter, setFilter, minDate }) {
   let usersList = [];
   let repositoryList = [];
   let usersData = fetch(
-    `/api/findUser?limit=${limit}&offset=${offset}&userName=${name}`
+    `/api/find-user?limit=${limit}&offset=${offset}&userName=${name}`
   );
   let reposData = fetch(
-    `/api/findRepository?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}&userName=${
+    `/api/find-repository?limit=${limit}&offset=${offset}&repositoryName=${repositoryName}&userName=${
       filter ? filter.userName : undefined
     }`
   );

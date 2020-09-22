@@ -50,7 +50,7 @@ export default function UsersOfProjectComponent({
       name: "Projects",
       selector: function func(d) {
         return d.users_projects.length != 0 ? (
-          <Link href="/getProjects/[userId]" as={`/getProjects/${d.id}`}>
+          <Link href="/user-projects/[userId]" as={`/user-projects/${d.id}`}>
             <Button className="bg-white border-white text-primary btn-sm">
               {d.users_projects[0].user.users_projects.length}
             </Button>
@@ -65,8 +65,8 @@ export default function UsersOfProjectComponent({
       selector: function func(d) {
         return d.users_repositories.length != 0 ? (
           <Link
-            href="/getPublicRepositories/[userId]"
-            as={`/getPublicRepositories/${d.id}`}
+            href="/user-epositories/[userId]"
+            as={`/user-repositories/${d.id}`}
           >
             <Button className="bg-white border-white text-primary btn-sm">
               {d.users_repositories.length}

@@ -21,7 +21,7 @@ export default function Index() {
   };
   let [filter, setFilter] = useState({});
   let { error, data } = useSWR(
-    `/api/getUserList?limit=${limit}&offset=${offset}${getQueryString(filter)}`,
+    `/api/users?limit=${limit}&offset=${offset}${getQueryString(filter)}`,
     fetcher
   );
   if (error || code == 400 || code == 404 || code == 500)

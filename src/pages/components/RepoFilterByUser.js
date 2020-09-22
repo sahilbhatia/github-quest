@@ -8,7 +8,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
   let [repositoryName, setRepositoryName] = useState(null);
   let repositoryList = [];
   let reposData = fetch(
-    `/api/findRepository?userId=${userId}&repositoryName=${repositoryName}`
+    `/api/find-repository?userId=${userId}&repositoryName=${repositoryName}`
   );
 
   reposData
