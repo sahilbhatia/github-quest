@@ -1,5 +1,6 @@
 const request = require("superagent");
 const dbConn = require("../models/sequelize");
+const { headers } = require("../constants/intranetHeader");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
@@ -69,11 +70,8 @@ const findProject = async (id) => {
 module.exports.addProjects = async () => {
   try {
     const intranetProjects = await request
-      .get("https://stage-intranet.joshsoftware.com/api/v1/projects")
-      .set({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      });
+      .get(process.env.INTRANET_PROJECT_API)
+      .set(headers);
 
     const listOfProjects = await JSON.parse(intranetProjects.text);
     //iterate projects

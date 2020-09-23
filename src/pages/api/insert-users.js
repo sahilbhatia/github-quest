@@ -1,6 +1,7 @@
 var cron = require("node-cron");
 const request = require("superagent");
 const dbConn = require("../../../models/sequelize");
+const { headers } = require("../../../constants/intranetHeader");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Users = db.users;
@@ -113,11 +114,8 @@ export default async function insertUsers(req, res) {
   //function for insert users from intranet
   const insertUsersFunction = async () => {
     const intranetUsersList = await request
-      .get("https://stage-intranet.joshsoftware.com/api/v1/users")
-      .set({
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      });
+      .get(process.env.INTRANET_USER_API)
+      .set(headers);
 
     const listOfUsers = await JSON.parse(intranetUsersList.text);
 
