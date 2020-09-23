@@ -10,7 +10,7 @@ const data = require("./data");
 let project = data.project;
 
 /*eslint-disable  no-undef*/
-describe("test cases for find user api", function () {
+describe("test cases for find project api", function () {
   let projectId;
   before((done) => {
     db.projects.create(project).then((res) => {
@@ -23,12 +23,13 @@ describe("test cases for find user api", function () {
     await db.projects.destroy({ where: { id: projectId } });
   });
 
-  it("should give status 200", function (done) {
+  it("get empty list and should give status 200", function (done) {
     chai
       .request(app)
-      .get("/api/findProject")
+      .get("/api/find-project")
       .end(function (err, res) {
         should(res.status).eql(200);
+        should(res.body).be.a.Array();
         done();
       });
   });
@@ -36,7 +37,7 @@ describe("test cases for find user api", function () {
   it("find by project name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/findProject?projectName=${project.name}`)
+      .get(`/api/find-project?projectName=${project.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body).be.a.Array();

@@ -10,7 +10,7 @@ const data = require("./data");
 let user = data.user;
 
 /*eslint-disable  no-undef*/
-describe("test cases for find user api", function () {
+describe("test cases for get projects of api", function () {
   let userId;
   before((done) => {
     db.users.create(user).then((res) => {
@@ -23,30 +23,30 @@ describe("test cases for find user api", function () {
     await db.users.destroy({ where: { id: userId } });
   });
 
-  it("find project of user should give status 200", function (done) {
+  it("get projects by user id and should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjectsOfUser?userId=${userId}`)
+      .get(`/api/user-projects?userId=${userId}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         done();
       });
   });
 
-  it("find project of invalid user id should give status 400", function (done) {
+  it("get projects by invalid user id and should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjectsOfUser?userId=azby12`)
+      .get(`/api/user-projects?userId=azby12`)
       .end(function (err, res) {
         should(res.status).eql(400);
         done();
       });
   });
 
-  it("find project of invalid user id should give status 404", function (done) {
+  it("get projects by invalid user id and should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjectsOfUser?userId=12345`)
+      .get(`/api/user-projects?userId=12345`)
       .end(function (err, res) {
         should(res.status).eql(404);
         done();

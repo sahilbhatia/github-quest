@@ -31,40 +31,40 @@ describe("test cases for get forked repo api", function () {
     await db.repositories.destroy({ where: { id: parentRepoId } });
   });
 
-  it("should give status 200", function (done) {
+  it("get child repo and should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getForkedRepo?id=${parentRepoId}`)
+      .get(`/api/forks?id=${parentRepoId}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         done();
       });
   });
 
-  it("should give status 404", function (done) {
+  it("pass id have no child should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/getForkedRepo?id=${repoId}`)
+      .get(`/api/forks?id=${repoId}`)
       .end(function (err, res) {
         should(res.status).eql(404);
         done();
       });
   });
 
-  it("send invalid id should give status 400", function (done) {
+  it("get forked repo by invalid id should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/getForkedRepo?id=12qw`)
+      .get(`/api/forks?id=12qw`)
       .end(function (err, res) {
         should(res.status).eql(400);
         done();
       });
   });
 
-  it("find by invalid id should give status 404", function (done) {
+  it("get forked repo by invalid id should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/getForkedRepo?id=12345`)
+      .get(`/api/forks?id=12345`)
       .end(function (err, res) {
         should(res.status).eql(404);
         done();

@@ -16,7 +16,7 @@ let project_repository = data.project_repository;
 /*eslint-disable  no-undef*/
 //update user
 describe("test cases for web hooks to invalid event", function () {
-  it("invalid event type should give status 400", function (done) {
+  it("pass invalid event type should give status 400", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -44,7 +44,7 @@ describe("test cases for web hooks to update user", function () {
     await db.users.destroy({ where: { org_user_id: userId } });
   });
 
-  it("update user and should give status 200", function (done) {
+  it("update user with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -60,7 +60,7 @@ describe("test cases for web hooks to update user", function () {
       });
   });
 
-  it("invalid user id should give status 404", function (done) {
+  it("update user with invalid user id should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -105,7 +105,7 @@ describe("test cases for web hooks to remove user from project", function () {
     await db.users.destroy({ where: { org_user_id: userId } });
   });
 
-  it("remove user from project and should give status 200", function (done) {
+  it("remove user from project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -121,7 +121,7 @@ describe("test cases for web hooks to remove user from project", function () {
       });
   });
 
-  it("invalid user id should give status 404", function (done) {
+  it("pass invalid user id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -137,7 +137,7 @@ describe("test cases for web hooks to remove user from project", function () {
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -155,7 +155,7 @@ describe("test cases for web hooks to remove user from project", function () {
 });
 
 //add user in project
-describe("test cases for web hooks to remove user from project", function () {
+describe("test cases for web hooks to add user in project", function () {
   let userId = user.org_user_id;
   let projectId = project.org_project_id;
   let user_id;
@@ -178,7 +178,7 @@ describe("test cases for web hooks to remove user from project", function () {
     await db.users.destroy({ where: { org_user_id: userId } });
   });
 
-  it("add user in project and should give status 200", function (done) {
+  it("add user in project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -194,7 +194,7 @@ describe("test cases for web hooks to remove user from project", function () {
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -210,7 +210,7 @@ describe("test cases for web hooks to remove user from project", function () {
       });
   });
 
-  it("invalid user id should give status 404", function (done) {
+  it("pass invalid user id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -244,7 +244,7 @@ describe("test cases for web hooks to add project manager in project", function 
     await db.users.destroy({ where: { org_user_id: userId } });
   });
 
-  it("add project manager in project and should give status 200", function (done) {
+  it("add project manager in project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -260,7 +260,7 @@ describe("test cases for web hooks to add project manager in project", function 
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -276,7 +276,7 @@ describe("test cases for web hooks to add project manager in project", function 
       });
   });
 
-  it("invalid user id should give status 404", function (done) {
+  it("pass invalid user id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -311,7 +311,7 @@ describe("test cases for web hooks to remove project manager from project", func
     await db.users.destroy({ where: { org_user_id: userId } });
   });
 
-  it("remove project manager from project and should give status 200", function (done) {
+  it("remove project manager from project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -327,7 +327,7 @@ describe("test cases for web hooks to remove project manager from project", func
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -343,7 +343,7 @@ describe("test cases for web hooks to remove project manager from project", func
       });
   });
 
-  it("invalid user id should give status 404", function (done) {
+  it("pass invalid user id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -374,7 +374,7 @@ describe("test cases for web hooks to active project", function () {
     await db.projects.destroy({ where: { org_project_id: projectId } });
   });
 
-  it("activate project and should give status 200", function (done) {
+  it("activate project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -389,7 +389,7 @@ describe("test cases for web hooks to active project", function () {
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -419,7 +419,7 @@ describe("test cases for web hooks to Inactive project", function () {
     await db.projects.destroy({ where: { org_project_id: projectId } });
   });
 
-  it("inactivate project and should give status 200", function (done) {
+  it("inactivate project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -434,7 +434,7 @@ describe("test cases for web hooks to Inactive project", function () {
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -464,7 +464,7 @@ describe("test cases for web hooks to delete project", function () {
     await db.projects.destroy({ where: { org_project_id: projectId } });
   });
 
-  it("delete project and should give status 200", function (done) {
+  it("delete project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -479,7 +479,7 @@ describe("test cases for web hooks to delete project", function () {
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -513,7 +513,7 @@ describe("test cases for web hooks to add repository in project", function () {
     await db.projects.destroy({ where: { org_project_id: projectId } });
   });
 
-  it("add repository in project and should give status 200", function (done) {
+  it("add repository in project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -521,7 +521,7 @@ describe("test cases for web hooks to add repository in project", function () {
         event_type: "Repository Added",
         project_id: projectId,
         repository_url: faker.internet.url(),
-        Repository_details: {
+        repository_details: {
           host: faker.internet.domainName(),
         },
       })
@@ -532,7 +532,7 @@ describe("test cases for web hooks to add repository in project", function () {
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -540,7 +540,7 @@ describe("test cases for web hooks to add repository in project", function () {
         event_type: "Repository Added",
         project_id: "1a2b",
         repository_url: faker.internet.url(),
-        Repository_details: {
+        repository_details: {
           host: faker.internet.domainName(),
         },
       })
@@ -558,7 +558,7 @@ describe("test cases for web hooks to add repository in project", function () {
       .send({
         event_type: "Repository Added",
         project_id: projectId,
-        Repository_details: {
+        repository_details: {
           host: faker.internet.domainName(),
         },
       })
@@ -570,8 +570,8 @@ describe("test cases for web hooks to add repository in project", function () {
   });
 });
 
-//add repository in project
-describe("test cases for web hooks to add repository in project", function () {
+//remove repository from project
+describe("test cases for web hooks to remove repository from project", function () {
   let projectId = project.org_project_id;
   let project_id;
   before((done) => {
@@ -588,7 +588,7 @@ describe("test cases for web hooks to add repository in project", function () {
     await db.projects.destroy({ where: { org_project_id: projectId } });
   });
 
-  it("add repository in project and should give status 200", function (done) {
+  it("remove repository from project with valid data and should give status 200", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
@@ -604,12 +604,12 @@ describe("test cases for web hooks to add repository in project", function () {
       });
   });
 
-  it("invalid project id should give status 404", function (done) {
+  it("pass invalid project id and should give status 404", function (done) {
     chai
       .request(app)
       .get("/api/webhooks")
       .send({
-        event_type: "Repository Added",
+        event_type: "Repository Removed",
         project_id: "1a2b",
         repository_url: faker.internet.url(),
         Repository_details: {}
@@ -626,7 +626,7 @@ describe("test cases for web hooks to add repository in project", function () {
       .request(app)
       .get("/api/webhooks")
       .send({
-        event_type: "Repository Added",
+        event_type: "Repository Removed",
         project_id: projectId,
       })
       .end(function (err, res) {

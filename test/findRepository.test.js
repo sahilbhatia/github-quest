@@ -11,7 +11,7 @@ let user = data.user;
 let repository = data.user_repository;
 
 /*eslint-disable  no-undef*/
-describe("test cases for find user api", function () {
+describe("test cases for find repository api", function () {
   let userId, repoId;
   before((done) => {
     db.users.create(user).then((res) => {
@@ -33,20 +33,10 @@ describe("test cases for find user api", function () {
     await db.repositories.destroy({ where: { id: repoId } });
   });
 
-  it("should give status 200", function (done) {
+  it("get empty list and should give status 200", function (done) {
     chai
       .request(app)
-      .get("/api/findRepository")
-      .end(function (err, res) {
-        should(res.status).eql(200);
-        done();
-      });
-  });
-
-  it("find by user name should give status 200", function (done) {
-    chai
-      .request(app)
-      .get(`/api/findRepository?userName=${user.name}`)
+      .get("/api/find-repository")
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body).be.a.Array();
@@ -54,10 +44,10 @@ describe("test cases for find user api", function () {
       });
   });
 
-  it("find by repository name should give status 200", function (done) {
+  it("find repository by user name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/findRepository?repositoryName=${repository.name}`)
+      .get(`/api/find-repository?userName=${user.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body).be.a.Array();
@@ -65,30 +55,41 @@ describe("test cases for find user api", function () {
       });
   });
 
-  it("find by id should give status 200", function (done) {
+  it("find repository by repository name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/findRepository?userId=${userId}`)
+      .get(`/api/find-repository?repositoryName=${repository.name}`)
+      .end(function (err, res) {
+        should(res.status).eql(200);
+        should(res.body).be.a.Array();
+        done();
+      });
+  });
+
+  it("find repository by id should give status 200", function (done) {
+    chai
+      .request(app)
+      .get(`/api/find-repository?userId=${userId}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         done();
       });
   });
 
-  it("find by invalid id should give status 400", function (done) {
+  it("find repositories by invalid id should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/findRepository?userId=azby12`)
+      .get(`/api/find-repository?userId=azby12`)
       .end(function (err, res) {
         should(res.status).eql(400);
         done();
       });
   });
 
-  it("find by invalid id should give status 404", function (done) {
+  it("find repositories by invalid id should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/findRepository?userId=12345`)
+      .get(`/api/find-repository?userId=12345`)
       .end(function (err, res) {
         should(res.status).eql(404);
         done();

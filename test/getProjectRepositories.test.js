@@ -10,7 +10,7 @@ const data = require("./data");
 let project = data.project;
 
 /*eslint-disable  no-undef*/
-describe("test cases for find user api", function () {
+describe("test cases for get project repositories api", function () {
   let projectId;
 
   before((done) => {
@@ -27,7 +27,7 @@ describe("test cases for find user api", function () {
   it("find repositories of project should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjectRepositories?projectId=${projectId}`)
+      .get(`/api/project-repositories?projectId=${projectId}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         done();
@@ -37,7 +37,7 @@ describe("test cases for find user api", function () {
   it("find repositories of invalid project id should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjectRepositories?projectId=azby12`)
+      .get(`/api/project-repositories?projectId=azby12`)
       .end(function (err, res) {
         should(res.status).eql(400);
         done();
@@ -47,7 +47,7 @@ describe("test cases for find user api", function () {
   it("find repositories of invalid project id should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjectRepositories?projectId=12345`)
+      .get(`/api/project-repositories?projectId=12345`)
       .end(function (err, res) {
         should(res.status).eql(404);
         done();

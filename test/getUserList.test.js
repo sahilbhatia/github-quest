@@ -25,10 +25,10 @@ describe("test cases for get User list api", function () {
     await db.users.destroy({ where: { id: userId } });
   });
 
-  it("array length should equal to limit  and should give status 200", function (done) {
+  it("get users array length should equal to limit  and should give status 200", function (done) {
     chai
       .request(app)
-      .get("/api/getUserList?limit=2")
+      .get("/api/users?limit=2")
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.users.length).eql(2);
@@ -37,10 +37,10 @@ describe("test cases for get User list api", function () {
       });
   });
 
-  it("should give status 200", function (done) {
+  it(" get all users and should give status 200", function (done) {
     chai
       .request(app)
-      .get("/api/getUserList")
+      .get("/api/users")
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.users).be.a.Array();
@@ -48,10 +48,10 @@ describe("test cases for get User list api", function () {
       });
   });
 
-  it("filter by user name should give status 200", function (done) {
+  it("get user by user name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getUserList?userName=${user.name}`)
+      .get(`/api/users?userName=${user.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.users[0].name).eql(user.name);
@@ -60,10 +60,10 @@ describe("test cases for get User list api", function () {
       });
   });
 
-  it("filter by invalid user name should give status 200", function (done) {
+  it("get user by invalid user name should give status 200 but array length 0", function (done) {
     chai
       .request(app)
-      .get(`/api/getUserList?userName=azby`)
+      .get(`/api/users?userName=azby`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.users.length).eql(0);
@@ -72,10 +72,10 @@ describe("test cases for get User list api", function () {
       });
   });
 
-  it("filter by github handle should give status 200", function (done) {
+  it("get users by github handle should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getUserList?gitHandle=${user.github_handle}`)
+      .get(`/api/users?gitHandle=${user.github_handle}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.users).be.a.Array();
@@ -83,10 +83,10 @@ describe("test cases for get User list api", function () {
       });
   });
 
-  it("filter by invalid github handle should give status 200", function (done) {
+  it("get users by invalid github handle should give status 200 but array length 0", function (done) {
     chai
       .request(app)
-      .get(`/api/getUserList?gitHandle=azby`)
+      .get(`/api/users?gitHandle=azby`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.users.length).eql(0);

@@ -23,11 +23,11 @@ describe("test cases for review repositories", function () {
     await db.repositories.destroy({ where: { id: repoId } });
   });
 
-  it("update manual review status and should give status 200", function (done) {
+  it("update manual review with valid repo id and status and should give status 200", function (done) {
     chai
       .request(app)
       .get(
-        `/api/updateManualReview?id=${repoId}&updatedAt=2020-08-27T09:04:33.568Z`
+        `/api/update-manual-review?id=${repoId}&updatedAt=2020-08-27T09:04:33.568Z`
       )
       .end(function (err, res) {
         should(res.status).eql(200);
@@ -35,20 +35,20 @@ describe("test cases for review repositories", function () {
       });
   });
 
-  it("update time not pass and should give status 400", function (done) {
+  it("update manual review without passing update time and should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/updateManualReview?id=${repoId}`)
+      .get(`/api/update-manual-review?id=${repoId}`)
       .end(function (err, res) {
         should(res.status).eql(400);
         done();
       });
   });
 
-  it("send invalid id and should give status 404", function (done) {
+  it("update manual review with invalid id and should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/updateManualReview?id=7000&updatedAt=2020-08-27T09:04:33.568Z`)
+      .get(`/api/update-manual-review?id=7000&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(404);
         should(res.body).be.a.Object();
@@ -56,10 +56,10 @@ describe("test cases for review repositories", function () {
       });
   });
 
-  it("send non numeric id and should give status 400", function (done) {
+  it("update manual review with non numeric id and should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/updateManualReview?id=1aw&updatedAt=2020-08-27T09:04:33.568Z`)
+      .get(`/api/update-manual-review?id=1aw&updatedAt=2020-08-27T09:04:33.568Z`)
       .end(function (err, res) {
         should(res.status).eql(400);
         should(res.body).be.a.Object();
@@ -67,11 +67,11 @@ describe("test cases for review repositories", function () {
       });
   });
 
-  it("update suspicious repo and should give status 200", function (done) {
+  it("update suspicious repo with valid repo id and should give status 200", function (done) {
     chai
       .request(app)
       .get(
-        `/api/updateSuspiciousRepos?id=${repoId}&updatedAt=2020-08-27T09:04:33.568Z`
+        `/api/update-suspicious-repository?id=${repoId}&updatedAt=2020-08-27T09:04:33.568Z`
       )
       .end(function (err, res) {
         should(res.status).eql(200);
@@ -80,11 +80,11 @@ describe("test cases for review repositories", function () {
       });
   });
 
-  it("send invalid id and should give status 404", function (done) {
+  it("update suspicious repo with invalid repo id and should give status 404", function (done) {
     chai
       .request(app)
       .get(
-        `/api/updateSuspiciousRepos?id=7000&updatedAt=2020-08-27T09:04:33.568Z`
+        `/api/update-suspicious-repository?id=7000&updatedAt=2020-08-27T09:04:33.568Z`
       )
       .end(function (err, res) {
         should(res.status).eql(404);
@@ -93,11 +93,11 @@ describe("test cases for review repositories", function () {
       });
   });
 
-  it("send non numeric id and should give status 400", function (done) {
+  it("update suspicious repo with non numeric repo id and should give status 400", function (done) {
     chai
       .request(app)
       .get(
-        `/api/updateSuspiciousRepos?id=1aw&updatedAt=2020-08-27T09:04:33.568Z`
+        `/api/update-suspicious-repository?id=1aw&updatedAt=2020-08-27T09:04:33.568Z`
       )
       .end(function (err, res) {
         should(res.status).eql(400);
@@ -106,10 +106,10 @@ describe("test cases for review repositories", function () {
       });
   });
 
-  it("update time not pass and should give status 400", function (done) {
+  it("update suspicious repo without update time and should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/updateSuspiciousRepos?id=${repoId}`)
+      .get(`/api/update-suspicious-repository?id=${repoId}`)
       .end(function (err, res) {
         should(res.status).eql(400);
         done();

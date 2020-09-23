@@ -10,7 +10,7 @@ const data = require("./data");
 let project = data.project;
 
 /*eslint-disable  no-undef*/
-describe("test cases for get project api", function () {
+describe("test cases for get projects api", function () {
   let projectId1, projectId2;
   before((done) => {
     project.is_active = false;
@@ -29,10 +29,10 @@ describe("test cases for get project api", function () {
     await db.projects.destroy({ where: { id: projectId2 } });
   });
 
-  it("array length should equal to limit  and should give status 200", function (done) {
+  it("array length should equal to limit and should give status 200", function (done) {
     chai
       .request(app)
-      .get("/api/getProjects?limit=2")
+      .get("/api/projects?limit=2")
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.projects.length).eql(2);
@@ -41,10 +41,10 @@ describe("test cases for get project api", function () {
       });
   });
 
-  it("should give status 200", function (done) {
+  it("get all projects and should give status 200", function (done) {
     chai
       .request(app)
-      .get("/api/getProjects")
+      .get("/api/projects")
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.projects).be.a.Array();
@@ -52,10 +52,10 @@ describe("test cases for get project api", function () {
       });
   });
 
-  it("filter should give status 200 with correct response", function (done) {
+  it("get inactive projects and  should give status 200 with correct response", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjects?is_active=false`)
+      .get(`/api/projects?is_active=false`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.projects[0].is_active).eql(false);
@@ -64,10 +64,10 @@ describe("test cases for get project api", function () {
       });
   });
 
-  it("filter should give status 200 with correct response", function (done) {
+  it("get active projects and should give status 200 with correct response", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjects?is_active=true`)
+      .get(`/api/projects?is_active=true`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.projects[0].is_active).eql(true);
@@ -76,10 +76,10 @@ describe("test cases for get project api", function () {
       });
   });
 
-  it("filter by project name should give status 200", function (done) {
+  it("get project by project name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjects?projectName=${project.name}`)
+      .get(`/api/projects?projectName=${project.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.projects[0].name).eql(project.name);
@@ -88,10 +88,10 @@ describe("test cases for get project api", function () {
       });
   });
 
-  it("filter by invalid project name should give status 200", function (done) {
+  it("get project by invalid project name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/getProjects?projectName=azby`)
+      .get(`/api/projects?projectName=azby`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body.projects.length).eql(0);

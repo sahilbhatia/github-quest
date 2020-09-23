@@ -27,20 +27,20 @@ describe("test cases for find user api", function () {
     await db.users.destroy({ where: { id: userId } });
   });
 
-  it("should give status 400", function (done) {
+  it("find user without passing params and should give status 400", function (done) {
     chai
       .request(app)
-      .get("/api/findUser")
+      .get("/api/find-user")
       .end(function (err, res) {
         should(res.status).eql(400);
         done();
       });
   });
 
-  it("find by user name should give status 200", function (done) {
+  it("find user by user name should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/findUser?userName=${user.name}`)
+      .get(`/api/find-user?userName=${user.name}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body).be.a.Array();
@@ -48,10 +48,10 @@ describe("test cases for find user api", function () {
       });
   });
 
-  it("find by github handle should give status 200", function (done) {
+  it("find user by git handle should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/findUser?gitHandle=${user.github_handle}`)
+      .get(`/api/find-user?gitHandle=${user.github_handle}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         should(res.body).be.a.Array();
@@ -59,30 +59,30 @@ describe("test cases for find user api", function () {
       });
   });
 
-  it("find by id should give status 200", function (done) {
+  it("find user by id should give status 200", function (done) {
     chai
       .request(app)
-      .get(`/api/findUser?userId=${userId}`)
+      .get(`/api/find-user?userId=${userId}`)
       .end(function (err, res) {
         should(res.status).eql(200);
         done();
       });
   });
 
-  it("find by invalid id should give status 400", function (done) {
+  it("find user by invalid id should give status 400", function (done) {
     chai
       .request(app)
-      .get(`/api/findUser?userId=azby12`)
+      .get(`/api/find-user?userId=azby12`)
       .end(function (err, res) {
         should(res.status).eql(400);
         done();
       });
   });
 
-  it("find by invalid id should give status 404", function (done) {
+  it("find user by invalid id should give status 404", function (done) {
     chai
       .request(app)
-      .get(`/api/findUser?userId=12345`)
+      .get(`/api/find-user?userId=12345`)
       .end(function (err, res) {
         should(res.status).eql(404);
         done();
