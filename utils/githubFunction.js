@@ -45,7 +45,7 @@ const getAllRepositories = async (databaseUser) => {
     } else {
       return null;
     }
-  } catch {
+  } catch (err) {
     await Users.update(
       {
         error_details: "repositories not fetch for given github handle",
