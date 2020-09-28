@@ -562,14 +562,6 @@ module.exports.insertGithubRepos = async (databaseUser) => {
     });
     try {
       await Promise.all(mapData);
-      await Users.update(
-        { last_fetched_at: moment.utc().format() },
-        {
-          returning: true,
-          plain: true,
-          where: { id: databaseUser.dataValues.id },
-        }
-      );
     } catch {
       await updateUserError(databaseUser.dataValues.id);
       return;

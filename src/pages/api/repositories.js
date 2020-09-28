@@ -239,6 +239,19 @@ const getUserRepositories = async (userId, limit, offset, req, res) => {
     });
 };
 
+//function for get last fetch time
+const getLastFetchedAt = async () => {
+  const time = await Users.findOne({
+    attributes: ["last_fetched_at"],
+    where: {
+      last_fetched_at: {
+        [Sequelize.Op.ne]: null,
+      },
+    },
+  });
+  return time;
+};
+
 //get repositories
 const getAllPublicRepos = async (req, res) => {
   let { userName, limit, offset, userId } = req.query;
@@ -256,8 +269,11 @@ const getAllPublicRepos = async (req, res) => {
       const earliestDate = await Repositories.findAll({
         attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
       });
+      const lastFetchedAt = await getLastFetchedAt();
       let data = {};
-      (data.repositories = repositories), (data.date = earliestDate[0]);
+      (data.repositories = repositories),
+        (data.date = earliestDate[0]),
+        (data.last_fetched_at = lastFetchedAt.last_fetched_at);
       res.status(200).json(data);
     } catch {
       res.status(500).json({

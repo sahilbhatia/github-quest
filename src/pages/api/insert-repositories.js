@@ -1,5 +1,6 @@
 var cron = require("node-cron");
 const dbConn = require("../../../models/sequelize");
+const moment = require("moment");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const github = require("../../../utils/githubFunction");
@@ -9,7 +10,7 @@ const Users = db.users;
 const validation = require("../../../utils/validation");
 
 const insertPublicRepos = async (req, res) => {
-  const insertRepos = async () => {
+  const insertRepos = async (req, res) => {
     const validate = await validation.validateToken();
     if (validate) {
       res.status(401).json({
@@ -37,6 +38,12 @@ const insertPublicRepos = async (req, res) => {
         if (user.dataValues.github_handle) {
           await github.insertGithubRepos(user);
         }
+        await Users.update(
+          { last_fetched_at: moment.utc().format() },
+          {
+            where: { id: user.dataValues.id },
+          }
+        );
       });
       res.status(200).json({
         message: "cron Job Activated successfully for inserting repositories",
@@ -45,9 +52,9 @@ const insertPublicRepos = async (req, res) => {
   };
 
   cron.schedule(process.env.INSERT_PUBLIC_REPOS_SCHEDULE, async () => {
-    insertRepos();
+    await insertRepos(req, res);
   });
-  insertRepos();
+  await insertRepos(req, res);
 };
 
 export default insertPublicRepos;

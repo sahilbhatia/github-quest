@@ -45,6 +45,10 @@ export default function Index() {
     );
     window.location.reload(false);
   };
+  const reFetch = async () => {
+    await fetch(`/api/insert-repositories`);
+    window.location.reload(false);
+  };
   return (
     <RepositoryListComponent
       filter={filter}
@@ -56,6 +60,7 @@ export default function Index() {
       data={data}
       onSelectManualReview={onSelectManualReview}
       onSelectSuspeciousMark={onSelectSuspeciousMark}
+      reFetch={reFetch}
     />
   );
 }
