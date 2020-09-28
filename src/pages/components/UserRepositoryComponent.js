@@ -113,6 +113,21 @@ export default function UserRepositoryComponent({
       maxWidth: "40px",
     },
     {
+      name: "Remark",
+      selector: function func(d) {
+        return (
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>{d.remark}</Tooltip>}
+          >
+            <span>{d.remark}</span>
+          </OverlayTrigger>
+        );
+      },
+      maxWidth: "40px",
+    },
+    {
       name: "Source Type",
       selector: function func(d) {
         return (
