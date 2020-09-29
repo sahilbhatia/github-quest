@@ -30,11 +30,6 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      remark: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-        defaultValue: null,
-      },
       is_forked: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,

@@ -5,6 +5,7 @@ const dbConn = require("../models/sequelize");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
+const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
@@ -444,21 +445,26 @@ const updateReviewStatus = async (item, result, databaseUser) => {
       result[0].dataValues.review == "suspicious manual"
     ) {
       if (isRepoUpdated(item, result[0].dataValues)) {
-        const commit = await getCommits(result[0].dataValues, databaseUser);
-        if (commit.length != 0) {
-          await Repositories.update(
-            {
-              remark: commit[commit.length - 1].commit.message,
-              updated_at: item.updated_at,
-              review: "pending",
+        const commits = await getCommits(result[0].dataValues, databaseUser);
+        await commits.map(async (commit) => {
+          const obj = {
+            commit_id: commit.sha,
+            commit: commit.commit.message,
+            repository_id: result[0].dataValues.id,
+          };
+          await Commits.create(obj);
+        });
+        await Repositories.update(
+          {
+            updated_at: item.updated_at,
+            review: "pending",
+          },
+          {
+            where: {
+              source_repo_id: result[0].dataValues.source_repo_id.toString(),
             },
-            {
-              where: {
-                source_repo_id: result[0].dataValues.source_repo_id.toString(),
-              },
-            }
-          );
-        }
+          }
+        );
       }
       return null;
     } else {

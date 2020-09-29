@@ -23,6 +23,13 @@ export default function UserRepositoryComponent({
   data = data ? data.repositories : undefined;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
+  const getRemark = (commits) => {
+    let message = "review status changed because of ";
+    commits.map((commit, index) => {
+      message += `(${index + 1}) ${commit.commit}`;
+    });
+    return message;
+  };
   const columns = [
     {
       name: "Name",
@@ -117,11 +124,15 @@ export default function UserRepositoryComponent({
       selector: function func(d) {
         return (
           <OverlayTrigger
-            placement="top"
+            placement="left"
             delay={{ show: 250, hide: 400 }}
-            overlay={<Tooltip>{d.remark}</Tooltip>}
+            overlay={
+              <Tooltip>
+                {d.commits.length != 0 ? getRemark(d.commits) : "-"}
+              </Tooltip>
+            }
           >
-            <span>{d.remark}</span>
+            <span>{d.commits.length != 0 ? getRemark(d.commits) : "-"}</span>
           </OverlayTrigger>
         );
       },

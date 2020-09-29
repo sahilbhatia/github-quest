@@ -31,5 +31,6 @@ db.projects_repositories = require("./projects_repositories.model")(
   Sequelize
 );
 db.users_projects = require("./users_projects.model")(sequelize, Sequelize);
+db.commits = require("./commits.model")(sequelize, Sequelize);
 
 module.exports = db;
