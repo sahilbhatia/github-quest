@@ -70,8 +70,8 @@ const updateSuspiciousRepo = async (req, res) => {
               updatedRepo[1].dataValues.parent_repo_id,
               updatedAt
             );
+            await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
           }
-          await updateParentRepo(updatedRepo[1].dataValues.id, updatedAt);
           await clearRemark(repoId);
           res.status(200).json({
             message: "Repository Updated Successfully",
