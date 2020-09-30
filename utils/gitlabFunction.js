@@ -203,7 +203,7 @@ const updateReviewStatus = async (item, findRepo) => {
           });
           await Repositories.update(
             {
-              updated_at: item.updated_at,
+              updated_at: item.last_activity_at,
               review: "pending",
             },
             {
