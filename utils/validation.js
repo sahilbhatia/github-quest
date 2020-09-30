@@ -1,20 +1,17 @@
 const request = require("superagent");
-const {
-  validateGitHubToken,
-  ValidationError,
-} = require("validate-github-token");
+const { headers } = require("../constants/githubHeader");
 
 //function for validate github access token
 const gitHubValidation = async () => {
   try {
-    await validateGitHubToken(process.env.GITHUB_ACCESS_TOKEN);
-    return true;
-  } catch (err) {
-    if (err instanceof ValidationError) {
-      return false;
-    } else {
+    const res = await request.get(`https://api.github.com`).set(headers);
+    if (res.status == 200) {
       return true;
+    } else {
+      return false;
     }
+  } catch {
+    return false;
   }
 };
 
