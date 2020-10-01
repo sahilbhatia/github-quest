@@ -64,13 +64,13 @@ const isRateLimitExceed = (githubValidate, gitlabValidate) => {
     } else {
       return {
         status: 403,
-        message: "Rate Limit Exceeds Of GitLab Access Token",
+        message: "Rate Limit Exceeded Of GitLab Access Token",
       };
     }
   } else {
     return {
       status: 403,
-      message: "Rate Limit Exceeds Of GitHub Access Token",
+      message: "Rate Limit Exceeded Of GitHub Access Token",
     };
   }
 };

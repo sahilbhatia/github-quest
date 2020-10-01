@@ -19,7 +19,7 @@ const insertPublicRepos = async (req, res) => {
     } else if (validate.status == 403) {
       process.env["RETRY"] = true;
       res.status(403).json({
-        error: "Rate Limit Exceeds",
+        error: "Rate Limit Exceeded",
         message: validate.message,
       });
     } else {
