@@ -6,7 +6,7 @@ const gitHubValidation = async () => {
   try {
     const res = await request.get(`https://api.github.com`).set(headers);
     if (res.status == 200) {
-      return true;
+      return res;
     } else {
       return false;
     }
@@ -22,7 +22,7 @@ const gitLabValidation = async () => {
       .get(`https://gitlab.com/api/v4/projects`)
       .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
     if (res.status == 200) {
-      return true;
+      return res;
     } else {
       return false;
     }
@@ -38,12 +38,40 @@ const bitbucketValidation = async () => {
       `https://api.bitbucket.org/2.0/repositories?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
     );
     if (res.status == 200) {
-      return true;
+      return res;
     } else {
       return false;
     }
   } catch {
     return false;
+  }
+};
+
+//function for check rate limit exceeded
+const isRateLimitExceed = (githubValidate, gitlabValidate) => {
+  if (
+    githubValidate.header["x-ratelimit-limit"] -
+      githubValidate.header["x-ratelimit-used"] >=
+    100
+  ) {
+    if (
+      gitlabValidate.header["ratelimit-limit"] -
+        gitlabValidate.header["ratelimit-observed"] >=
+      100
+    ) {
+      delete process.env.RETRY;
+      return false;
+    } else {
+      return {
+        status: 403,
+        message: "Rate Limit Exceeds Of GitLab Access Token",
+      };
+    }
+  } else {
+    return {
+      status: 403,
+      message: "Rate Limit Exceeds Of GitHub Access Token",
+    };
   }
 };
 
@@ -55,14 +83,14 @@ module.exports.validateToken = async () => {
     if (gitlabValidate) {
       const bitbucketValidate = await bitbucketValidation();
       if (bitbucketValidate) {
-        return false;
+        return isRateLimitExceed(githubValidate, gitlabValidate);
       } else {
-        return "Invalid BitBucket Access Token";
+        return { status: 401, message: "Invalid BitBucket Access Token" };
       }
     } else {
-      return "Invalid GiLab Access Token";
+      return { status: 401, message: "Invalid GiLab Access Token" };
     }
   } else {
-    return "Invalid GitHub Access Token";
+    return { status: 401, message: "Invalid GitHub Access Token" };
   }
 };
