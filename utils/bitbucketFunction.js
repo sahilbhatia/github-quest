@@ -1,6 +1,7 @@
 const request = require("superagent");
 const moment = require("moment");
 const dbConn = require("../models/sequelize");
+const { Sentry } = require("./sentry");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
@@ -9,128 +10,158 @@ const Users_repositories = db.users_repositories;
 
 //function for insert new repository
 const insertNewRepo = async (insertRepos, repo) => {
-  insertRepos = await Repositories.create({
-    source_type: "bitbucket",
-    source_repo_id: repo.uuid,
-    name: repo.name,
-    url: repo.links.html.href,
-    description: repo.description,
-    is_private: repo.is_private,
-    is_forked: repo.parent ? true : false,
-    created_at: repo.created_on,
-    updated_at: repo.updated_on,
-    review: "pending",
-  });
-  return insertRepos;
+  try {
+    insertRepos = await Repositories.create({
+      source_type: "bitbucket",
+      source_repo_id: repo.uuid,
+      name: repo.name,
+      url: repo.links.html.href,
+      description: repo.description,
+      is_private: repo.is_private,
+      is_forked: repo.parent ? true : false,
+      created_at: repo.created_on,
+      updated_at: repo.updated_on,
+      review: "pending",
+    });
+    return insertRepos;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
 };
 
 //function for insert forked repo
 const insertForkedRepoFunction = async (forkRepo, repo, insertRepos) => {
-  const insertForkedRepo = await Repositories.create({
-    source_type: "bitbucket",
-    source_repo_id: forkRepo.uuid,
-    name: forkRepo.name,
-    url: forkRepo.web_url,
-    description: forkRepo.description,
-    is_disabled: !forkRepo.packages_enabled,
-    is_archived: forkRepo.archived,
-    is_private: forkRepo.is_private ? true : false,
-    is_forked: true,
-    created_at: forkRepo.created_at,
-    updated_at: forkRepo.last_activity_at,
-    parent_repo_id: insertRepos ? insertRepos.dataValues.id : null,
-    is_suspicious:
-      (repo.is_private && !forkRepo.is_private) ||
-      (insertRepos ? insertRepos.dataValues.is_suspicious : false)
-        ? true
-        : false,
-    review:
-      (repo.is_private && !forkRepo.is_private) ||
-      (insertRepos ? insertRepos.dataValues.is_suspicious : false)
-        ? "suspicious auto"
-        : "no action",
-    reviewed_at:
-      (repo.is_private && !forkRepo.is_private) ||
-      (insertRepos ? insertRepos.dataValues.is_suspicious : false)
-        ? moment.utc().format()
-        : null,
-  });
-  return insertForkedRepo;
+  try {
+    const insertForkedRepo = await Repositories.create({
+      source_type: "bitbucket",
+      source_repo_id: forkRepo.uuid,
+      name: forkRepo.name,
+      url: forkRepo.web_url,
+      description: forkRepo.description,
+      is_disabled: !forkRepo.packages_enabled,
+      is_archived: forkRepo.archived,
+      is_private: forkRepo.is_private ? true : false,
+      is_forked: true,
+      created_at: forkRepo.created_at,
+      updated_at: forkRepo.last_activity_at,
+      parent_repo_id: insertRepos ? insertRepos.dataValues.id : null,
+      is_suspicious:
+        (repo.is_private && !forkRepo.is_private) ||
+        (insertRepos ? insertRepos.dataValues.is_suspicious : false)
+          ? true
+          : false,
+      review:
+        (repo.is_private && !forkRepo.is_private) ||
+        (insertRepos ? insertRepos.dataValues.is_suspicious : false)
+          ? "suspicious auto"
+          : "no action",
+      reviewed_at:
+        (repo.is_private && !forkRepo.is_private) ||
+        (insertRepos ? insertRepos.dataValues.is_suspicious : false)
+          ? moment.utc().format()
+          : null,
+    });
+    return insertForkedRepo;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
 };
 
 //function for link repository with user
 const linkUserRepository = async (user, repo) => {
-  await Users_repositories.create({
-    user_id: user.id,
-    repository_id: repo.id,
-  });
-  return null;
+  try {
+    await Users_repositories.create({
+      user_id: user.id,
+      repository_id: repo.id,
+    });
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
 };
 
 //function for find repo
 const findRepoFunction = async (id) => {
-  const repo = await Repositories.findOne({
-    where: {
-      source_repo_id: id.toString(),
-    },
-  });
-  if (!repo) {
-    return false;
-  } else {
-    return repo;
+  try {
+    const repo = await Repositories.findOne({
+      where: {
+        source_repo_id: id.toString(),
+      },
+    });
+    if (!repo) {
+      return false;
+    } else {
+      return repo;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
   }
 };
 
 //function for update repository
 const updateRepo = async (insertParentRepo, insertRepos, ParentRepo, repo) => {
-  await Repositories.update(
-    {
-      parent_repo_id: insertParentRepo.id,
-      is_suspicious: ParentRepo.is_private && !repo.is_private ? true : false,
-      review:
-        ParentRepo.is_private && !repo.is_private
-          ? "suspicious auto"
-          : "no action",
-      reviewed_at:
-        ParentRepo.is_private && !repo.is_private
-          ? moment.utc().format()
-          : null,
-      manual_review: false,
-    },
-    {
-      where: {
-        id: insertRepos.id,
+  try {
+    await Repositories.update(
+      {
+        parent_repo_id: insertParentRepo.id,
+        is_suspicious: ParentRepo.is_private && !repo.is_private ? true : false,
+        review:
+          ParentRepo.is_private && !repo.is_private
+            ? "suspicious auto"
+            : "no action",
+        reviewed_at:
+          ParentRepo.is_private && !repo.is_private
+            ? moment.utc().format()
+            : null,
+        manual_review: false,
       },
-    }
-  );
-  return null;
+      {
+        where: {
+          id: insertRepos.id,
+        },
+      }
+    );
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
 };
 
 //function for update forked repo
 const updateForkedRepo = async (insertRepos, forkRepo, repo) => {
-  const updateObject = {
-    is_forked: true,
-    parent_repo_id: insertRepos.id,
-    is_suspicious:
-      (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
-        ? true
-        : false,
-    review:
-      (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
-        ? "suspicious auto"
-        : "no action",
-    reviewed_at:
-      (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
-        ? moment.utc().format()
-        : null,
-    manual_review: false,
-  };
-  await Repositories.update(updateObject, {
-    where: {
-      source_repo_id: forkRepo.uuid,
-    },
-  });
-  return null;
+  try {
+    const updateObject = {
+      is_forked: true,
+      parent_repo_id: insertRepos.id,
+      is_suspicious:
+        (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
+          ? true
+          : false,
+      review:
+        (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
+          ? "suspicious auto"
+          : "no action",
+      reviewed_at:
+        (repo.is_private && !forkRepo.is_private) || insertRepos.is_suspicious
+          ? moment.utc().format()
+          : null,
+      manual_review: false,
+    };
+    await Repositories.update(updateObject, {
+      where: {
+        source_repo_id: forkRepo.uuid,
+      },
+    });
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
 };
 
 //function for check valid bitbucket handle
@@ -140,7 +171,8 @@ const getBitBucketRepos = async (databaseUser) => {
       `https://api.bitbucket.org/2.0/repositories/${databaseUser.dataValues.bitbucket_handle}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
     );
     return bitbucketRepos;
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     await Users.update(
       {
         error_details: "repositories not fetch for given bitbucket handle",
@@ -351,8 +383,9 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
         where: { id: databaseUser.dataValues.id },
       }
     );
-    return;
-  } catch {
-    return;
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
   }
 };

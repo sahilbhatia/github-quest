@@ -1,4 +1,5 @@
 const request = require("superagent");
+const { Sentry } = require("./sentry");
 const {
   validateGitHubToken,
   ValidationError,
@@ -10,6 +11,7 @@ const gitHubValidation = async () => {
     await validateGitHubToken(process.env.GITHUB_ACCESS_TOKEN);
     return true;
   } catch (err) {
+    Sentry.captureException(err);
     if (err instanceof ValidationError) {
       return false;
     } else {
@@ -29,7 +31,8 @@ const gitLabValidation = async () => {
     } else {
       return false;
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     return false;
   }
 };
@@ -45,7 +48,8 @@ const bitbucketValidation = async () => {
     } else {
       return false;
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     return false;
   }
 };

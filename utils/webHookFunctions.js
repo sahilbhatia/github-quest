@@ -1,6 +1,7 @@
 const dbConn = require("../models/sequelize");
 dbConn.sequelize;
 const db = require("../models/sequelize");
+const { Sentry } = require("./sentry");
 const Users = db.users;
 const UsersProjects = db.users_projects;
 const Projects = db.projects;
@@ -13,50 +14,78 @@ const repositoryRemoveSchema = validation.repositoryRemoveSchema();
 const repositoryInsertSchema = validation.repositoryInsertSchema();
 
 //find user
-const findUser = async (id) => {
-  const user = await Users.findOne({
-    where: { org_user_id: id },
-  });
-  if (!user) {
-    return false;
-  } else {
-    return user;
+const findUser = async (id, res) => {
+  try {
+    const user = await Users.findOne({
+      where: { org_user_id: id },
+    });
+    if (!user) {
+      return false;
+    } else {
+      return user;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
   }
 };
 
 //find manager
-const findManager = async (userId, projectId) => {
-  const manager = await Projects.findOne({
-    where: { org_project_id: projectId, project_manager: userId },
-  });
-  if (!manager) {
-    return false;
-  } else {
-    return true;
+const findManager = async (userId, projectId, res) => {
+  try {
+    const manager = await Projects.findOne({
+      where: { org_project_id: projectId, project_manager: userId },
+    });
+    if (!manager) {
+      return false;
+    } else {
+      return true;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
   }
 };
 
 //find project
-const findProject = async (id) => {
-  const project = await Projects.findOne({
-    where: { org_project_id: id },
-  });
-  if (!project) {
-    return false;
-  } else {
-    return project;
+const findProject = async (id, res) => {
+  try {
+    const project = await Projects.findOne({
+      where: { org_project_id: id },
+    });
+    if (!project) {
+      return false;
+    } else {
+      return project;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
   }
 };
 
 //find repository
-const findRepository = async (url) => {
-  const repo = await ProjectsRepositories.findOne({
-    where: { repository_url: url },
-  });
-  if (!repo) {
-    return false;
-  } else {
-    return repo;
+const findRepository = async (url, res) => {
+  try {
+    const repo = await ProjectsRepositories.findOne({
+      where: { repository_url: url },
+    });
+    if (!repo) {
+      return false;
+    } else {
+      return repo;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
   }
 };
 
@@ -68,7 +97,7 @@ module.exports.updateUser = async (res, data) => {
     })
     .then(async () => {
       try {
-        const user = await findUser(data.user_id);
+        const user = await findUser(data.user_id, res);
         if (!user) {
           res.status(404).json({
             message: "User Not Found For Specified Id",
@@ -89,13 +118,15 @@ module.exports.updateUser = async (res, data) => {
             message: "User Updated Successfully",
           });
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -116,13 +147,13 @@ module.exports.addUserInProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const user = await findUser(data.user_id);
+          const user = await findUser(data.user_id, res);
           if (!user) {
             res.status(404).json({
               message: "User Not Found For Specified Id",
@@ -138,13 +169,15 @@ module.exports.addUserInProject = async (res, data) => {
             });
           }
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -165,13 +198,13 @@ module.exports.removeUserFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const user = await findUser(data.user_id);
+          const user = await findUser(data.user_id, res);
           if (!user) {
             res.status(404).json({
               message: "User Not Found For Specified Id",
@@ -188,13 +221,15 @@ module.exports.removeUserFromProject = async (res, data) => {
             });
           }
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -211,7 +246,7 @@ module.exports.changeStatusOfProject = async (res, data, is_active) => {
     })
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
@@ -231,13 +266,15 @@ module.exports.changeStatusOfProject = async (res, data, is_active) => {
             });
           }
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -254,7 +291,7 @@ module.exports.deleteProject = async (res, data) => {
     })
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
@@ -277,13 +314,15 @@ module.exports.deleteProject = async (res, data) => {
             message: "Project Deleted Successfully",
           });
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -304,13 +343,13 @@ module.exports.addManagerInProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const user = await findUser(data.user_id);
+          const user = await findUser(data.user_id, res);
           if (!user) {
             res.status(404).json({
               message: "User Not Found For Specified Id",
@@ -325,13 +364,15 @@ module.exports.addManagerInProject = async (res, data) => {
             });
           }
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -352,19 +393,19 @@ module.exports.removeManagerFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const user = await findUser(data.user_id);
+          const user = await findUser(data.user_id, res);
           if (!user) {
             res.status(404).json({
               message: "User Not Found For Specified Id",
             });
           } else {
-            const manager = await findManager(user.id, data.project_id);
+            const manager = await findManager(user.id, data.project_id, res);
             if (!manager) {
               res.status(404).json({
                 message: "Manager Not Assigned To Specified Project Id",
@@ -380,13 +421,15 @@ module.exports.removeManagerFromProject = async (res, data) => {
             }
           }
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -407,13 +450,13 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const repo = await findRepository(data.repository_url);
+          const repo = await findRepository(data.repository_url, res);
           if (!repo) {
             res.status(404).json({
               message: "Repository Not Found For Specified Url",
@@ -431,13 +474,15 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
             });
           }
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
@@ -459,7 +504,7 @@ module.exports.addRepositoryInProject = async (res, data) => {
     )
     .then(async () => {
       try {
-        const project = await findProject(data.project_id);
+        const project = await findProject(data.project_id, res);
         if (!project) {
           res.status(404).json({
             message: "Project Not Found For Specified Id",
@@ -476,13 +521,15 @@ module.exports.addRepositoryInProject = async (res, data) => {
             });
           });
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",
