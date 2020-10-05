@@ -5,6 +5,7 @@ const { Sentry } = require("./sentry");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
+const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
@@ -187,6 +188,77 @@ const getBitBucketRepos = async (databaseUser) => {
   }
 };
 
+//function for check updated repo
+const isRepoUpdated = (item, repo) => {
+  if (
+    new Date(
+      moment(repo.reviewed_at).add(330, "minutes").toISOString()
+    ).valueOf() < new Date(item.updated_on).valueOf()
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+//function for get new commit
+const getCommits = async (repo, databaseUser) => {
+  const commits = await request.get(
+    `https://api.bitbucket.org/2.0/repositories/${databaseUser.dataValues.bitbucket_handle}/${repo.name}/commits?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
+  );
+  let array = [];
+  await commits.body.values.map((commit) => {
+    if (
+      new Date(
+        moment(repo.reviewed_at).add(330, "minutes").toISOString()
+      ).valueOf() < new Date(commit.date).valueOf()
+    ) {
+      array.push(commit);
+    }
+  });
+  return array;
+};
+
+//function for update review status
+const updateReviewStatus = async (item, findRepo, databaseUser) => {
+  try {
+    if (
+      findRepo.dataValues.review == "approved" ||
+      findRepo.dataValues.review == "suspicious manual"
+    ) {
+      if (isRepoUpdated(item, findRepo.dataValues)) {
+        const commits = await getCommits(findRepo.dataValues, databaseUser);
+        if (commits.length != 0) {
+          await commits.map(async (commit) => {
+            const obj = {
+              commit_id: commit.hash,
+              commit: commit.message,
+              repository_id: findRepo.dataValues.id,
+            };
+            await Commits.create(obj);
+          });
+          await Repositories.update(
+            {
+              updated_at: item.updated_on,
+              review: "pending",
+            },
+            {
+              where: {
+                source_repo_id: findRepo.dataValues.source_repo_id.toString(),
+              },
+            }
+          );
+        }
+      }
+      return null;
+    } else {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+};
+
 //insert bitbucket repositories
 module.exports.insertBitbucketRepos = async (databaseUser) => {
   try {
@@ -281,6 +353,7 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
           });
         }
       } else {
+        await updateReviewStatus(repo, findRepo, databaseUser);
         //get parent repo
         if (repo.parent) {
           const ParentRepo = await request.get(
@@ -375,14 +448,6 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
       }
     });
     await Promise.all(data);
-    await Users.update(
-      { last_fetched_at: moment.utc().format() },
-      {
-        returning: true,
-        plain: true,
-        where: { id: databaseUser.dataValues.id },
-      }
-    );
     return null;
   } catch (err) {
     Sentry.captureException(err);

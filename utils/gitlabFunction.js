@@ -5,6 +5,7 @@ const { Sentry } = require("./sentry");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
+const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
@@ -173,6 +174,69 @@ const updateForkedRepo = async (insertRepos, forkRepo, repo) => {
   }
 };
 
+//function for check updated repo
+const isRepoUpdated = (item, repo) => {
+  if (
+    new Date(
+      moment(repo.reviewed_at).add(330, "minutes").toISOString()
+    ).valueOf() < new Date(item.last_activity_at).valueOf()
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+//function for get new commit
+const getCommits = async (repo) => {
+  const commits = await request
+    .get(
+      `https://gitlab.com/api/v4/projects/${repo.source_repo_id}/repository/commits?since=${repo.reviewed_at}`
+    )
+    .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+  return commits.body;
+};
+
+//function for update review status
+const updateReviewStatus = async (item, findRepo) => {
+  try {
+    if (
+      findRepo.dataValues.review == "approved" ||
+      findRepo.dataValues.review == "suspicious manual"
+    ) {
+      if (isRepoUpdated(item, findRepo.dataValues)) {
+        const commits = await getCommits(findRepo.dataValues);
+        if (commits.length != 0) {
+          await commits.map(async (commit) => {
+            const obj = {
+              commit_id: commit.id,
+              commit: commit.message,
+              repository_id: findRepo.dataValues.id,
+            };
+            await Commits.create(obj);
+          });
+          await Repositories.update(
+            {
+              updated_at: item.last_activity_at,
+              review: "pending",
+            },
+            {
+              where: {
+                source_repo_id: findRepo.dataValues.source_repo_id.toString(),
+              },
+            }
+          );
+        }
+      }
+      return null;
+    } else {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+};
+
 //insert gitlab repositories
 module.exports.insertGitlabRepos = async (databaseUser) => {
   try {
@@ -275,6 +339,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
             });
           }
         } else {
+          await updateReviewStatus(repo, findRepo, databaseUser);
           //check repositories updated or not
           if (
             new Date(
@@ -389,14 +454,6 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
         }
       });
       await Promise.all(data);
-      await Users.update(
-        { last_fetched_at: moment.utc().format() },
-        {
-          returning: true,
-          plain: true,
-          where: { id: databaseUser.dataValues.id },
-        }
-      );
     } else {
       await Users.update(
         {

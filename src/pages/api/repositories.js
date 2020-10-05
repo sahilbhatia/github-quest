@@ -7,6 +7,7 @@ const { Sentry } = require("../../../utils/sentry");
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
+const Commits = db.commits;
 const yup = require("yup");
 
 Users_repositories.belongsTo(Repositories, {
@@ -24,6 +25,12 @@ Users.hasMany(Users_repositories, {
 Repositories.hasMany(Repositories, {
   foreignKey: { name: "parent_repo_id", allowNull: true },
   as: "parent_of",
+});
+Repositories.hasMany(Commits, {
+  foreignKey: { name: "repository_id", allowNull: true },
+});
+Commits.belongsTo(Repositories, {
+  foreignKey: { name: "repository_id", allowNull: true },
 });
 
 //function for get where clause
@@ -157,6 +164,9 @@ const getFindAllClause = (limit, offset, getIncludeUsersModel) => {
         model: Repositories,
         as: "parent_of",
       },
+      {
+        model: Commits,
+      },
     ],
     limit: limit,
     offset: offset,
@@ -181,6 +191,9 @@ const getFindAllUserClause = (userId, limit, offset) => {
       {
         model: Repositories,
         as: "parent_of",
+      },
+      {
+        model: Commits,
       },
     ],
     limit: limit,
@@ -242,6 +255,19 @@ const getUserRepositories = async (userId, limit, offset, req, res) => {
     });
 };
 
+//function for get last fetch time
+const getLastFetchedAt = async () => {
+  const time = await Users.findOne({
+    attributes: ["last_fetched_at"],
+    where: {
+      last_fetched_at: {
+        [Sequelize.Op.ne]: null,
+      },
+    },
+  });
+  return time;
+};
+
 //get repositories
 const getAllPublicRepos = async (req, res) => {
   let { userName, limit, offset, userId } = req.query;
@@ -259,8 +285,11 @@ const getAllPublicRepos = async (req, res) => {
       const earliestDate = await Repositories.findAll({
         attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
       });
+      const lastFetchedAt = await getLastFetchedAt();
       let data = {};
-      (data.repositories = repositories), (data.date = earliestDate[0]);
+      (data.repositories = repositories),
+        (data.date = earliestDate[0]),
+        (data.last_fetched_at = lastFetchedAt.last_fetched_at);
       res.status(200).json(data);
     } catch (err) {
       Sentry.captureException(err);

@@ -6,6 +6,7 @@ const { Sentry } = require("./sentry");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
+const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
@@ -353,7 +354,6 @@ const updateRepo = async (result, item) => {
         is_forked: item.fork,
         created_at: item.created_at,
         updated_at: item.updated_at,
-        review: "pending",
       },
       {
         returning: true,
@@ -475,6 +475,73 @@ const updateUserError = async (id) => {
   }
 };
 
+//function for check updated repo
+const isRepoUpdated = (item, repo) => {
+  if (
+    new Date(
+      moment(repo.updated_at).add(330, "minutes").toISOString()
+    ).valueOf() < new Date(item.updated_at).valueOf()
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+//function for get new commit
+const getCommits = async (repo, databaseUser) => {
+  try {
+    const commits = await request
+      .get(
+        `https://api.github.com/repos/${databaseUser.dataValues.github_handle}/${repo.name}/commits?since=${repo.updated_at}`
+      )
+      .set(headers);
+    return commits.body;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
+};
+
+//function for update review status
+const updateReviewStatus = async (item, result, databaseUser) => {
+  try {
+    if (
+      result[0].dataValues.review == "approved" ||
+      result[0].dataValues.review == "suspicious manual"
+    ) {
+      if (isRepoUpdated(item, result[0].dataValues)) {
+        const commits = await getCommits(result[0].dataValues, databaseUser);
+        await commits.map(async (commit) => {
+          const obj = {
+            commit_id: commit.sha,
+            commit: commit.commit.message,
+            repository_id: result[0].dataValues.id,
+          };
+          await Commits.create(obj);
+        });
+        await Repositories.update(
+          {
+            updated_at: item.updated_at,
+            review: "pending",
+          },
+          {
+            where: {
+              source_repo_id: result[0].dataValues.source_repo_id.toString(),
+            },
+          }
+        );
+      }
+      return null;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
+};
+
 //insert repositories by github handle
 module.exports.insertGithubRepos = async (databaseUser) => {
   const data = await getRepoForSpecificUser(databaseUser);
@@ -484,165 +551,162 @@ module.exports.insertGithubRepos = async (databaseUser) => {
         where: { source_repo_id: item.id.toString() },
         order: [["id", "ASC"]],
       });
-      //if repo is not forked
-      if (result.length === 0 && item.fork === false) {
-        try {
-          const insertRepos = await insertNewRepo(item);
-          await linkUserRepository(
-            databaseUser.dataValues,
-            insertRepos.dataValues
-          );
-        } catch (err) {
-          Sentry.captureException(err);
-          await updateUserError(databaseUser.dataValues.id);
-          return;
-        }
-        //if repo is forked
-      } else if (result.length === 0 && item.fork == true) {
-        try {
-          let insertParentRepositories;
-          const parentRepo = await request
-            .get(
-              `https://api.github.com/repos/${databaseUser.dataValues.github_handle}/${item.name}`
-            )
-            .set(headers);
-
-          insertParentRepositories = await findRepoFunction(
-            parentRepo.body.parent.id
-          );
-          //if parent repo existing
-          if (insertParentRepositories) {
-            try {
-              const insertRepos = await insertForkedRepo(
-                item,
-                insertParentRepositories
-              );
-              await linkUserRepository(
-                databaseUser.dataValues,
-                insertRepos.dataValues
-              );
-              await insertSuspiciousChildRepos(
-                item,
-                insertRepos,
-                insertParentRepositories,
-                databaseUser
-              );
-              await Repositories.update(
-                {
-                  review: "pending",
-                },
-                {
-                  returning: true,
-                  where: { id: insertParentRepositories.dataValues.id },
-                }
-              );
-            } catch (err) {
-              Sentry.captureException(err);
-              await updateRepositoryError(
-                insertParentRepositories.dataValues.id
-              );
-              return;
-            }
-          } else {
-            //insert parent repo
-            try {
-              insertParentRepositories = await insertNewRepo(parentRepo.body);
-              let userObject = await Users.findOne({
-                where: {
-                  github_handle: parentRepo.body.parent.owner.login,
-                },
-              });
-
-              if (userObject) {
-                try {
-                  await linkUserRepository(
-                    userObject.dataValues,
-                    insertParentRepositories.dataValues
-                  );
-                } catch (err) {
-                  Sentry.captureException(err);
-                  await updateUserError(databaseUser.dataValues.id);
-                  return;
-                }
-              }
-              const insertRepos = await insertForkedRepo(
-                item,
-                insertParentRepositories
-              );
-              await linkUserRepository(
-                databaseUser.dataValues,
-                insertRepos.dataValues
-              );
-              await insertSuspiciousChildRepos(
-                item,
-                insertRepos,
-                insertParentRepositories,
-                databaseUser
-              );
-            } catch (err) {
-              Sentry.captureException(err);
-              await updateRepositoryErrorBySourceId(
-                result[0].dataValues.source_repo_id
-              );
-              return;
-            }
+      if (result.length == 0) {
+        //if repo is not forked
+        if (item.fork === false) {
+          try {
+            const insertRepos = await insertNewRepo(item);
+            await linkUserRepository(
+              databaseUser.dataValues,
+              insertRepos.dataValues
+            );
+          } catch (err) {
+            Sentry.captureException(err);
+            await updateUserError(databaseUser.dataValues.id);
+            return null;
           }
-        } catch (err) {
-          Sentry.captureException(err);
-          const insertRepos = await insertErrorRepo(item, err);
-          await linkUserRepository(
-            databaseUser.dataValues,
-            insertRepos.dataValues
-          );
-        }
-      } else if (result.length === 1 && item.fork == false) {
-        try {
-          await updateRepo(result, item);
-        } catch (err) {
-          Sentry.captureException(err);
-          await updateRepositoryErrorBySourceId(
-            result[0].dataValues.source_repo_id
-          );
-          return;
-        }
-      } else if (result.length === 1 && item.fork == true) {
-        try {
-          let parentRepo;
-          let insertParentRepositories = await getParentRepoData(
-            item,
-            result,
-            databaseUser,
-            parentRepo
-          );
+          //if repo is forked
+        } else {
+          try {
+            let insertParentRepositories;
+            const parentRepo = await request
+              .get(
+                `https://api.github.com/repos/${databaseUser.dataValues.github_handle}/${item.name}`
+              )
+              .set(headers);
 
-          await Repositories.findOne({
-            where: { parent_repo_id: result[0].dataValues.id },
-          });
-          await updateChildRepo(item, result, insertParentRepositories);
-        } catch (err) {
-          Sentry.captureException(err);
-          await updateRepositoryErrorBySourceId(
-            result[0].dataValues.source_repo_id
-          );
-          return;
+            insertParentRepositories = await findRepoFunction(
+              parentRepo.body.parent.id
+            );
+            //if parent repo existing
+            if (insertParentRepositories) {
+              try {
+                const insertRepos = await insertForkedRepo(
+                  item,
+                  insertParentRepositories
+                );
+                await linkUserRepository(
+                  databaseUser.dataValues,
+                  insertRepos.dataValues
+                );
+                await insertSuspiciousChildRepos(
+                  item,
+                  insertRepos,
+                  insertParentRepositories,
+                  databaseUser
+                );
+                await Repositories.update(
+                  {
+                    review: "pending",
+                  },
+                  {
+                    returning: true,
+                    where: { id: insertParentRepositories.dataValues.id },
+                  }
+                );
+              } catch (err) {
+                Sentry.captureException(err);
+                await updateRepositoryError(
+                  insertParentRepositories.dataValues.id
+                );
+                return null;
+              }
+            } else {
+              //insert parent repo
+              try {
+                insertParentRepositories = await insertNewRepo(parentRepo.body);
+                let userObject = await Users.findOne({
+                  where: {
+                    github_handle: parentRepo.body.parent.owner.login,
+                  },
+                });
+
+                if (userObject) {
+                  try {
+                    await linkUserRepository(
+                      userObject.dataValues,
+                      insertParentRepositories.dataValues
+                    );
+                  } catch (err) {
+                    Sentry.captureException(err);
+                    await updateUserError(databaseUser.dataValues.id);
+                    return null;
+                  }
+                }
+                const insertRepos = await insertForkedRepo(
+                  item,
+                  insertParentRepositories
+                );
+                await linkUserRepository(
+                  databaseUser.dataValues,
+                  insertRepos.dataValues
+                );
+                await insertSuspiciousChildRepos(
+                  item,
+                  insertRepos,
+                  insertParentRepositories,
+                  databaseUser
+                );
+              } catch (err) {
+                Sentry.captureException(err);
+                await updateRepositoryErrorBySourceId(
+                  result[0].dataValues.source_repo_id
+                );
+                return null;
+              }
+            }
+          } catch (err) {
+            Sentry.captureException(err);
+            const insertRepos = await insertErrorRepo(item, err);
+            await linkUserRepository(
+              databaseUser.dataValues,
+              insertRepos.dataValues
+            );
+          }
+        }
+      } else {
+        await updateReviewStatus(item, result, databaseUser);
+        if (item.fork == false) {
+          try {
+            await updateRepo(result, item);
+          } catch (err) {
+            Sentry.captureException(err);
+            await updateRepositoryErrorBySourceId(
+              result[0].dataValues.source_repo_id
+            );
+            return null;
+          }
+        } else {
+          try {
+            let parentRepo;
+            let insertParentRepositories = await getParentRepoData(
+              item,
+              result,
+              databaseUser,
+              parentRepo
+            );
+
+            await Repositories.findOne({
+              where: { parent_repo_id: result[0].dataValues.id },
+            });
+            await updateChildRepo(item, result, insertParentRepositories);
+          } catch (err) {
+            Sentry.captureException(err);
+            await updateRepositoryErrorBySourceId(
+              result[0].dataValues.source_repo_id
+            );
+            return null;
+          }
         }
       }
     });
     try {
       await Promise.all(mapData);
-      await Users.update(
-        { last_fetched_at: moment.utc().format() },
-        {
-          returning: true,
-          plain: true,
-          where: { id: databaseUser.dataValues.id },
-        }
-      );
     } catch (err) {
       Sentry.captureException(err);
       await updateUserError(databaseUser.dataValues.id);
-      return;
+      return null;
     }
   }
-  return;
+  return null;
 };
