@@ -397,14 +397,6 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
         }
       });
       await Promise.all(data);
-      await Users.update(
-        { last_fetched_at: moment.utc().format() },
-        {
-          returning: true,
-          plain: true,
-          where: { id: databaseUser.dataValues.id },
-        }
-      );
     } else {
       await Users.update(
         {

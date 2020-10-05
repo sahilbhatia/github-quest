@@ -17,8 +17,12 @@ export default function RepositoryListComponent({
   data,
   onSelectManualReview,
   onSelectSuspeciousMark,
+  reFetch,
 }) {
   const minDate = data ? data.date.min : undefined;
+  const lastFetchedAt = data
+    ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
+    : undefined;
   data = data ? data.repositories : undefined;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
@@ -310,6 +314,18 @@ export default function RepositoryListComponent({
   ];
   return (
     <div>
+      <div className="text-right ">
+        <span className="text-dark">last fetched at </span>
+        <span className="border border-dark pl-1 text-danger">
+          {lastFetchedAt.substring(0, 24)}
+        </span>
+      </div>
+      <div className="text-right ">
+        <span className="text-dark">Refetch </span>
+        <Button className="ml-2 btn-sm" variant="danger" onClick={reFetch}>
+          ↺
+        </Button>
+      </div>
       <DataTable
         title={
           <div className="d-flex justify-content-end text-primary">
@@ -357,4 +373,5 @@ RepositoryListComponent.propTypes = {
   setFilter: PropTypes.func.isRequired,
   onSelectManualReview: PropTypes.func.isRequired,
   onSelectSuspeciousMark: PropTypes.func.isRequired,
+  reFetch: PropTypes.func.isRequired,
 };

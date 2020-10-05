@@ -1,5 +1,6 @@
 var cron = require("node-cron");
 const dbConn = require("../../../models/sequelize");
+const moment = require("moment");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const github = require("../../../utils/githubFunction");
@@ -43,6 +44,12 @@ const insertPublicRepos = async (req, res) => {
         if (user.dataValues.github_handle) {
           await github.insertGithubRepos(user);
         }
+        await Users.update(
+          { last_fetched_at: moment.utc().format() },
+          {
+            where: { id: user.dataValues.id },
+          }
+        );
       });
       res.status(200).json({
         message: "cron Job Activated successfully for inserting repositories",

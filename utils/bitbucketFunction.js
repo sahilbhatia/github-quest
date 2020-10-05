@@ -416,14 +416,6 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
       }
     });
     await Promise.all(data);
-    await Users.update(
-      { last_fetched_at: moment.utc().format() },
-      {
-        returning: true,
-        plain: true,
-        where: { id: databaseUser.dataValues.id },
-      }
-    );
     return;
   } catch {
     return;
