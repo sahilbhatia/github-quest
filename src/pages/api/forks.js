@@ -5,6 +5,7 @@ const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
 const yup = require("yup");
+const { Sentry } = require("../../../utils/sentry");
 
 Repositories.belongsTo(Repositories, {
   foreignKey: { name: "parent_repo_id", allowNull: true },
@@ -29,33 +30,40 @@ Users.hasMany(Users_repositories, {
 });
 
 //function for return forked repo
-const forkedRepos = async (repoId) => {
-  const data = await Repositories.findAll({
-    where: { parent_repo_id: repoId },
-    include: [
-      {
-        model: Repositories,
-        as: "parent",
-        include: [
-          {
-            model: Repositories,
-            as: "children",
-          },
-        ],
-      },
-      {
-        model: Repositories,
-        as: "children",
-      },
-      {
-        model: Users_repositories,
-        include: {
-          model: Users,
+const forkedRepos = async (repoId, res) => {
+  try {
+    const data = await Repositories.findAll({
+      where: { parent_repo_id: repoId },
+      include: [
+        {
+          model: Repositories,
+          as: "parent",
+          include: [
+            {
+              model: Repositories,
+              as: "children",
+            },
+          ],
         },
-      },
-    ],
-  });
-  return data;
+        {
+          model: Repositories,
+          as: "children",
+        },
+        {
+          model: Users_repositories,
+          include: {
+            model: Users,
+          },
+        },
+      ],
+    });
+    return data;
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 //get forked repos
@@ -70,7 +78,7 @@ const getForkedRepos = async (req, res) => {
     })
     .then(async () => {
       try {
-        const data = await forkedRepos(req.query.id);
+        const data = await forkedRepos(req.query.id, res);
         if (data.length == 0) {
           res.status(404).json({
             message: "List Not found For Given Id",
@@ -78,13 +86,15 @@ const getForkedRepos = async (req, res) => {
         } else {
           res.status(200).json(data);
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",

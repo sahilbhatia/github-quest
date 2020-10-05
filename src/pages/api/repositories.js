@@ -3,6 +3,7 @@ const moment = require("moment");
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
+const { Sentry } = require("../../../utils/sentry");
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
@@ -226,13 +227,15 @@ const getUserRepositories = async (userId, limit, offset, req, res) => {
           data.userName = user.name;
           res.status(200).json(data);
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      Sentry.captureException(err);
       res.status(400).json({
         message: "User Id Must Be Number",
       });
@@ -259,7 +262,8 @@ const getAllPublicRepos = async (req, res) => {
       let data = {};
       (data.repositories = repositories), (data.date = earliestDate[0]);
       res.status(200).json(data);
-    } catch {
+    } catch (err) {
+      Sentry.captureException(err);
       res.status(500).json({
         message: "Internal Server Error",
       });

@@ -3,38 +3,53 @@ dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
 const validation = require("../../../utils/validationSchema");
+const { Sentry } = require("../../../utils/sentry");
 
 //function for update repository
-const updateRepo = async (repoId, updatedAt) => {
-  const updateRepo = await Repositories.update(
-    {
-      is_suspicious: true,
-      review: "suspicious manual",
-      reviewed_at: updatedAt,
-    },
-    {
-      returning: true,
-      plain: true,
-      where: { id: repoId },
-    }
-  );
-  return updateRepo;
+const updateRepo = async (repoId, updatedAt, res) => {
+  try {
+    const updateRepo = await Repositories.update(
+      {
+        is_suspicious: true,
+        review: "suspicious manual",
+        reviewed_at: updatedAt,
+      },
+      {
+        returning: true,
+        plain: true,
+        where: { id: repoId },
+      }
+    );
+    return updateRepo;
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 //function for update parent repository
-const updateParentRepo = async (repoId, updatedAt) => {
-  await Repositories.update(
-    {
-      is_suspicious: true,
-      review: "suspicious manual",
-      reviewed_at: updatedAt,
-    },
-    {
-      returning: true,
-      where: {
-        parent_repo_id: repoId,
+const updateParentRepo = async (repoId, updatedAt, res) => {
+  try {
+    await Repositories.update(
+      {
+        is_suspicious: true,
+        review: "suspicious manual",
+        reviewed_at: updatedAt,
       },
-    }
-  );
+      {
+        returning: true,
+        where: {
+          parent_repo_id: repoId,
+        },
+      }
+    );
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 //function for update suspicious repo
@@ -58,25 +73,28 @@ const updateSuspiciousRepo = async (req, res) => {
             message: "Repository Not Found For Specified Id",
           });
         } else {
-          const updatedRepo = await updateRepo(repoId, updatedAt);
+          const updatedRepo = await updateRepo(repoId, updatedAt, res);
           if (updatedRepo[1].dataValues.parent_repo_id) {
             await updateParentRepo(
               updatedRepo[1].dataValues.parent_repo_id,
-              updatedAt
+              updatedAt,
+              res
             );
           }
-          await updateParentRepo(updatedRepo[1].dataValues.id, updatedAt);
+          await updateParentRepo(updatedRepo[1].dataValues.id, updatedAt, res);
           res.status(200).json({
             message: "Repository Updated Successfully",
           });
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "internal server error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",

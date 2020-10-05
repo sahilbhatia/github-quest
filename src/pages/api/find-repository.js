@@ -6,6 +6,7 @@ const Users_repositories = db.users_repositories;
 const Users = db.users;
 const Sequelize = require("sequelize");
 const yup = require("yup");
+const { Sentry } = require("../../../utils/sentry");
 
 Users_repositories.belongsTo(Repositories, {
   foreignKey: { name: "repository_id", allowNull: true },
@@ -22,53 +23,67 @@ Users.hasMany(Users_repositories, {
 });
 
 //function for get repository list by user id
-const getRepositoriesByUserId = async (userId, repositoryName) => {
-  const repoList = await Repositories.findAll({
-    include: {
-      model: Users_repositories,
+const getRepositoriesByUserId = async (userId, repositoryName, res) => {
+  try {
+    const repoList = await Repositories.findAll({
       include: {
-        model: Users,
-        where: { id: userId },
+        model: Users_repositories,
+        include: {
+          model: Users,
+          where: { id: userId },
+        },
       },
-    },
-    where: {
-      name: {
-        [Sequelize.Op.iLike]: "%" + repositoryName + "%",
+      where: {
+        name: {
+          [Sequelize.Op.iLike]: "%" + repositoryName + "%",
+        },
       },
-    },
-  });
-  let arr = [];
-  repoList.map((item) => {
-    if (item.users_repositories.length != 0) {
-      arr.push(item);
-    }
-  });
-  return arr;
+    });
+    let arr = [];
+    repoList.map((item) => {
+      if (item.users_repositories.length != 0) {
+        arr.push(item);
+      }
+    });
+    return arr;
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 //function for get repository list by username
-const getRepositoriesByUserName = async (userName, repositoryName) => {
-  const repoList = await Repositories.findAll({
-    include: {
-      model: Users_repositories,
+const getRepositoriesByUserName = async (userName, repositoryName, res) => {
+  try {
+    const repoList = await Repositories.findAll({
       include: {
-        model: Users,
-        where: { name: userName },
+        model: Users_repositories,
+        include: {
+          model: Users,
+          where: { name: userName },
+        },
       },
-    },
-    where: {
-      name: {
-        [Sequelize.Op.iLike]: "%" + repositoryName + "%",
+      where: {
+        name: {
+          [Sequelize.Op.iLike]: "%" + repositoryName + "%",
+        },
       },
-    },
-  });
-  let arr = [];
-  repoList.map((item) => {
-    if (item.users_repositories.length != 0) {
-      arr.push(item);
-    }
-  });
-  return arr;
+    });
+    let arr = [];
+    repoList.map((item) => {
+      if (item.users_repositories.length != 0) {
+        arr.push(item);
+      }
+    });
+    return arr;
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 //function for find repositories
@@ -85,24 +100,33 @@ const findRepository = async (req, res) => {
           userId: userId,
         })
         .then(async () => {
-          let user = await Users.findOne({
-            where: {
-              id: userId,
-            },
-          });
-          if (user) {
-            const repoList = await getRepositoriesByUserId(
-              userId,
-              repositoryName
-            );
-            res.status(200).json(repoList);
-          } else {
-            res.status(404).json({
-              message: "User Not Found For Specified Id",
+          try {
+            let user = await Users.findOne({
+              where: {
+                id: userId,
+              },
+            });
+            if (user) {
+              const repoList = await getRepositoriesByUserId(
+                userId,
+                repositoryName,
+                res
+              );
+              res.status(200).json(repoList);
+            } else {
+              res.status(404).json({
+                message: "User Not Found For Specified Id",
+              });
+            }
+          } catch (err) {
+            Sentry.captureException(err);
+            res.status(500).json({
+              message: "Internal Server Error",
             });
           }
         })
         .catch((err) => {
+          Sentry.captureException(err);
           const errors = err.errors;
           res.status(400).json({
             message: "Validation Error",
@@ -125,11 +149,13 @@ const findRepository = async (req, res) => {
     } else {
       const repoList = await getRepositoriesByUserName(
         userName,
-        repositoryName
+        repositoryName,
+        res
       );
       res.status(200).json(repoList);
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     res.status(500).json({
       message: "Internal Server Error",
     });

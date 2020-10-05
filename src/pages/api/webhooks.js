@@ -2,16 +2,10 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const webHooks = require("../../../utils/webHookFunctions");
 const fetchProjects = require("../../../utils/fetchProjects");
-const Sentry = require("@sentry/node");
-
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 1.0,
-});
+const { Sentry } = require("../../../utils/sentry");
 
 export default async function insertUsers(req, res) {
   try {
-    Sentry.captureException(req.body);
     const data = req.body;
     await fetchProjects.addProjects();
     switch (data.event_type) {
@@ -71,7 +65,8 @@ export default async function insertUsers(req, res) {
         });
         break;
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     res.status(500).json({
       message: "Internal Server Error",
     });
