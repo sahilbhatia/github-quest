@@ -2,6 +2,7 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
+const Commits = db.commits;
 const validation = require("../../../utils/validationSchema");
 
 //function for update repository
@@ -37,6 +38,11 @@ const updateParentRepo = async (repoId, updatedAt) => {
   );
 };
 
+//function for clear remark
+const clearRemark = async (id) => {
+  await Commits.destroy({ where: { repository_id: id } });
+};
+
 //function for manual review
 const updateManualRepo = async (req, res) => {
   const repoId = req.query.id;
@@ -64,9 +70,9 @@ const updateManualRepo = async (req, res) => {
               updatedRepo[1].dataValues.parent_repo_id,
               updatedAt
             );
+            await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
           }
-          await updateParentRepo(updatedRepo[1].dataValues.id, updatedAt);
-
+          await clearRemark(repoId);
           res.status(200).json({
             message: "Repository Updated Successfully",
           });

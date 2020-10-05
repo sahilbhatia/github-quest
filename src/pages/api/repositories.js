@@ -6,6 +6,7 @@ const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
+const Commits = db.commits;
 const yup = require("yup");
 
 Users_repositories.belongsTo(Repositories, {
@@ -23,6 +24,12 @@ Users.hasMany(Users_repositories, {
 Repositories.hasMany(Repositories, {
   foreignKey: { name: "parent_repo_id", allowNull: true },
   as: "parent_of",
+});
+Repositories.hasMany(Commits, {
+  foreignKey: { name: "repository_id", allowNull: true },
+});
+Commits.belongsTo(Repositories, {
+  foreignKey: { name: "repository_id", allowNull: true },
 });
 
 //function for get where clause
@@ -156,6 +163,9 @@ const getFindAllClause = (limit, offset, getIncludeUsersModel) => {
         model: Repositories,
         as: "parent_of",
       },
+      {
+        model: Commits,
+      },
     ],
     limit: limit,
     offset: offset,
@@ -180,6 +190,9 @@ const getFindAllUserClause = (userId, limit, offset) => {
       {
         model: Repositories,
         as: "parent_of",
+      },
+      {
+        model: Commits,
       },
     ],
     limit: limit,
