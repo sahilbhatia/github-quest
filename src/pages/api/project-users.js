@@ -2,6 +2,7 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const yup = require("yup");
+const { Sentry } = require("../../../utils/sentry");
 const Projects = db.projects;
 const Users_projects = db.users_projects;
 const Users_repositories = db.users_repositories;
@@ -27,34 +28,41 @@ Users.hasMany(Users_repositories, {
 });
 
 //function for get users of projects
-const getUsersByProjectId = async (projectId, limit, offset) => {
-  let users = await Users.findAll({
-    include: [
-      {
-        model: Users_projects,
-        attributes: ["id"],
-        where: { project_id: projectId },
-        include: {
-          model: Users,
+const getUsersByProjectId = async (projectId, limit, offset, res) => {
+  try {
+    let users = await Users.findAll({
+      include: [
+        {
+          model: Users_projects,
           attributes: ["id"],
+          where: { project_id: projectId },
           include: {
-            model: Users_projects,
+            model: Users,
+            attributes: ["id"],
+            include: {
+              model: Users_projects,
+            },
           },
         },
-      },
-      {
-        model: Users_repositories,
-        attributes: ["id"],
-      },
-    ],
-    limit: limit,
-    offset: offset,
-  });
-  let data = {};
-  const project = await Projects.findOne({ where: { id: projectId } });
-  data.users = users;
-  data.projectName = project.name;
-  return data;
+        {
+          model: Users_repositories,
+          attributes: ["id"],
+        },
+      ],
+      limit: limit,
+      offset: offset,
+    });
+    let data = {};
+    const project = await Projects.findOne({ where: { id: projectId } });
+    data.users = users;
+    data.projectName = project.name;
+    return data;
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 //get users
@@ -78,16 +86,18 @@ const getUsers = async (req, res) => {
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const data = await getUsersByProjectId(projectId, limit, offset);
+          const data = await getUsersByProjectId(projectId, limit, offset, res);
           res.status(200).json(data);
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         res.status(500).json({
           message: "Internal Server Error",
         });
       }
     })
     .catch((err) => {
+      Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
         message: "Validation Error",

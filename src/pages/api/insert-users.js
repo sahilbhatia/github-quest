@@ -4,6 +4,7 @@ const dbConn = require("../../../models/sequelize");
 const { headers } = require("../../../constants/intranetHeader");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
+const { Sentry } = require("../../../utils/sentry");
 const Users = db.users;
 const Roles = db.roles;
 
@@ -29,15 +30,20 @@ const getValidGitHandle = (gitHandle) => {
 
 //find user
 const findUser = async (email) => {
-  const user = await Users.findOne({
-    where: {
-      email: email,
-    },
-  });
-  if (!user) {
+  try {
+    const user = await Users.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (!user) {
+      return false;
+    } else {
+      return user;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
     return false;
-  } else {
-    return user;
   }
 };
 
@@ -69,7 +75,8 @@ const newUser = async (item) => {
       bitbucket_handle: bitbucket_handle,
       org_user_id: item.id,
     });
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     return false;
   }
 };
@@ -105,7 +112,8 @@ const existUser = async (item, find_user) => {
         }
       );
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     return false;
   }
 };
@@ -113,36 +121,42 @@ const existUser = async (item, find_user) => {
 export default async function insertUsers(req, res) {
   //function for insert users from intranet
   const insertUsersFunction = async () => {
-    const intranetUsersList = await request
-      .get(process.env.INTRANET_USER_API)
-      .set(headers);
+    try {
+      const intranetUsersList = await request
+        .get(process.env.INTRANET_USER_API)
+        .set(headers);
 
-    const listOfUsers = await JSON.parse(intranetUsersList.text);
+      const listOfUsers = await JSON.parse(intranetUsersList.text);
 
-    //iterate user list
-    const insertUsersList = await listOfUsers.users.map(async (item) => {
-      try {
-        const find_user = await findUser(item.email);
-        if (!find_user) {
-          await newUser(item);
-        } else if (find_user && item.public_profile) {
-          await existUser(item, find_user);
+      //iterate user list
+      await listOfUsers.users.map(async (item) => {
+        try {
+          const find_user = await findUser(item.email);
+          if (!find_user) {
+            await newUser(item);
+          } else if (find_user && item.public_profile) {
+            await existUser(item, find_user);
+          }
+        } catch (err) {
+          Sentry.captureException(err);
+          return false;
         }
-      } catch {
-        return false;
-      }
-    });
-    await Promise.all(insertUsersList);
+      });
+      res.status(200).json({
+        message: "cron Job Activated successfully for inserting users",
+      });
+    } catch (err) {
+      Sentry.captureException(err);
+      res.status(500).json({
+        message: "Internal Server Error",
+      });
+    }
   };
 
   //cron scheduler
   cron.schedule(process.env.INSERT_USERS_FROM_INTRANET, async () => {
-    insertUsersFunction();
+    await insertUsersFunction();
   });
   //call insert user function
-  insertUsersFunction();
-
-  res.status(200).json({
-    message: "cron Job Activated successfully for inserting users",
-  });
+  await insertUsersFunction();
 }

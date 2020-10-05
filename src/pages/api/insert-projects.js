@@ -4,10 +4,10 @@ const fetchProjects = require("../../../utils/fetchProjects");
 export default async function insertProjects(req, res) {
   //cron scheduler
   cron.schedule(process.env.INSERT_PROJECTS_SCHEDULE, async () => {
-    fetchProjects.addProjects();
+    await fetchProjects.addProjects();
   });
 
-  fetchProjects.addProjects();
+  await fetchProjects.addProjects();
   res.status(200).json({
     message: "Cron Job Activated Successfully For Inserting Projects",
   });

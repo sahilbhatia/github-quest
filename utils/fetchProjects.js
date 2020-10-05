@@ -1,6 +1,7 @@
 const request = require("superagent");
 const dbConn = require("../models/sequelize");
 const { headers } = require("../constants/intranetHeader");
+const { Sentry } = require("./sentry");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
@@ -18,7 +19,8 @@ const insertRepository = async (item, projectId) => {
           host: item.host ? item.host : null,
           project_id: projectId,
         });
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         return false;
       }
     });
@@ -41,7 +43,8 @@ const insertUsers = async (item, projectId) => {
             project_id: projectId,
           });
         }
-      } catch {
+      } catch (err) {
+        Sentry.captureException(err);
         return false;
       }
     });
@@ -61,7 +64,8 @@ const findProject = async (id) => {
     } else {
       return project;
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     return false;
   }
 };
@@ -92,7 +96,8 @@ module.exports.addProjects = async () => {
     });
     await Promise.all(data);
     return null;
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     return false;
   }
 };

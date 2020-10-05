@@ -3,6 +3,7 @@ dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Projects = db.projects;
 const Sequelize = require("sequelize");
+const { Sentry } = require("../../../utils/sentry");
 
 const findProject = async (req, res) => {
   try {
@@ -15,7 +16,8 @@ const findProject = async (req, res) => {
       },
     });
     res.status(200).json(projectList);
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     res.status(500).json({
       message: "Internal Server Error",
     });
