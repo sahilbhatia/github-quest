@@ -11,10 +11,16 @@ const validation = require("../../../utils/validation");
 const insertPublicRepos = async (req, res) => {
   const insertRepos = async () => {
     const validate = await validation.validateToken();
-    if (validate) {
+    if (validate.status == 401) {
       res.status(401).json({
         error: "Unauthorized",
-        message: validate,
+        message: validate.message,
+      });
+    } else if (validate.status == 403) {
+      process.env["RETRY"] = true;
+      res.status(403).json({
+        error: "Rate Limit Exceeded",
+        message: validate.message,
       });
     } else {
       const usersList = await Users.findAll({
@@ -44,10 +50,19 @@ const insertPublicRepos = async (req, res) => {
     }
   };
 
+  //for daily cron schedule
   cron.schedule(process.env.INSERT_PUBLIC_REPOS_SCHEDULE, async () => {
-    insertRepos();
+    await insertRepos();
   });
-  insertRepos();
+
+  //for retry cron schedule
+  cron.schedule(process.env.RETRY_SCHEDULE, async () => {
+    if (process.env.RETRY == "true") {
+      await insertRepos();
+    }
+  });
+
+  await insertRepos();
 };
 
 export default insertPublicRepos;
