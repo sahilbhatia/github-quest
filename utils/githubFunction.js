@@ -490,17 +490,12 @@ const isRepoUpdated = (item, repo) => {
 
 //function for get new commit
 const getCommits = async (repo, databaseUser) => {
-  try {
-    const commits = await request
-      .get(
-        `https://api.github.com/repos/${databaseUser.dataValues.github_handle}/${repo.name}/commits?since=${repo.updated_at}`
-      )
-      .set(headers);
-    return commits.body;
-  } catch (err) {
-    Sentry.captureException(err);
-    return null;
-  }
+  const commits = await request
+    .get(
+      `https://api.github.com/repos/${databaseUser.dataValues.github_handle}/${repo.name}/commits?since=${repo.updated_at}`
+    )
+    .set(headers);
+  return commits.body;
 };
 
 //function for update review status
@@ -536,8 +531,7 @@ const updateReviewStatus = async (item, result, databaseUser) => {
     } else {
       return null;
     }
-  } catch (err) {
-    Sentry.captureException(err);
+  } catch {
     return null;
   }
 };
