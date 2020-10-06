@@ -14,10 +14,16 @@ const insertPublicRepos = async (req, res) => {
   const insertRepos = async () => {
     try {
       const validate = await validation.validateToken();
-      if (validate) {
+      if (validate.status == 401) {
         res.status(401).json({
           error: "Unauthorized",
-          message: validate,
+          message: validate.message,
+        });
+      } else if (validate.status == 403) {
+        process.env["RETRY"] = true;
+        res.status(403).json({
+          error: "Rate Limit Exceeded",
+          message: validate.message,
         });
       } else {
         const usersList = await Users.findAll({
@@ -53,9 +59,7 @@ const insertPublicRepos = async (req, res) => {
       }
     } catch (err) {
       Sentry.captureException(err);
-      res.status(500).json({
-        message: "Internal Server Error",
-      });
+      return null;
     }
   };
 

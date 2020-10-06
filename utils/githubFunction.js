@@ -542,6 +542,67 @@ const updateReviewStatus = async (item, result, databaseUser) => {
   }
 };
 
+//function for check updated repo
+const isRepoUpdated = (item, repo) => {
+  if (
+    new Date(
+      moment(repo.updated_at).add(330, "minutes").toISOString()
+    ).valueOf() < new Date(item.updated_at).valueOf()
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+//function for get new commit
+const getCommits = async (repo, databaseUser) => {
+  const commits = await request
+    .get(
+      `https://api.github.com/repos/${databaseUser.dataValues.github_handle}/${repo.name}/commits?since=${repo.updated_at}`
+    )
+    .set(headers);
+  return commits.body;
+};
+
+//function for update review status
+const updateReviewStatus = async (item, result, databaseUser) => {
+  try {
+    if (
+      result[0].dataValues.review == "approved" ||
+      result[0].dataValues.review == "suspicious manual"
+    ) {
+      if (isRepoUpdated(item, result[0].dataValues)) {
+        const commits = await getCommits(result[0].dataValues, databaseUser);
+        await commits.map(async (commit) => {
+          const obj = {
+            commit_id: commit.sha,
+            commit: commit.commit.message,
+            repository_id: result[0].dataValues.id,
+          };
+          await Commits.create(obj);
+        });
+        await Repositories.update(
+          {
+            updated_at: item.updated_at,
+            review: "pending",
+          },
+          {
+            where: {
+              source_repo_id: result[0].dataValues.source_repo_id.toString(),
+            },
+          }
+        );
+      }
+      return null;
+    } else {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+};
+
 //insert repositories by github handle
 module.exports.insertGithubRepos = async (databaseUser) => {
   const data = await getRepoForSpecificUser(databaseUser);

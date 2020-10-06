@@ -58,6 +58,11 @@ const clearRemark = async (id) => {
   await Commits.destroy({ where: { repository_id: id } });
 };
 
+//function for clear remark
+const clearRemark = async (id) => {
+  await Commits.destroy({ where: { repository_id: id } });
+};
+
 //function for update suspicious repo
 const updateSuspiciousRepo = async (req, res) => {
   const repoId = req.query.id;
