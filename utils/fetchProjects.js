@@ -86,10 +86,12 @@ module.exports.addProjects = async () => {
           const insertProject = await Projects.create({
             name: item.name ? item.name : "unknown",
             org_project_id: item.id,
+            is_active: item.is_active,
           });
           await insertRepository(item, insertProject.id);
           await insertUsers(item, insertProject.id);
-        } catch {
+        } catch (err) {
+          Sentry.captureException(err);
           return false;
         }
       }
