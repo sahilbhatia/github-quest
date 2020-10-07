@@ -172,7 +172,7 @@ export default async function insertUsers(req, res) {
       }
     });
     res.status(200).json({
-      message: "cron Job Activated successfully for inserting users",
+      message: "cron Job Activated Successfully For Inserting Users",
     });
   } catch (err) {
     Sentry.captureException(err);
