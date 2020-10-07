@@ -17,6 +17,7 @@ let project_repository = data.project_repository;
 //update user
 describe("test cases for web hooks to invalid event", function () {
   it("pass invalid event type should give status 400", function (done) {
+    this.timeout(3000);
     chai
       .request(app)
       .get("/api/webhooks")

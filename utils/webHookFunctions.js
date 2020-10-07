@@ -89,6 +89,28 @@ const findRepository = async (url, res) => {
   }
 };
 
+//function for get updated info
+const getUpdateObj = (data) => {
+  if (data.public_profile_details) {
+    let updateObject = {
+      email: data.email,
+      name: data.name,
+      role: data.role,
+      github_handle: data.public_profile_details.github_handle,
+      gitlab_handle: data.public_profile_details.gitlab_handle,
+      bitbucket_handle: data.public_profile_details.bitbucket_handle,
+    };
+    return updateObject;
+  } else {
+    let updateObject = {
+      email: data.email,
+      name: data.name,
+      role: data.role,
+    };
+    return updateObject;
+  }
+};
+
 //update user information
 module.exports.updateUser = async (res, data) => {
   await userSchema
@@ -103,14 +125,7 @@ module.exports.updateUser = async (res, data) => {
             message: "User Not Found For Specified Id",
           });
         } else {
-          let updateObject = {
-            email: data.email,
-            name: data.name,
-            role: data.role,
-            github_handle: data.github_handle,
-            gitlab_handle: data.gitlab_handle,
-            bitbucket_handle: data.bitbucket_handle,
-          };
+          let updateObject = getUpdateObj(data);
           await Users.update(updateObject, {
             where: { org_user_id: data.user_id },
           });
