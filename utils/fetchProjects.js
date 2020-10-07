@@ -70,7 +70,7 @@ const findProject = async (id) => {
   }
 };
 
-//function for insert intranet projects
+//function for cron schedule
 module.exports.addProjects = async () => {
   try {
     const intranetProjects = await request
@@ -101,5 +101,41 @@ module.exports.addProjects = async () => {
   } catch (err) {
     Sentry.captureException(err);
     return false;
+  }
+};
+
+//function for insert intranet projects
+module.exports.addIntranetProjects = async (res) => {
+  try {
+    const intranetProjects = await request
+      .get(process.env.INTRANET_PROJECT_API)
+      .set(headers);
+
+    const listOfProjects = await JSON.parse(intranetProjects.text);
+    //iterate projects
+    const data = await listOfProjects.projects.map(async (item) => {
+      const project = await findProject(item.id);
+      if (!project) {
+        try {
+          const insertProject = await Projects.create({
+            name: item.name ? item.name : "unknown",
+            org_project_id: item.id,
+          });
+          await insertRepository(item, insertProject.id);
+          await insertUsers(item, insertProject.id);
+        } catch {
+          return false;
+        }
+      }
+    });
+    await Promise.all(data);
+    res.status(200).json({
+      message: "cron Job Activated successfully for inserting users",
+    });
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
   }
 };

@@ -7,8 +7,5 @@ export default async function insertProjects(req, res) {
     await fetchProjects.addProjects();
   });
 
-  await fetchProjects.addProjects();
-  res.status(200).json({
-    message: "Cron Job Activated Successfully For Inserting Projects",
-  });
+  await fetchProjects.addIntranetProjects(res);
 }

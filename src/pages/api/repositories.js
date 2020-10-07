@@ -289,7 +289,7 @@ const getAllPublicRepos = async (req, res) => {
       let data = {};
       (data.repositories = repositories),
         (data.date = earliestDate[0]),
-        (data.last_fetched_at = lastFetchedAt.last_fetched_at);
+        (data.last_fetched_at = lastFetchedAt);
       res.status(200).json(data);
     } catch (err) {
       Sentry.captureException(err);

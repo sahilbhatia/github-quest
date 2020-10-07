@@ -118,45 +118,71 @@ const existUser = async (item, find_user) => {
   }
 };
 
+//function for cron schedule
+const insertUsersFunction = async () => {
+  try {
+    const intranetUsersList = await request
+      .get(process.env.INTRANET_USER_API)
+      .set(headers);
+
+    const listOfUsers = await JSON.parse(intranetUsersList.text);
+
+    //iterate user list
+    await listOfUsers.users.map(async (item) => {
+      try {
+        const find_user = await findUser(item.email);
+        if (!find_user) {
+          await newUser(item);
+        } else if (find_user && item.public_profile) {
+          await existUser(item, find_user);
+        }
+      } catch (err) {
+        Sentry.captureException(err);
+        return false;
+      }
+    });
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
+};
+
 export default async function insertUsers(req, res) {
   //function for insert users from intranet
-  const insertUsersFunction = async () => {
-    try {
-      const intranetUsersList = await request
-        .get(process.env.INTRANET_USER_API)
-        .set(headers);
+  try {
+    const intranetUsersList = await request
+      .get(process.env.INTRANET_USER_API)
+      .set(headers);
 
-      const listOfUsers = await JSON.parse(intranetUsersList.text);
+    const listOfUsers = await JSON.parse(intranetUsersList.text);
 
-      //iterate user list
-      await listOfUsers.users.map(async (item) => {
-        try {
-          const find_user = await findUser(item.email);
-          if (!find_user) {
-            await newUser(item);
-          } else if (find_user && item.public_profile) {
-            await existUser(item, find_user);
-          }
-        } catch (err) {
-          Sentry.captureException(err);
-          return false;
+    //iterate user list
+    await listOfUsers.users.map(async (item) => {
+      try {
+        const find_user = await findUser(item.email);
+        if (!find_user) {
+          await newUser(item);
+        } else if (find_user && item.public_profile) {
+          await existUser(item, find_user);
         }
-      });
-      res.status(200).json({
-        message: "cron Job Activated successfully for inserting users",
-      });
-    } catch (err) {
-      Sentry.captureException(err);
-      res.status(500).json({
-        message: "Internal Server Error",
-      });
-    }
-  };
+      } catch (err) {
+        Sentry.captureException(err);
+        return false;
+      }
+    });
+    res.status(200).json({
+      message: "cron Job Activated successfully for inserting users",
+    });
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 
   //cron scheduler
   cron.schedule(process.env.INSERT_USERS_FROM_INTRANET, async () => {
     await insertUsersFunction();
   });
-  //call insert user function
-  await insertUsersFunction();
 }
