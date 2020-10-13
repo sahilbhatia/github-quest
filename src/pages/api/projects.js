@@ -9,31 +9,6 @@ const Users_projects = db.users_projects;
 const Users = db.users;
 const Project_Repositories = db.projects_repositories;
 
-Users_projects.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Users_projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Users_projects.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_projects, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Project_Repositories.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Project_Repositories, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.belongsTo(Users, {
-  foreignKey: { name: "project_manager", allowNull: true },
-});
-Users.hasMany(Projects, {
-  foreignKey: { name: "project_manager", allowNull: true },
-});
-
 //function for get project model
 const getProjectModel = (limit, offset) => {
   let findAllClause = {

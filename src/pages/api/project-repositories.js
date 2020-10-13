@@ -6,13 +6,6 @@ const Projects = db.projects;
 const { Sentry } = require("../../../utils/sentry");
 const Projects_Repositories = db.projects_repositories;
 
-Projects_Repositories.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Projects_Repositories, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-
 //function for get repositories
 const getRepositories = async (limit, offset, projectId, res) => {
   try {

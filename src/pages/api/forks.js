@@ -7,28 +7,6 @@ const Users = db.users;
 const yup = require("yup");
 const { Sentry } = require("../../../utils/sentry");
 
-Repositories.belongsTo(Repositories, {
-  foreignKey: { name: "parent_repo_id", allowNull: true },
-  as: "parent",
-});
-Repositories.hasMany(Repositories, {
-  foreignKey: { name: "parent_repo_id", allowNull: true },
-  as: "children",
-});
-Users_repositories.belongsTo(Repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-
-Repositories.hasMany(Users_repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-Users_repositories.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_repositories, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-
 //function for return forked repo
 const forkedRepos = async (repoId, res) => {
   try {

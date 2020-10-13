@@ -7,19 +7,6 @@ const Users_projects = db.users_projects;
 const Users = db.users;
 const Users_repositories = db.users_repositories;
 
-Users_projects.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_projects, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users_repositories.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_repositories, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-
 //function for get git handle where clause
 const getGitHandleClause = (gitHandle) => {
   let where = {

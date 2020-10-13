@@ -10,29 +10,6 @@ const Users = db.users;
 const Commits = db.commits;
 const yup = require("yup");
 
-Users_repositories.belongsTo(Repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-Repositories.hasMany(Users_repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-Users_repositories.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_repositories, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Repositories.hasMany(Repositories, {
-  foreignKey: { name: "parent_repo_id", allowNull: true },
-  as: "parent_of",
-});
-Repositories.hasMany(Commits, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-Commits.belongsTo(Repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-
 //function for get where clause
 const getWhereClause = ({
   repoName,
@@ -162,7 +139,7 @@ const getFindAllClause = (limit, offset, getIncludeUsersModel) => {
       getIncludeUsersModel,
       {
         model: Repositories,
-        as: "parent_of",
+        as: "children",
       },
       {
         model: Commits,
@@ -190,7 +167,7 @@ const getFindAllUserClause = (userId, limit, offset) => {
       },
       {
         model: Repositories,
-        as: "parent_of",
+        as: "children",
       },
       {
         model: Commits,

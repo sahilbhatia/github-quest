@@ -8,25 +8,6 @@ const Users_projects = db.users_projects;
 const Users = db.users;
 const Projects_Repositories = db.projects_repositories;
 
-Users_projects.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Users_projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Users_projects.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_projects, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Projects_Repositories.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Projects_Repositories, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-
 //function for get projects of user
 const getProjectsByUserId = async (userId, res) => {
   try {
