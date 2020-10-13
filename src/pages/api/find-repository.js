@@ -9,7 +9,7 @@ const yup = require("yup");
 const { Sentry } = require("../../../utils/sentry");
 
 //function for get repository list by user id
-const getRepositoriesByUserId = async (userId, repositoryName, res) => {
+const getRepositoriesByUserId = async (userId, repositoryName) => {
   try {
     const repoList = await Repositories.findAll({
       include: {
@@ -34,14 +34,12 @@ const getRepositoriesByUserId = async (userId, repositoryName, res) => {
     return arr;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
 //function for get repository list by username
-const getRepositoriesByUserName = async (userName, repositoryName, res) => {
+const getRepositoriesByUserName = async (userName, repositoryName) => {
   try {
     const repoList = await Repositories.findAll({
       include: {
@@ -66,9 +64,7 @@ const getRepositoriesByUserName = async (userName, repositoryName, res) => {
     return arr;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
@@ -95,8 +91,7 @@ const findRepository = async (req, res) => {
             if (user) {
               const repoList = await getRepositoriesByUserId(
                 userId,
-                repositoryName,
-                res
+                repositoryName
               );
               res.status(200).json(repoList);
             } else {
@@ -135,8 +130,7 @@ const findRepository = async (req, res) => {
     } else {
       const repoList = await getRepositoriesByUserName(
         userName,
-        repositoryName,
-        res
+        repositoryName
       );
       res.status(200).json(repoList);
     }

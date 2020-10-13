@@ -7,7 +7,7 @@ const Sequelize = require("sequelize");
 const { Sentry } = require("../../../utils/sentry");
 
 //function for find user by username
-const findUserByUserName = async (userName, res) => {
+const findUserByUserName = async (userName) => {
   try {
     let userList = await Users.findAll({
       where: {
@@ -19,14 +19,12 @@ const findUserByUserName = async (userName, res) => {
     return userList;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
 //function for find user by git handle
-const findUserByGitHandle = async (gitHandle, res) => {
+const findUserByGitHandle = async (gitHandle) => {
   try {
     let userList = await Users.findAll({
       where: {
@@ -52,14 +50,12 @@ const findUserByGitHandle = async (gitHandle, res) => {
     return userList;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
 //function for find user by user id
-const findUserByUserId = async (res, userId) => {
+const validateUserId = async (userId) => {
   await yup
     .object()
     .shape({
@@ -69,12 +65,44 @@ const findUserByUserId = async (res, userId) => {
       userId: userId,
     })
     .then(async () => {
-      try {
-        let user = await Users.findOne({
-          where: {
-            id: userId,
-          },
-        });
+      return false;
+    })
+    .catch((err) => {
+      Sentry.captureException(err);
+      const errors = err.errors;
+      return errors;
+    });
+};
+
+//function for find user by user id
+const findUserByUserId = async (userId) => {
+  try {
+    let user = await Users.findOne({
+      where: {
+        id: userId,
+      },
+    });
+    return user;
+  } catch (err) {
+    Sentry.captureException(err);
+    throw err;
+  }
+};
+
+//get user list
+const findUser = async (req, res) => {
+  try {
+    const { userName, gitHandle, userId } = req.query;
+    if (userName) {
+      let userList = await findUserByUserName(userName);
+      res.status(200).json(userList);
+    } else if (gitHandle) {
+      const userList = await findUserByGitHandle(gitHandle);
+      res.status(200).json(userList);
+    } else if (userId) {
+      const validateError = await validateUserId(userId);
+      if (!validateError) {
+        const user = await findUserByUserId(userId);
         if (user) {
           res.status(200).json(user);
         } else {
@@ -82,34 +110,12 @@ const findUserByUserId = async (res, userId) => {
             message: "User Not Found For Specified Id",
           });
         }
-      } catch (err) {
-        Sentry.captureException(err);
-        res.status(500).json({
-          message: "Internal Server Error",
+      } else {
+        res.status(400).json({
+          message: "Validation Error",
+          validateError,
         });
       }
-    })
-    .catch((err) => {
-      Sentry.captureException(err);
-      const errors = err.errors;
-      res.status(400).json({
-        message: "Validation Error",
-        errors,
-      });
-    });
-};
-//get user list
-const findUser = async (req, res) => {
-  try {
-    const { userName, gitHandle, userId } = req.query;
-    if (userName) {
-      let userList = await findUserByUserName(userName, res);
-      res.status(200).json(userList);
-    } else if (gitHandle) {
-      const userList = await findUserByGitHandle(gitHandle, res);
-      res.status(200).json(userList);
-    } else if (userId) {
-      await findUserByUserId(res, userId);
     } else {
       res.status(400).json({
         message: "Params Required",

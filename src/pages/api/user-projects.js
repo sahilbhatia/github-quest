@@ -9,7 +9,7 @@ const Users = db.users;
 const Projects_Repositories = db.projects_repositories;
 
 //function for get projects of user
-const getProjectsByUserId = async (userId, res) => {
+const getProjectsByUserId = async (userId) => {
   try {
     let data = await Users.findOne({
       where: { id: userId },
@@ -30,9 +30,7 @@ const getProjectsByUserId = async (userId, res) => {
     return data;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
@@ -57,7 +55,7 @@ const getProjects = async (req, res) => {
             message: "User Not Found For Specified Id",
           });
         } else {
-          const data = await getProjectsByUserId(userId, res);
+          const data = await getProjectsByUserId(userId);
           res.status(200).json(data);
         }
       } catch (err) {

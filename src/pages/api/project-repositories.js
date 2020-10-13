@@ -7,7 +7,7 @@ const { Sentry } = require("../../../utils/sentry");
 const Projects_Repositories = db.projects_repositories;
 
 //function for get repositories
-const getRepositories = async (limit, offset, projectId, res) => {
+const getRepositories = async (limit, offset, projectId) => {
   try {
     let repoList = await Projects_Repositories.findAll({
       where: { project_id: projectId },
@@ -21,9 +21,7 @@ const getRepositories = async (limit, offset, projectId, res) => {
     return data;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
@@ -47,7 +45,7 @@ const getProjectRepository = async (req, res) => {
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const data = await getRepositories(limit, offset, projectId, res);
+          const data = await getRepositories(limit, offset, projectId);
           res.status(200).json(data);
         }
       } catch (err) {

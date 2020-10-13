@@ -7,7 +7,7 @@ const validation = require("../../../utils/validationSchema");
 const { Sentry } = require("../../../utils/sentry");
 
 //function for update repository
-const updateRepo = async (repoId, updatedAt, res) => {
+const updateRepo = async (repoId, updatedAt) => {
   try {
     const updateRepo = await Repositories.update(
       {
@@ -24,13 +24,11 @@ const updateRepo = async (repoId, updatedAt, res) => {
     return updateRepo;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 //function for update parent repository
-const updateParentRepo = async (repoId, updatedAt, res) => {
+const updateParentRepo = async (repoId, updatedAt) => {
   try {
     await Repositories.update(
       {
@@ -47,9 +45,7 @@ const updateParentRepo = async (repoId, updatedAt, res) => {
     );
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
@@ -79,12 +75,11 @@ const updateSuspiciousRepo = async (req, res) => {
             message: "Repository Not Found For Specified Id",
           });
         } else {
-          const updatedRepo = await updateRepo(repoId, updatedAt, res);
+          const updatedRepo = await updateRepo(repoId, updatedAt);
           if (updatedRepo[1].dataValues.parent_repo_id) {
             await updateParentRepo(
               updatedRepo[1].dataValues.parent_repo_id,
-              updatedAt,
-              res
+              updatedAt
             );
             await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
           }

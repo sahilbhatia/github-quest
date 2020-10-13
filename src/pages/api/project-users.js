@@ -9,7 +9,7 @@ const Users_repositories = db.users_repositories;
 const Users = db.users;
 
 //function for get users of projects
-const getUsersByProjectId = async (projectId, limit, offset, res) => {
+const getUsersByProjectId = async (projectId, limit, offset) => {
   try {
     let users = await Users.findAll({
       include: [
@@ -40,9 +40,7 @@ const getUsersByProjectId = async (projectId, limit, offset, res) => {
     return data;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 

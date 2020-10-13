@@ -8,7 +8,7 @@ const yup = require("yup");
 const { Sentry } = require("../../../utils/sentry");
 
 //function for return forked repo
-const forkedRepos = async (repoId, res) => {
+const forkedRepos = async (repoId) => {
   try {
     const data = await Repositories.findAll({
       where: { parent_repo_id: repoId },
@@ -38,9 +38,7 @@ const forkedRepos = async (repoId, res) => {
     return data;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
@@ -56,7 +54,7 @@ const getForkedRepos = async (req, res) => {
     })
     .then(async () => {
       try {
-        const data = await forkedRepos(req.query.id, res);
+        const data = await forkedRepos(req.query.id);
         if (data.length == 0) {
           res.status(404).json({
             message: "List Not found For Given Id",

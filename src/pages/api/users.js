@@ -80,7 +80,7 @@ const getWhereClause = (
 };
 
 // function for get user list
-const getUserList = async (where, limit, offset, res) => {
+const getUserList = async (where, limit, offset) => {
   try {
     const usersData = await Users.findAll({
       where,
@@ -105,9 +105,7 @@ const getUserList = async (where, limit, offset, res) => {
     return data;
   } catch (err) {
     Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    throw err;
   }
 };
 
@@ -130,7 +128,7 @@ const getUsers = async (req, res) => {
       endDate,
       error_details
     );
-    const data = await getUserList(where, limit, offset, res);
+    const data = await getUserList(where, limit, offset);
     res.status(200).json(data);
   } catch (err) {
     Sentry.captureException(err);

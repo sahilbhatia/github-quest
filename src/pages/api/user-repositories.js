@@ -8,6 +8,7 @@ const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
 const Commits = db.commits;
+const yup = require("yup");
 
 //function for get where clause
 const getWhereClause = ({
@@ -106,36 +107,20 @@ const getWhereClause = ({
   } else null;
 };
 
-//function for get where clause for username
-const getUsersWhereClause = (userName) => {
-  let findUserWhereClause = {};
-  if (userName != undefined) {
-    findUserWhereClause = {
-      model: Users_repositories,
-      include: {
-        model: Users,
-        where: {
-          name: userName,
-        },
-      },
-    };
-  } else {
-    findUserWhereClause = {
-      model: Users_repositories,
-      include: {
-        model: Users,
-      },
-    };
-  }
-  return findUserWhereClause;
-};
-
-//function for get find all clause
-const getFindAllClause = (limit, offset, getIncludeUsersModel) => {
+//function for get find all clause for user
+const getFindAllUserClause = (userId, limit, offset) => {
   let findAllClause = {
     order: [["id", "ASC"]],
     include: [
-      getIncludeUsersModel,
+      {
+        model: Users_repositories,
+        include: {
+          model: Users,
+          where: {
+            id: userId,
+          },
+        },
+      },
       {
         model: Repositories,
         as: "children",
@@ -150,45 +135,59 @@ const getFindAllClause = (limit, offset, getIncludeUsersModel) => {
   return findAllClause;
 };
 
-//function for get last fetch time
-const getLastFetchedAt = async () => {
-  const time = await Users.findOne({
-    attributes: ["last_fetched_at"],
-    where: {
-      last_fetched_at: {
-        [Sequelize.Op.ne]: null,
-      },
-    },
-  });
-  return time;
-};
-
 //get repositories
 const getAllPublicRepos = async (req, res) => {
-  let { userName, limit, offset } = req.query;
+  let { limit, offset, userId } = req.query;
   limit = limit == undefined ? 10 : limit;
-  //get all repositories
-  const getIncludeUsersModel = await getUsersWhereClause(userName);
-  let findAllClause = getFindAllClause(limit, offset, getIncludeUsersModel);
-  const getWhereClauseObject = await getWhereClause(req.query);
-  try {
-    findAllClause.where = getWhereClauseObject;
-    const repositories = await Repositories.findAll(findAllClause);
-    const earliestDate = await Repositories.findAll({
-      attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
+  await yup
+    .object()
+    .shape({
+      userId: yup.number(),
+    })
+    .validate({
+      userId: userId,
+    })
+    .then(async () => {
+      try {
+        let user = await Users.findOne({
+          where: {
+            id: userId,
+          },
+        });
+        if (!user) {
+          res.status(404).json({
+            message: "User Not Found For Specified Id",
+          });
+        } else {
+          let findAllClause = getFindAllUserClause(userId, limit, offset);
+          const getWhereClauseObject = await getWhereClause(req.query);
+
+          findAllClause.where = getWhereClauseObject;
+          const repositories = await Repositories.findAll(findAllClause);
+          const earliestDate = await Repositories.findAll({
+            attributes: [
+              [Sequelize.fn("min", Sequelize.col("created_at")), "min"],
+            ],
+          });
+          let data = {};
+          (data.repositories = repositories), (data.date = earliestDate[0]);
+          const user = await Users.findOne({ where: { id: userId } });
+          data.userName = user.name;
+          res.status(200).json(data);
+        }
+      } catch (err) {
+        Sentry.captureException(err);
+        res.status(500).json({
+          message: "Internal Server Error",
+        });
+      }
+    })
+    .catch((err) => {
+      Sentry.captureException(err);
+      res.status(400).json({
+        message: "User Id Must Be Number",
+      });
     });
-    const lastFetchedAt = await getLastFetchedAt();
-    let data = {};
-    (data.repositories = repositories),
-      (data.date = earliestDate[0]),
-      (data.last_fetched_at = lastFetchedAt);
-    res.status(200).json(data);
-  } catch (err) {
-    Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
 };
 
 export default getAllPublicRepos;
