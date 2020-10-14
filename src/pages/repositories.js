@@ -15,6 +15,7 @@ export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
+  let [arr, setArr] = useState([]);
 
   const getQueryString = (filterObject) => {
     let filterString = "";
@@ -58,6 +59,8 @@ export default function Index() {
       setOffset={setOffset}
       setLimit={setLimit}
       data={data}
+      arr={arr}
+      setArr={setArr}
       onSelectManualReview={onSelectManualReview}
       onSelectSuspeciousMark={onSelectSuspeciousMark}
       reFetch={reFetch}

@@ -1,5 +1,5 @@
 import DataTable from "react-data-table-component";
-import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
+import { Tooltip, OverlayTrigger, Button, FormCheck } from "react-bootstrap";
 import React from "react";
 import Filter from "./filter";
 import Pagination from "./pagination";
@@ -14,6 +14,8 @@ export default function RepositoryListComponent({
   offset,
   setOffset,
   setLimit,
+  arr,
+  setArr,
   data,
   onSelectManualReview,
   onSelectSuspeciousMark,
@@ -32,6 +34,10 @@ export default function RepositoryListComponent({
       message += `(${index + 1}) ${commit.commit}`;
     });
     return message;
+  };
+  const markId = (id) => {
+    arr.push(id);
+    setArr(arr);
   };
   const columns = [
     {
@@ -174,40 +180,49 @@ export default function RepositoryListComponent({
       maxWidth: "40px",
     },
     {
-      name: "Action",
+      name: (
+        <div className="d-flex">
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>mark as manual review</Tooltip>}
+          >
+            <Button
+              size="sm"
+              onClick={() => {
+                onSelectManualReview();
+              }}
+              className="text-success mx-1 bg-white"
+            >
+              ✔
+            </Button>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>mark as a suspicious</Tooltip>}
+          >
+            <Button
+              size="sm"
+              onClick={() => {
+                onSelectSuspeciousMark();
+              }}
+              className="text-danger mx-2 bg-white"
+            >
+              ✘
+            </Button>
+          </OverlayTrigger>
+        </div>
+      ),
       selector: function func(d) {
         return d.review == "pending" ? (
-          <div className="d-flex">
-            <OverlayTrigger
-              placement="top"
-              delay={{ show: 250, hide: 400 }}
-              overlay={<Tooltip>mark as manual review</Tooltip>}
-            >
-              <Button
-                size="sm"
-                onClick={() => {
-                  onSelectManualReview(d.id);
-                }}
-                className="text-success mx-1 bg-white"
-              >
-                ✔
-              </Button>
-            </OverlayTrigger>
-            <OverlayTrigger
-              placement="top"
-              delay={{ show: 250, hide: 400 }}
-              overlay={<Tooltip>mark as a suspicious</Tooltip>}
-            >
-              <Button
-                size="sm"
-                onClick={() => {
-                  onSelectSuspeciousMark(d.id);
-                }}
-                className="text-danger mx-2 bg-white"
-              >
-                ✘
-              </Button>
-            </OverlayTrigger>
+          <div>
+            <FormCheck
+              className="px-5"
+              onClick={() => {
+                markId(d.id);
+              }}
+            />
           </div>
         ) : (
           <>-</>
@@ -368,6 +383,8 @@ RepositoryListComponent.propTypes = {
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,
   setOffset: PropTypes.func.isRequired,
+  arr: PropTypes.array.isRequired,
+  setArr: PropTypes.func.isRequired,
   setLimit: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
