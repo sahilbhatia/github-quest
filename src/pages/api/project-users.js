@@ -1,47 +1,44 @@
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
-const yup = require("yup");
+const log4js = require("../../../config/loggerConfig");
 const { Sentry } = require("../../../utils/sentry");
+const yup = require("yup");
 const Projects = db.projects;
 const Users_projects = db.users_projects;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
+const logger = log4js.getLogger();
 
 //function for get users of projects
 const getUsersByProjectId = async (projectId, limit, offset) => {
-  try {
-    let users = await Users.findAll({
-      include: [
-        {
-          model: Users_projects,
+  let users = await Users.findAll({
+    include: [
+      {
+        model: Users_projects,
+        attributes: ["id"],
+        where: { project_id: projectId },
+        include: {
+          model: Users,
           attributes: ["id"],
-          where: { project_id: projectId },
           include: {
-            model: Users,
-            attributes: ["id"],
-            include: {
-              model: Users_projects,
-            },
+            model: Users_projects,
           },
         },
-        {
-          model: Users_repositories,
-          attributes: ["id"],
-        },
-      ],
-      limit: limit,
-      offset: offset,
-    });
-    let data = {};
-    const project = await Projects.findOne({ where: { id: projectId } });
-    data.users = users;
-    data.projectName = project.name;
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+      },
+      {
+        model: Users_repositories,
+        attributes: ["id"],
+      },
+    ],
+    limit: limit,
+    offset: offset,
+  });
+  let data = {};
+  const project = await Projects.findOne({ where: { id: projectId } });
+  data.users = users;
+  data.projectName = project.name;
+  return data;
 };
 
 //get users
@@ -70,6 +67,9 @@ const getUsers = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing while getting all users of project");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });

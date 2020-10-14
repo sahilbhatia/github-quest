@@ -1,13 +1,15 @@
 const Sequelize = require("sequelize");
 const moment = require("moment");
+const log4js = require("../../../config/loggerConfig");
+const { Sentry } = require("../../../utils/sentry");
 const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
-const { Sentry } = require("../../../utils/sentry");
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 const Users = db.users;
 const Commits = db.commits;
+const logger = log4js.getLogger();
 
 //function for get where clause
 const getWhereClause = ({
@@ -185,6 +187,9 @@ const getAllPublicRepos = async (req, res) => {
     res.status(200).json(data);
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing while getting all repositories");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });

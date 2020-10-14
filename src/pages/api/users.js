@@ -3,6 +3,8 @@ dbConn.sequelize;
 const Sequelize = require("sequelize");
 const db = require("../../../models/sequelize");
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const Users_projects = db.users_projects;
 const Users = db.users;
 const Users_repositories = db.users_repositories;
@@ -30,6 +32,7 @@ const getGitHandleClause = (gitHandle) => {
   };
   return where;
 };
+
 //function for get where clause
 const getWhereClause = (
   userName,
@@ -81,32 +84,27 @@ const getWhereClause = (
 
 // function for get user list
 const getUserList = async (where, limit, offset) => {
-  try {
-    const usersData = await Users.findAll({
-      where,
-      include: [
-        {
-          model: Users_projects,
-          attributes: ["id"],
-        },
-        {
-          model: Users_repositories,
-          attributes: ["id"],
-        },
-      ],
-      limit: limit,
-      offset: offset,
-    });
-    const earliestDate = await Users.findAll({
-      attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
-    });
-    let data = {};
-    (data.users = usersData), (data.date = earliestDate[0]);
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+  const usersData = await Users.findAll({
+    where,
+    include: [
+      {
+        model: Users_projects,
+        attributes: ["id"],
+      },
+      {
+        model: Users_repositories,
+        attributes: ["id"],
+      },
+    ],
+    limit: limit,
+    offset: offset,
+  });
+  const earliestDate = await Users.findAll({
+    attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
+  });
+  let data = {};
+  (data.users = usersData), (data.date = earliestDate[0]);
+  return data;
 };
 
 //get users
@@ -132,6 +130,9 @@ const getUsers = async (req, res) => {
     res.status(200).json(data);
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing while getting user list");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });

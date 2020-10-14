@@ -3,6 +3,8 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const Projects = db.projects;
 const Users_projects = db.users_projects;
 const Users = db.users;
@@ -10,28 +12,23 @@ const Projects_Repositories = db.projects_repositories;
 
 //function for get projects of user
 const getProjectsByUserId = async (userId) => {
-  try {
-    let data = await Users.findOne({
-      where: { id: userId },
-      include: {
-        model: Users_projects,
-        attributes: ["id"],
-        include: [
-          {
-            model: Projects,
-            include: [
-              { model: Users_projects },
-              { model: Projects_Repositories },
-            ],
-          },
-        ],
-      },
-    });
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+  let data = await Users.findOne({
+    where: { id: userId },
+    include: {
+      model: Users_projects,
+      attributes: ["id"],
+      include: [
+        {
+          model: Projects,
+          include: [
+            { model: Users_projects },
+            { model: Projects_Repositories },
+          ],
+        },
+      ],
+    },
+  });
+  return data;
 };
 
 //get projects
@@ -60,6 +57,9 @@ const getProjects = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing while getting projects of user");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });

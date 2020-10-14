@@ -4,25 +4,22 @@ const yup = require("yup");
 const db = require("../../../models/sequelize");
 const Projects = db.projects;
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const Projects_Repositories = db.projects_repositories;
 
 //function for get repositories
 const getRepositories = async (limit, offset, projectId) => {
-  try {
-    let repoList = await Projects_Repositories.findAll({
-      where: { project_id: projectId },
-      limit: limit,
-      offset: offset,
-    });
-    let data = {};
-    const project = await Projects.findOne({ where: { id: projectId } });
-    data.repositories = repoList;
-    data.projectName = project.name;
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+  let repoList = await Projects_Repositories.findAll({
+    where: { project_id: projectId },
+    limit: limit,
+    offset: offset,
+  });
+  let data = {};
+  const project = await Projects.findOne({ where: { id: projectId } });
+  data.repositories = repoList;
+  data.projectName = project.name;
+  return data;
 };
 
 const getProjectRepository = async (req, res) => {
@@ -50,6 +47,9 @@ const getProjectRepository = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in while getting project repositories");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });

@@ -5,6 +5,8 @@ const { headers } = require("../../../constants/intranetHeader");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const Users = db.users;
 const Roles = db.roles;
 
@@ -43,6 +45,11 @@ const findUser = async (email) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting users in find user function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -77,6 +84,11 @@ const newUser = async (item) => {
     });
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting users in new user function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -114,6 +126,11 @@ const existUser = async (item, find_user) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting users in exist user function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -144,6 +161,11 @@ const insertUsersFunction = async () => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting users in insert user function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -168,6 +190,11 @@ export default async function insertUsers(req, res) {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error(
+          "Error executing in inserting users while iterating user list"
+        );
+        logger.error(err);
+        logger.info("=========================================");
         return false;
       }
     });
@@ -176,6 +203,9 @@ export default async function insertUsers(req, res) {
     });
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in while inserting users");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });

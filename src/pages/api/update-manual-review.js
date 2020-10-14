@@ -4,49 +4,41 @@ const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
 const Commits = db.commits;
 const validation = require("../../../utils/validationSchema");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
 
 //function for update repository
 const updateRepo = async (repoId, updatedAt) => {
-  try {
-    const updateRepo = await Repositories.update(
-      {
-        manual_review: false,
-        review: "approved",
-        reviewed_at: updatedAt,
-      },
-      {
-        returning: true,
-        plain: true,
-        where: { id: repoId },
-      }
-    );
-    return updateRepo;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+  const updateRepo = await Repositories.update(
+    {
+      manual_review: false,
+      review: "approved",
+      reviewed_at: updatedAt,
+    },
+    {
+      returning: true,
+      plain: true,
+      where: { id: repoId },
+    }
+  );
+  return updateRepo;
 };
 //function for update parent repository
 const updateParentRepo = async (repoId, updatedAt) => {
-  try {
-    await Repositories.update(
-      {
-        manual_review: false,
-        review: "approved",
-        reviewed_at: updatedAt,
+  await Repositories.update(
+    {
+      manual_review: false,
+      review: "approved",
+      reviewed_at: updatedAt,
+    },
+    {
+      returning: true,
+      where: {
+        parent_repo_id: repoId,
       },
-      {
-        returning: true,
-        where: {
-          parent_repo_id: repoId,
-        },
-      }
-    );
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+    }
+  );
 };
 
 //function for clear remark
@@ -90,6 +82,9 @@ const updateManualRepo = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing while update manual review");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });

@@ -4,54 +4,46 @@ const db = require("../../../models/sequelize");
 const Users = db.users;
 const yup = require("yup");
 const Sequelize = require("sequelize");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
 
 //function for find user by username
 const findUserByUserName = async (userName) => {
-  try {
-    let userList = await Users.findAll({
-      where: {
-        name: {
-          [Sequelize.Op.iLike]: "%" + userName + "%",
-        },
+  let userList = await Users.findAll({
+    where: {
+      name: {
+        [Sequelize.Op.iLike]: "%" + userName + "%",
       },
-    });
-    return userList;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+    },
+  });
+  return userList;
 };
 
 //function for find user by git handle
 const findUserByGitHandle = async (gitHandle) => {
-  try {
-    let userList = await Users.findAll({
-      where: {
-        [Sequelize.Op.or]: [
-          {
-            gitlab_handle: {
-              [Sequelize.Op.iLike]: "%" + gitHandle + "%",
-            },
+  let userList = await Users.findAll({
+    where: {
+      [Sequelize.Op.or]: [
+        {
+          gitlab_handle: {
+            [Sequelize.Op.iLike]: "%" + gitHandle + "%",
           },
-          {
-            github_handle: {
-              [Sequelize.Op.iLike]: "%" + gitHandle + "%",
-            },
+        },
+        {
+          github_handle: {
+            [Sequelize.Op.iLike]: "%" + gitHandle + "%",
           },
-          {
-            bitbucket_handle: {
-              [Sequelize.Op.iLike]: "%" + gitHandle + "%",
-            },
+        },
+        {
+          bitbucket_handle: {
+            [Sequelize.Op.iLike]: "%" + gitHandle + "%",
           },
-        ],
-      },
-    });
-    return userList;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+        },
+      ],
+    },
+  });
+  return userList;
 };
 
 //function for find user by user id
@@ -76,17 +68,12 @@ const validateUserId = async (userId) => {
 
 //function for find user by user id
 const findUserByUserId = async (userId) => {
-  try {
-    let user = await Users.findOne({
-      where: {
-        id: userId,
-      },
-    });
-    return user;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+  let user = await Users.findOne({
+    where: {
+      id: userId,
+    },
+  });
+  return user;
 };
 
 //get user list
@@ -123,6 +110,9 @@ const findUser = async (req, res) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in while find user");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });

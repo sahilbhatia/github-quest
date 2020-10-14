@@ -3,6 +3,8 @@ dbConn.sequelize;
 const webHooks = require("../../../utils/webHookFunctions");
 const fetchProjects = require("../../../utils/fetchProjects");
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 
 export default async function insertUsers(req, res) {
   try {
@@ -67,6 +69,9 @@ export default async function insertUsers(req, res) {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing while calling webhook");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });

@@ -6,40 +6,37 @@ const Users_repositories = db.users_repositories;
 const Users = db.users;
 const yup = require("yup");
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 
 //function for return forked repo
 const forkedRepos = async (repoId) => {
-  try {
-    const data = await Repositories.findAll({
-      where: { parent_repo_id: repoId },
-      include: [
-        {
-          model: Repositories,
-          as: "parent",
-          include: [
-            {
-              model: Repositories,
-              as: "children",
-            },
-          ],
-        },
-        {
-          model: Repositories,
-          as: "children",
-        },
-        {
-          model: Users_repositories,
-          include: {
-            model: Users,
+  const data = await Repositories.findAll({
+    where: { parent_repo_id: repoId },
+    include: [
+      {
+        model: Repositories,
+        as: "parent",
+        include: [
+          {
+            model: Repositories,
+            as: "children",
           },
+        ],
+      },
+      {
+        model: Repositories,
+        as: "children",
+      },
+      {
+        model: Users_repositories,
+        include: {
+          model: Users,
         },
-      ],
-    });
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
+      },
+    ],
+  });
+  return data;
 };
 
 //get forked repos
@@ -64,6 +61,9 @@ const getForkedRepos = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in while getting forked repositories");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
