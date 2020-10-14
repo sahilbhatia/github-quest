@@ -2,6 +2,8 @@ const request = require("superagent");
 const moment = require("moment");
 const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
+const log4js = require("../config/loggerConfig");
+const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
@@ -27,6 +29,11 @@ const insertNewRepo = async (insertRepos, repo) => {
     return insertRepos;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in insert new repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -66,6 +73,11 @@ const insertForkedRepoFunction = async (forkRepo, repo, insertRepos) => {
     return insertForkedRepo;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in insert forked repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -80,6 +92,11 @@ const linkUserRepository = async (user, repo) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in link user repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -99,6 +116,11 @@ const findRepoFunction = async (id) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in find repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -129,6 +151,11 @@ const updateRepo = async (insertParentRepo, insertRepos, ParentRepo, repo) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in update repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -161,6 +188,11 @@ const updateForkedRepo = async (insertRepos, forkRepo, repo) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in update forked repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -174,6 +206,11 @@ const getBitBucketRepos = async (databaseUser) => {
     return bitbucketRepos;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in get bitbucket repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     await Users.update(
       {
         error_details: "repositories not fetch for given bitbucket handle",
@@ -254,7 +291,13 @@ const updateReviewStatus = async (item, findRepo, databaseUser) => {
     } else {
       return null;
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in while inserting bitbucket repositories in update review status function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -451,6 +494,9 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in while inserting bitbucket repositories");
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };

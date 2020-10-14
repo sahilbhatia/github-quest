@@ -2,6 +2,8 @@ const dbConn = require("../models/sequelize");
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const { Sentry } = require("./sentry");
+const log4js = require("../config/loggerConfig");
+const logger = log4js.getLogger();
 const Users = db.users;
 const UsersProjects = db.users_projects;
 const Projects = db.projects;
@@ -26,6 +28,9 @@ const findUser = async (id) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in webhook function in find user function");
+    logger.error(err);
+    logger.info("=========================================");
     throw err;
   }
 };
@@ -43,6 +48,11 @@ const findManager = async (userId, projectId) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in webhook function in find manager function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     throw err;
   }
 };
@@ -60,6 +70,11 @@ const findProject = async (id) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in webhook function in find project function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     throw err;
   }
 };
@@ -77,6 +92,11 @@ const findRepository = async (url) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing in webhook function in find repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     throw err;
   }
 };
@@ -127,6 +147,9 @@ module.exports.updateUser = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in update user webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -178,6 +201,9 @@ module.exports.addUserInProject = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in add user in project webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -230,6 +256,9 @@ module.exports.removeUserFromProject = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in remove user from project webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -275,6 +304,9 @@ module.exports.changeStatusOfProject = async (res, data, is_active) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in change project status webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -323,6 +355,9 @@ module.exports.deleteProject = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in delete project webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -373,6 +408,9 @@ module.exports.addManagerInProject = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in add manger in project webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -430,6 +468,9 @@ module.exports.removeManagerFromProject = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in remove manger from project webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -483,6 +524,11 @@ module.exports.removeRepositoryFromProject = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error(
+          "Error executing in remove repository from project webhook"
+        );
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
@@ -530,6 +576,9 @@ module.exports.addRepositoryInProject = async (res, data) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in add repository in project webhook");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });
