@@ -7,7 +7,7 @@ import {
   DropdownButton,
   Dropdown,
 } from "react-bootstrap";
-import React from "react";
+import React, { useState } from "react";
 import Filter from "./filter";
 import Pagination from "./pagination";
 import Link from "next/link";
@@ -29,12 +29,14 @@ export default function RepositoryListComponent({
   reFetch,
 }) {
   const minDate = data ? data.date.min : undefined;
+  let [checkAll, setCheckAll] = useState(false);
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
     : undefined;
   data = data ? data.repositories : undefined;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
+
   const getRemark = (commits) => {
     let message = "review status changed because of ";
     commits.map((commit, index) => {
@@ -42,33 +44,63 @@ export default function RepositoryListComponent({
     });
     return message;
   };
+
   const markId = (id) => {
-    arr.push(id);
+    arr.includes(id) ? arr.splice(arr.indexOf(id), 1) : arr.push(id);
     setArr(arr);
   };
+
+  const markAll = async (check) => {
+    if (check) {
+      setCheckAll(false);
+      arr = [];
+      setArr(arr);
+    } else {
+      setCheckAll(true);
+      arr = [];
+      setArr(arr);
+      await data.map((item) => {
+        if (item.review == "pending") {
+          arr.push(item.id);
+        }
+      });
+      setArr(arr);
+    }
+  };
+
   const columns = [
     {
       name: (
-        <DropdownButton className="ml-2" title="Action">
-          <Dropdown.Item
-            onClick={() => onSelectManualReview(arr)}
-            className="bg-success"
-          >
-            Approved
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => onSelectSuspeciousMark(arr)}
-            className="bg-warning"
-          >
-            mark suspicious
-          </Dropdown.Item>
-        </DropdownButton>
+        <div className="d-flex flex-row">
+          <FormCheck
+            className="mt-2"
+            defaultChecked={checkAll}
+            onClick={() => {
+              markAll(checkAll);
+            }}
+          />
+          <DropdownButton className="ml-2" title="Action">
+            <Dropdown.Item
+              onClick={() => onSelectManualReview(arr)}
+              className="bg-success"
+            >
+              Approved
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => onSelectSuspeciousMark(arr)}
+              className="bg-warning"
+            >
+              mark suspicious
+            </Dropdown.Item>
+          </DropdownButton>
+        </div>
       ),
       selector: function func(d) {
         return d.review == "pending" ? (
           <div>
             <FormCheck
               className="px-5"
+              defaultChecked={checkAll || arr.includes(d.id)}
               onClick={() => {
                 markId(d.id);
               }}

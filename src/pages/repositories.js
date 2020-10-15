@@ -16,7 +16,6 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
   let [arr, setArr] = useState([]);
-
   const getQueryString = (filterObject) => {
     let filterString = "";
     Object.keys(filterObject).map((key) => {
