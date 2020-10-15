@@ -6,7 +6,6 @@ import {
   FormCheck,
   DropdownButton,
   Dropdown,
-  Modal,
 } from "react-bootstrap";
 import React, { useState } from "react";
 import Filter from "./filter";
@@ -31,9 +30,7 @@ export default function RepositoryListComponent({
 }) {
   const minDate = data ? data.date.min : undefined;
   let [checkAll, setCheckAll] = useState(false);
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  let [actionHidden, setActionHidden] = useState(true);
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
     : undefined;
@@ -52,6 +49,7 @@ export default function RepositoryListComponent({
   const markId = (id) => {
     arr.includes(id) ? arr.splice(arr.indexOf(id), 1) : arr.push(id);
     setArr(arr);
+    arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
   };
 
   const markAll = async (check) => {
@@ -70,42 +68,11 @@ export default function RepositoryListComponent({
       });
       setArr(arr);
     }
+    arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
   };
 
   const columns = [
     {
-      name: (
-        <div className="">
-          <div className="d-flex">
-            <FormCheck
-              className="pt-2"
-              defaultChecked={checkAll}
-              onClick={() => {
-                markAll(checkAll);
-              }}
-            />
-            <span className="pt-2">select all</span>
-          </div>
-          <DropdownButton className="ml-2" title="Action">
-            <Dropdown.Item
-              onClick={() =>
-                arr.length == 0 ? handleShow() : onSelectManualReview(arr)
-              }
-              className="bg-success"
-            >
-              Approved
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() =>
-                arr.length == 0 ? handleShow() : onSelectSuspeciousMark(arr)
-              }
-              className="bg-warning"
-            >
-              mark suspicious
-            </Dropdown.Item>
-          </DropdownButton>
-        </div>
-      ),
       selector: function func(d) {
         return d.review == "pending" ? (
           <div>
@@ -361,14 +328,6 @@ export default function RepositoryListComponent({
   ];
   return (
     <div>
-      <Modal show={show} onHide={handleClose} centered>
-        <Modal.Body>Repository Not Selected</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
       <div className="text-right ">
         <span className="text-dark">last fetched at </span>
         <span className="border border-dark pl-1 text-danger">
@@ -389,7 +348,53 @@ export default function RepositoryListComponent({
         }
         subHeader
         subHeaderComponent={
-          <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+          <div>
+            <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+            <div className="d-flex">
+              <OverlayTrigger
+                placement="bottom"
+                delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip>Selecte All</Tooltip>}
+              >
+                <FormCheck
+                  className="mt-2 ml-2"
+                  defaultChecked={checkAll}
+                  onClick={() => {
+                    markAll(checkAll);
+                  }}
+                />
+              </OverlayTrigger>
+              <div>
+                <OverlayTrigger
+                  placement="right"
+                  delay={{ show: 250, hide: 400 }}
+                  overlay={<Tooltip>Repositories Not Selected</Tooltip>}
+                >
+                  <span>
+                    <DropdownButton
+                      className="ml-2 mt-1"
+                      title="Action"
+                      size="sm"
+                      disabled={actionHidden}
+                    >
+                      <Dropdown.Item
+                        onClick={() => onSelectManualReview(arr)}
+                        className="bg-success"
+                      >
+                        Approved
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        onClick={() => onSelectSuspeciousMark(arr)}
+                        className="bg-warning"
+                      >
+                        mark suspicious
+                      </Dropdown.Item>
+                    </DropdownButton>
+                  </span>
+                </OverlayTrigger>
+              </div>
+            </div>
+          </div>
         }
         columns={columns}
         customStyles={customStyles}
