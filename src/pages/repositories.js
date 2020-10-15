@@ -33,18 +33,22 @@ export default function Index() {
   if (error || code == 400 || code == 404 || code == 500)
     return <ErrorComponent code={code} />;
   if (!data) return <LoadingComponent />;
-  const onSelectManualReview = (id) => {
-    fetch(
-      `/api/update-manual-review?id=${id}&updatedAt=${moment().toISOString()}`,
-      { data: null }
-    );
-    window.location.reload(false);
+  const onSelectManualReview = (ids) => {
+    if (ids != "") {
+      fetch(
+        `/api/update-manual-review?ids=${ids}&updatedAt=${moment().toISOString()}`,
+        { data: null }
+      );
+      window.location.reload(false);
+    }
   };
-  const onSelectSuspeciousMark = (id) => {
-    fetch(
-      `/api/update-suspicious-repository?id=${id}&updatedAt=${moment().toISOString()}`
-    );
-    window.location.reload(false);
+  const onSelectSuspeciousMark = (ids) => {
+    if (ids != "") {
+      fetch(
+        `/api/update-suspicious-repository?ids=${ids}&updatedAt=${moment().toISOString()}`
+      );
+      window.location.reload(false);
+    }
   };
   const reFetch = async () => {
     await fetch(`/api/insert-repositories`);

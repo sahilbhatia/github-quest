@@ -1,5 +1,12 @@
 import DataTable from "react-data-table-component";
-import { Tooltip, OverlayTrigger, Button, FormCheck } from "react-bootstrap";
+import {
+  Tooltip,
+  OverlayTrigger,
+  Button,
+  FormCheck,
+  DropdownButton,
+  Dropdown,
+} from "react-bootstrap";
 import React from "react";
 import Filter from "./filter";
 import Pagination from "./pagination";
@@ -40,6 +47,39 @@ export default function RepositoryListComponent({
     setArr(arr);
   };
   const columns = [
+    {
+      name: (
+        <DropdownButton className="ml-2" title="Action">
+          <Dropdown.Item
+            onClick={() => onSelectManualReview(arr)}
+            className="bg-success"
+          >
+            Approved
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => onSelectSuspeciousMark(arr)}
+            className="bg-warning"
+          >
+            mark suspicious
+          </Dropdown.Item>
+        </DropdownButton>
+      ),
+      selector: function func(d) {
+        return d.review == "pending" ? (
+          <div>
+            <FormCheck
+              className="px-5"
+              onClick={() => {
+                markId(d.id);
+              }}
+            />
+          </div>
+        ) : (
+          <>-</>
+        );
+      },
+      maxWidth: "120px",
+    },
     {
       name: "Owner Name",
       selector: function func(d) {
@@ -178,57 +218,6 @@ export default function RepositoryListComponent({
         );
       },
       maxWidth: "40px",
-    },
-    {
-      name: (
-        <div className="d-flex">
-          <OverlayTrigger
-            placement="top"
-            delay={{ show: 250, hide: 400 }}
-            overlay={<Tooltip>mark as manual review</Tooltip>}
-          >
-            <Button
-              size="sm"
-              onClick={() => {
-                onSelectManualReview();
-              }}
-              className="text-success mx-1 bg-white"
-            >
-              ✔
-            </Button>
-          </OverlayTrigger>
-          <OverlayTrigger
-            placement="top"
-            delay={{ show: 250, hide: 400 }}
-            overlay={<Tooltip>mark as a suspicious</Tooltip>}
-          >
-            <Button
-              size="sm"
-              onClick={() => {
-                onSelectSuspeciousMark();
-              }}
-              className="text-danger mx-2 bg-white"
-            >
-              ✘
-            </Button>
-          </OverlayTrigger>
-        </div>
-      ),
-      selector: function func(d) {
-        return d.review == "pending" ? (
-          <div>
-            <FormCheck
-              className="px-5"
-              onClick={() => {
-                markId(d.id);
-              }}
-            />
-          </div>
-        ) : (
-          <>-</>
-        );
-      },
-      maxWidth: "120px",
     },
     {
       name: "Error Details",

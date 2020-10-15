@@ -60,39 +60,42 @@ const clearRemark = async (id) => {
 
 //function for manual review
 const updateManualRepo = async (req, res) => {
-  const repoId = req.query.id;
+  let repoIds = req.query.ids.split(",");
+  repoIds = repoIds.map(Number);
   const updatedAt = req.query.updatedAt;
   await validation
     .reviewSchema()
     .validate(
       {
-        repoId: req.query.id,
+        repoIds: repoIds,
         updatedAt: updatedAt,
       },
       { abortEarly: false }
     )
     .then(async () => {
       try {
-        let repo = await Repositories.findOne({ where: { id: repoId } });
-        if (!repo) {
-          res.status(404).json({
-            message: "Repository Not Found For Given Id",
-          });
-        } else {
-          const updatedRepo = await updateRepo(repoId, updatedAt, res);
-          if (updatedRepo[1].dataValues.parent_repo_id) {
-            await updateParentRepo(
-              updatedRepo[1].dataValues.parent_repo_id,
-              updatedAt,
-              res
-            );
-            await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
+        await repoIds.map(async (id) => {
+          let repo = await Repositories.findOne({ where: { id: id } });
+          if (!repo) {
+            res.status(404).json({
+              message: "Repository Not Found For Given Id",
+            });
+          } else {
+            const updatedRepo = await updateRepo(id, updatedAt, res);
+            if (updatedRepo[1].dataValues.parent_repo_id) {
+              await updateParentRepo(
+                updatedRepo[1].dataValues.parent_repo_id,
+                updatedAt,
+                res
+              );
+              await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
+            }
+            await clearRemark(id);
           }
-          await clearRemark(repoId);
-          res.status(200).json({
-            message: "Repository Updated Successfully",
-          });
-        }
+        });
+        res.status(200).json({
+          message: "Repository Updated Successfully",
+        });
       } catch (err) {
         Sentry.captureException(err);
         res.status(500).json({
