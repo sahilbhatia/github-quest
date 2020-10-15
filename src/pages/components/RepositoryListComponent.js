@@ -6,6 +6,7 @@ import {
   FormCheck,
   DropdownButton,
   Dropdown,
+  Modal,
 } from "react-bootstrap";
 import React, { useState } from "react";
 import Filter from "./filter";
@@ -30,6 +31,9 @@ export default function RepositoryListComponent({
 }) {
   const minDate = data ? data.date.min : undefined;
   let [checkAll, setCheckAll] = useState(false);
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
     : undefined;
@@ -71,23 +75,30 @@ export default function RepositoryListComponent({
   const columns = [
     {
       name: (
-        <div className="d-flex flex-row">
-          <FormCheck
-            className="mt-2"
-            defaultChecked={checkAll}
-            onClick={() => {
-              markAll(checkAll);
-            }}
-          />
+        <div className="">
+          <div className="d-flex">
+            <FormCheck
+              className="pt-2"
+              defaultChecked={checkAll}
+              onClick={() => {
+                markAll(checkAll);
+              }}
+            />
+            <span className="pt-2">select all</span>
+          </div>
           <DropdownButton className="ml-2" title="Action">
             <Dropdown.Item
-              onClick={() => onSelectManualReview(arr)}
+              onClick={() =>
+                arr.length == 0 ? handleShow() : onSelectManualReview(arr)
+              }
               className="bg-success"
             >
               Approved
             </Dropdown.Item>
             <Dropdown.Item
-              onClick={() => onSelectSuspeciousMark(arr)}
+              onClick={() =>
+                arr.length == 0 ? handleShow() : onSelectSuspeciousMark(arr)
+              }
               className="bg-warning"
             >
               mark suspicious
@@ -350,6 +361,14 @@ export default function RepositoryListComponent({
   ];
   return (
     <div>
+      <Modal show={show} onHide={handleClose} centered>
+        <Modal.Body>Repository Not Selected</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" size="sm" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <div className="text-right ">
         <span className="text-dark">last fetched at </span>
         <span className="border border-dark pl-1 text-danger">
