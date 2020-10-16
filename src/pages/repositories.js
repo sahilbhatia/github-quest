@@ -12,10 +12,9 @@ const fetcher = (url) =>
   });
 
 export default function Index() {
-  let [limit, setLimit] = useState(10);
+  let [limit, setLimit] = useState(0);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
-
   const getQueryString = (filterObject) => {
     let filterString = "";
     Object.keys(filterObject).map((key) => {

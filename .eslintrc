@@ -27,7 +27,8 @@
     "SharedArrayBuffer": "readonly",
     "window":true,
     "fetch":true,
-    "process": true
+    "process": true,
+    "localStorage": true
   },
   "parserOptions": {
     "ecmaFeatures": {

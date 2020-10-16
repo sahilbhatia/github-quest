@@ -33,6 +33,38 @@ export default function RepositoryListComponent({
     });
     return message;
   };
+
+  if (Object.keys(filter).length == 0) {
+    if (localStorage.getItem("filter") != null) {
+      const data = localStorage.getItem("filter");
+      setFilter(JSON.parse(data));
+    }
+  } else {
+    localStorage.removeItem("filter");
+    localStorage.setItem("filter", JSON.stringify(filter));
+  }
+
+  if (limit == 0) {
+    if (localStorage.getItem("limit") != null) {
+      const data = localStorage.getItem("limit");
+      setLimit(parseInt(data));
+    } else {
+      setLimit(10);
+    }
+  } else {
+    localStorage.removeItem("limit");
+    localStorage.setItem("limit", limit);
+  }
+
+  if (offset == 0) {
+    if (localStorage.getItem("offset") != null) {
+      const data = localStorage.getItem("offset");
+      setOffset(parseInt(data));
+    }
+  } else {
+    localStorage.removeItem("offset");
+    localStorage.setItem("offset", offset);
+  }
   const columns = [
     {
       name: "Owner Name",

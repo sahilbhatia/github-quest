@@ -86,6 +86,7 @@ export default function Index({ filter, setFilter, minDate }) {
 
   const reset = () => {
     setFilter({});
+    localStorage.removeItem("filter");
     window.location.reload();
   };
   const setDateFrom = (value) => {
