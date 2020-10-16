@@ -77,7 +77,7 @@ export default function RepositoryListComponent({
         return d.review == "pending" ? (
           <div>
             <FormCheck
-              className="px-5"
+              className="mx-4"
               defaultChecked={checkAll || arr.includes(d.id)}
               onClick={() => {
                 markId(d.id);
@@ -85,10 +85,10 @@ export default function RepositoryListComponent({
             />
           </div>
         ) : (
-          <>-</>
+          <span className="mx-4">-</span>
         );
       },
-      maxWidth: "120px",
+      maxWidth: "40px",
     },
     {
       name: "Owner Name",
@@ -364,35 +364,58 @@ export default function RepositoryListComponent({
                   }}
                 />
               </OverlayTrigger>
-              <div>
-                <OverlayTrigger
-                  placement="right"
-                  delay={{ show: 250, hide: 400 }}
-                  overlay={<Tooltip>Repositories Not Selected</Tooltip>}
+              {actionHidden ? (
+                <div>
+                  <OverlayTrigger
+                    placement="right"
+                    delay={{ show: 250, hide: 400 }}
+                    overlay={<Tooltip>Repositories Not Selected</Tooltip>}
+                  >
+                    <span>
+                      <DropdownButton
+                        className="ml-2 mt-1"
+                        title="Action"
+                        size="sm"
+                        disabled={actionHidden}
+                        style={{ pointerEvents: "none" }}
+                      >
+                        <Dropdown.Item
+                          onClick={() => onSelectManualReview(arr)}
+                          className="bg-success"
+                        >
+                          Approved
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => onSelectSuspeciousMark(arr)}
+                          className="bg-warning"
+                        >
+                          mark suspicious
+                        </Dropdown.Item>
+                      </DropdownButton>
+                    </span>
+                  </OverlayTrigger>
+                </div>
+              ) : (
+                <DropdownButton
+                  className="ml-2 mt-1"
+                  title="Action"
+                  size="sm"
+                  disabled={actionHidden}
                 >
-                  <span>
-                    <DropdownButton
-                      className="ml-2 mt-1"
-                      title="Action"
-                      size="sm"
-                      disabled={actionHidden}
-                    >
-                      <Dropdown.Item
-                        onClick={() => onSelectManualReview(arr)}
-                        className="bg-success"
-                      >
-                        Approved
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        onClick={() => onSelectSuspeciousMark(arr)}
-                        className="bg-warning"
-                      >
-                        mark suspicious
-                      </Dropdown.Item>
-                    </DropdownButton>
-                  </span>
-                </OverlayTrigger>
-              </div>
+                  <Dropdown.Item
+                    onClick={() => onSelectManualReview(arr)}
+                    className="bg-success"
+                  >
+                    Approved
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => onSelectSuspeciousMark(arr)}
+                    className="bg-warning"
+                  >
+                    mark suspicious
+                  </Dropdown.Item>
+                </DropdownButton>
+              )}
             </div>
           </div>
         }
