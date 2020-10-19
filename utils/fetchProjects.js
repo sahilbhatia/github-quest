@@ -126,8 +126,10 @@ module.exports.addProjects = async () => {
       if (!project) {
         try {
           const insertProject = await addProject(item);
-          await insertRepository(item, insertProject.id);
-          await insertUsers(item, insertProject.id);
+          if (insertProject) {
+            await insertRepository(item, insertProject.id);
+            await insertUsers(item, insertProject.id);
+          }
         } catch (err) {
           Sentry.captureException(err);
           return false;
@@ -156,8 +158,10 @@ module.exports.addIntranetProjects = async (res) => {
       if (!project) {
         try {
           const insertProject = await addProject(item);
-          await insertRepository(item, insertProject.id);
-          await insertUsers(item, insertProject.id);
+          if (insertProject) {
+            await insertRepository(item, insertProject.id);
+            await insertUsers(item, insertProject.id);
+          }
         } catch (err) {
           Sentry.captureException(err);
           return false;
