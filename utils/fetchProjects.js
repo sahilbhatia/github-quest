@@ -70,6 +70,48 @@ const findProject = async (id) => {
   }
 };
 
+//function for find project
+const getProjectManager = async (item) => {
+  if (item.manager_ids.length != 0) {
+    try {
+      const user = await Users.findOne({
+        where: {
+          org_user_id: item.manager_ids[0],
+        },
+      });
+      if (!user) {
+        return null;
+      } else {
+        return user.id;
+      }
+    } catch (err) {
+      Sentry.captureException(err);
+      return null;
+    }
+  } else {
+    return null;
+  }
+};
+
+//function for insert projects
+const addProject = async (item) => {
+  try {
+    const projectManager = await getProjectManager(item);
+    const insertProject = await Projects.create({
+      name: item.name ? item.name : "unknown",
+      org_project_id: item.id,
+      is_active: item.is_active,
+      project_manager: projectManager,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    });
+    return insertProject;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
+};
+
 //function for cron schedule
 module.exports.addProjects = async () => {
   try {
@@ -83,13 +125,13 @@ module.exports.addProjects = async () => {
       const project = await findProject(item.id);
       if (!project) {
         try {
-          const insertProject = await Projects.create({
-            name: item.name ? item.name : "unknown",
-            org_project_id: item.id,
-          });
-          await insertRepository(item, insertProject.id);
-          await insertUsers(item, insertProject.id);
-        } catch {
+          const insertProject = await addProject(item);
+          if (insertProject) {
+            await insertRepository(item, insertProject.id);
+            await insertUsers(item, insertProject.id);
+          }
+        } catch (err) {
+          Sentry.captureException(err);
           return false;
         }
       }
@@ -115,20 +157,20 @@ module.exports.addIntranetProjects = async (res) => {
       const project = await findProject(item.id);
       if (!project) {
         try {
-          const insertProject = await Projects.create({
-            name: item.name ? item.name : "unknown",
-            org_project_id: item.id,
-          });
-          await insertRepository(item, insertProject.id);
-          await insertUsers(item, insertProject.id);
-        } catch {
+          const insertProject = await addProject(item);
+          if (insertProject) {
+            await insertRepository(item, insertProject.id);
+            await insertUsers(item, insertProject.id);
+          }
+        } catch (err) {
+          Sentry.captureException(err);
           return false;
         }
       }
     });
     await Promise.all(data);
     res.status(200).json({
-      message: "cron Job Activated successfully for inserting users",
+      message: "Cron Job Activated Successfully For Inserting Projects",
     });
   } catch (err) {
     Sentry.captureException(err);
