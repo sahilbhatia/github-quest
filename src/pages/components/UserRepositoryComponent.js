@@ -6,6 +6,7 @@ import {
   FormCheck,
   DropdownButton,
   Dropdown,
+  Form,
 } from "react-bootstrap";
 import React, { useState } from "react";
 import Filter from "../components/RepoFilterByUser";
@@ -24,12 +25,15 @@ export default function UserRepositoryComponent({
   data,
   arr,
   setArr,
+  comment,
+  setComment,
   userId,
   onSelectManualReview,
   onSelectSuspeciousMark,
 }) {
   let [checkAll, setCheckAll] = useState(false);
   let [actionHidden, setActionHidden] = useState(true);
+  let [commentDisabled, setCommentDisabled] = useState(true);
   const minDate = data ? data.date.min : undefined;
   const userName = data ? data.userName : undefined;
   data = data ? data.repositories : undefined;
@@ -46,7 +50,8 @@ export default function UserRepositoryComponent({
   const markId = (id) => {
     arr.includes(id) ? arr.splice(arr.indexOf(id), 1) : arr.push(id);
     setArr(arr);
-    arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
+    setActionHidden(arr.length == 0);
+    setCommentDisabled(arr.length != 1);
   };
 
   const markAll = async (check) => {
@@ -65,7 +70,8 @@ export default function UserRepositoryComponent({
       });
       setArr(arr);
     }
-    arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
+    setActionHidden(arr.length == 0);
+    setCommentDisabled(true);
   };
 
   const columns = [
@@ -159,6 +165,23 @@ export default function UserRepositoryComponent({
         return d.is_disabled ? <>✔</> : <>✘</>;
       },
       maxWidth: "10px",
+    },
+    {
+      name: "Comment",
+      selector: function func(d) {
+        return d.comment ? (
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>{d.comment}</Tooltip>}
+          >
+            <span>{d.comment}</span>
+          </OverlayTrigger>
+        ) : (
+          "-"
+        );
+      },
+      maxWidth: "40px",
     },
     {
       name: "Review Status",
@@ -379,18 +402,51 @@ export default function UserRepositoryComponent({
                   disabled={actionHidden}
                 >
                   <Dropdown.Item
-                    onClick={() => onSelectManualReview(arr)}
+                    onClick={() => onSelectManualReview(arr, comment)}
                     className="bg-success"
                   >
                     Approved
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={() => onSelectSuspeciousMark(arr)}
+                    onClick={() => onSelectSuspeciousMark(arr, comment)}
                     className="bg-warning"
                   >
                     mark suspicious
                   </Dropdown.Item>
                 </DropdownButton>
+              )}
+              {commentDisabled ? (
+                <OverlayTrigger
+                  placement="bottom"
+                  delay={{ show: 250, hide: 400 }}
+                  overlay={
+                    <Tooltip>
+                      Enable to add comment for multiple repositories
+                    </Tooltip>
+                  }
+                >
+                  <span>
+                    <Form.Control
+                      type="text"
+                      size="sm"
+                      className="m-1"
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Add Comment..."
+                      disabled={commentDisabled}
+                      style={{ pointerEvents: "none", width: "220px" }}
+                    />
+                  </span>
+                </OverlayTrigger>
+              ) : (
+                <Form.Control
+                  style={{ width: "220px" }}
+                  type="text"
+                  size="sm"
+                  className="m-1"
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Add Comment..."
+                  disabled={commentDisabled}
+                />
               )}
             </div>
           </div>
@@ -430,6 +486,8 @@ UserRepositoryComponent.propTypes = {
   setOffset: PropTypes.func.isRequired,
   arr: PropTypes.array.isRequired,
   setArr: PropTypes.func.isRequired,
+  comment: PropTypes.string.isRequired,
+  setComment: PropTypes.func.isRequired,
   setLimit: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,

@@ -15,6 +15,7 @@ export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
+  let [comment, setComment] = useState();
   let [arr, setArr] = useState([]);
   const getQueryString = (filterObject) => {
     let filterString = "";
@@ -32,19 +33,26 @@ export default function Index() {
   if (error || code == 400 || code == 404 || code == 500)
     return <ErrorComponent code={code} />;
   if (!data) return <LoadingComponent />;
-  const onSelectManualReview = (ids) => {
+  const onSelectManualReview = (ids, comment) => {
     if (ids != "") {
       fetch(
         `/api/update-manual-review?ids=${ids}&updatedAt=${moment().toISOString()}`,
-        { data: null }
+        {
+          method: "POST",
+          body: comment,
+        }
       );
       window.location.reload(false);
     }
   };
-  const onSelectSuspeciousMark = (ids) => {
+  const onSelectSuspeciousMark = (ids, comment) => {
     if (ids != "") {
       fetch(
-        `/api/update-suspicious-repository?ids=${ids}&updatedAt=${moment().toISOString()}`
+        `/api/update-suspicious-repository?ids=${ids}&updatedAt=${moment().toISOString()}`,
+        {
+          method: "POST",
+          body: comment,
+        }
       );
       window.location.reload(false);
     }
@@ -60,6 +68,8 @@ export default function Index() {
       limit={limit}
       offset={offset}
       setOffset={setOffset}
+      comment={comment}
+      setComment={setComment}
       setLimit={setLimit}
       data={data}
       arr={arr}

@@ -7,13 +7,14 @@ const validation = require("../../../utils/validationSchema");
 const { Sentry } = require("../../../utils/sentry");
 
 //function for update repository
-const updateRepo = async (repoId, updatedAt, res) => {
+const updateRepo = async (repoId, updatedAt, res, comment) => {
   try {
     const updateRepo = await Repositories.update(
       {
         is_suspicious: true,
         review: "suspicious manual",
         reviewed_at: updatedAt,
+        comment: comment ? comment : null,
       },
       {
         returning: true,
@@ -30,13 +31,14 @@ const updateRepo = async (repoId, updatedAt, res) => {
   }
 };
 //function for update parent repository
-const updateParentRepo = async (repoId, updatedAt, res) => {
+const updateParentRepo = async (repoId, updatedAt, res, comment) => {
   try {
     await Repositories.update(
       {
         is_suspicious: true,
         review: "suspicious manual",
         reviewed_at: updatedAt,
+        comment: comment ? comment : null,
       },
       {
         returning: true,
@@ -81,12 +83,14 @@ const updateSuspiciousRepo = async (req, res) => {
               message: "Repository Not Found For Specified Id",
             });
           } else {
-            const updatedRepo = await updateRepo(id, updatedAt, res);
+            let comment = req.body;
+            const updatedRepo = await updateRepo(id, updatedAt, res, comment);
             if (updatedRepo[1].dataValues.parent_repo_id) {
               await updateParentRepo(
                 updatedRepo[1].dataValues.parent_repo_id,
                 updatedAt,
-                res
+                res,
+                comment
               );
               await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
             }
