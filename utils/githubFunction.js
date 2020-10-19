@@ -82,7 +82,7 @@ const insertNewRepo = async (item) => {
       source_type: "github",
       source_repo_id: item.id,
       name: item.name,
-      url: item.url,
+      url: item.html_url,
       description: item.description,
       is_disabled: item.disabled,
       is_archived: item.archived,
@@ -155,7 +155,7 @@ const insertSuspiciousChildRepos = async (
             source_type: "github",
             source_repo_id: value.id,
             name: value.name,
-            url: value.url,
+            url: value.html_url,
             description: value.description,
             is_disabled: value.disabled,
             is_archived: value.archived,
@@ -235,7 +235,7 @@ const insertForkedRepo = async (item, insertParentRepositories) => {
       source_type: "github",
       source_repo_id: item.id,
       name: item.name,
-      url: item.url,
+      url: item.html_url,
       description: item.description,
       is_disabled: item.disabled,
       is_archived: item.archived,
@@ -274,7 +274,7 @@ const insertErrorRepo = async (item, err) => {
       source_type: "github",
       source_repo_id: item.id,
       name: item.name,
-      url: item.url,
+      url: item.html_url,
       description: item.description,
       is_disabled: item.disabled,
       is_archived: item.archived,
@@ -321,7 +321,7 @@ const getParentRepoData = async (item, result, databaseUser, parentRepo) => {
           source_type: "github",
           source_repo_id: parentRepo.body.parent.id,
           name: parentRepo.body.name,
-          url: parentRepo.body.parent.url,
+          url: parentRepo.body.parent.html_url,
           description: parentRepo.body.parent.description,
           is_private: parentRepo.body.parent.private,
           is_archived: parentRepo.body.archived,
@@ -346,7 +346,7 @@ const updateRepo = async (result, item) => {
     await Repositories.update(
       {
         name: item.name,
-        url: item.url,
+        url: item.html_url,
         description: item.description,
         is_disabled: item.disabled,
         is_archived: item.archived,
@@ -375,7 +375,7 @@ const updateChildRepo = async (item, result, insertParentRepositories) => {
     await Repositories.update(
       {
         name: item.name,
-        url: item.url,
+        url: item.html_url,
         description: item.description,
         is_disabled: item.disabled,
         is_archived: item.archived,
@@ -403,6 +403,42 @@ const updateChildRepo = async (item, result, insertParentRepositories) => {
         returning: true,
         where: {
           source_repo_id: result[0].dataValues.source_repo_id.toString(),
+        },
+      }
+    );
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
+  }
+};
+
+//function for update child repo
+const updateForkedRepo = async (item, insertParentRepositories) => {
+  try {
+    await Repositories.update(
+      {
+        parent_repo_id: insertParentRepositories.dataValues.id,
+        is_suspicious:
+          insertParentRepositories.dataValues.is_private ||
+          insertParentRepositories.dataValues.is_suspicious
+            ? true
+            : false,
+        review:
+          insertParentRepositories.dataValues.is_private ||
+          insertParentRepositories.dataValues.is_suspicious
+            ? "suspicious auto"
+            : "no action",
+        reviewed_at:
+          insertParentRepositories.dataValues.is_private ||
+          insertParentRepositories.dataValues.is_suspicious
+            ? moment.utc().format()
+            : null,
+      },
+      {
+        returning: true,
+        where: {
+          source_repo_id: item.id.toString(),
         },
       }
     );
@@ -575,10 +611,16 @@ module.exports.insertGithubRepos = async (databaseUser) => {
             //if parent repo existing
             if (insertParentRepositories) {
               try {
-                const insertRepos = await insertForkedRepo(
-                  item,
-                  insertParentRepositories
-                );
+                let insertRepos;
+                insertRepos = await findRepoFunction(item.id);
+                if (insertRepos) {
+                  await updateForkedRepo(item, insertParentRepositories);
+                } else {
+                  insertRepos = await insertForkedRepo(
+                    item,
+                    insertParentRepositories
+                  );
+                }
                 await linkUserRepository(
                   databaseUser.dataValues,
                   insertRepos.dataValues
@@ -627,10 +669,16 @@ module.exports.insertGithubRepos = async (databaseUser) => {
                     return null;
                   }
                 }
-                const insertRepos = await insertForkedRepo(
-                  item,
-                  insertParentRepositories
-                );
+                let insertRepos;
+                insertRepos = await findRepoFunction(item.id);
+                if (insertRepos) {
+                  await updateForkedRepo(item, insertParentRepositories);
+                } else {
+                  insertRepos = await insertForkedRepo(
+                    item,
+                    insertParentRepositories
+                  );
+                }
                 await linkUserRepository(
                   databaseUser.dataValues,
                   insertRepos.dataValues
