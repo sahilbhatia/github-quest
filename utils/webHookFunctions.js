@@ -28,7 +28,7 @@ const findUser = async (id) => {
     }
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in webhook function in find user function");
+    logger.error("Error executing in find user function of webhook function");
     logger.error(err);
     logger.info("=========================================");
     throw err;
@@ -49,7 +49,7 @@ const findManager = async (userId, projectId) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in webhook function in find manager function"
+      "Error executing in find manager function of webhook function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -71,7 +71,7 @@ const findProject = async (id) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in webhook function in find project function"
+      "Error executing in find project function of webhook function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -93,7 +93,7 @@ const findRepository = async (url) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in webhook function in find repository function"
+      "Error executing in find repository function of webhook function"
     );
     logger.error(err);
     logger.info("=========================================");

@@ -93,6 +93,11 @@ const findRepository = async (req, res) => {
             }
           } catch (err) {
             Sentry.captureException(err);
+            logger.error(
+              "Error executing in find repository api while fetching user repositories"
+            );
+            logger.error(err);
+            logger.info("=========================================");
             res.status(500).json({
               message: "Internal Server Error",
             });
@@ -128,7 +133,7 @@ const findRepository = async (req, res) => {
     }
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in while find repository");
+    logger.error("Error executing in find repository api");
     logger.error(err);
     logger.info("=========================================");
     res.status(500).json({

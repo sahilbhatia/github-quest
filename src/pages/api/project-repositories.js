@@ -47,7 +47,7 @@ const getProjectRepository = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
-        logger.error("Error executing in while getting project repositories");
+        logger.error("Error executing in project repositories api");
         logger.error(err);
         logger.info("=========================================");
         res.status(500).json({

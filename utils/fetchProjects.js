@@ -24,7 +24,7 @@ const insertRepository = async (item, projectId) => {
       } catch (err) {
         Sentry.captureException(err);
         logger.error(
-          "Error executing in while fetching projects in insert repository function"
+          "Error executing while fetching projects in insert repository function"
         );
         logger.error(err);
         logger.info("=========================================");
@@ -53,7 +53,7 @@ const insertUsers = async (item, projectId) => {
       } catch (err) {
         Sentry.captureException(err);
         logger.error(
-          "Error executing in while fetching projects in insert users function"
+          "Error executing while fetching projects in insert users function"
         );
         logger.error(err);
         logger.info("=========================================");
@@ -79,11 +79,53 @@ const findProject = async (id) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while fetching projects in find project function"
+      "Error executing while fetching projects in find project function"
     );
     logger.error(err);
     logger.info("=========================================");
     return false;
+  }
+};
+
+//function for find project
+const getProjectManager = async (item) => {
+  if (item.manager_ids.length != 0) {
+    try {
+      const user = await Users.findOne({
+        where: {
+          org_user_id: item.manager_ids[0],
+        },
+      });
+      if (!user) {
+        return null;
+      } else {
+        return user.id;
+      }
+    } catch (err) {
+      Sentry.captureException(err);
+      return null;
+    }
+  } else {
+    return null;
+  }
+};
+
+//function for insert projects
+const addProject = async (item) => {
+  try {
+    const projectManager = await getProjectManager(item);
+    const insertProject = await Projects.create({
+      name: item.name ? item.name : "unknown",
+      org_project_id: item.id,
+      is_active: item.is_active,
+      project_manager: projectManager,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    });
+    return insertProject;
+  } catch (err) {
+    Sentry.captureException(err);
+    return null;
   }
 };
 
@@ -100,16 +142,15 @@ module.exports.addProjects = async () => {
       const project = await findProject(item.id);
       if (!project) {
         try {
-          const insertProject = await Projects.create({
-            name: item.name ? item.name : "unknown",
-            org_project_id: item.id,
-          });
-          await insertRepository(item, insertProject.id);
-          await insertUsers(item, insertProject.id);
+          const insertProject = await addProject(item);
+          if (insertProject) {
+            await insertRepository(item, insertProject.id);
+            await insertUsers(item, insertProject.id);
+          }
         } catch (err) {
           Sentry.captureException(err);
           logger.error(
-            "Error executing in fetching projects while iterating projects in API call"
+            "Error executing in fetch projects function while iterating projects in API call"
           );
           logger.error(err);
           logger.info("=========================================");
@@ -121,7 +162,7 @@ module.exports.addProjects = async () => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in while fetching projects");
+    logger.error("Error executing while fetching projects");
     logger.error(err);
     logger.info("=========================================");
     return false;
@@ -141,16 +182,15 @@ module.exports.addIntranetProjects = async (res) => {
       const project = await findProject(item.id);
       if (!project) {
         try {
-          const insertProject = await Projects.create({
-            name: item.name ? item.name : "unknown",
-            org_project_id: item.id,
-          });
-          await insertRepository(item, insertProject.id);
-          await insertUsers(item, insertProject.id);
+          const insertProject = await addProject(item);
+          if (insertProject) {
+            await insertRepository(item, insertProject.id);
+            await insertUsers(item, insertProject.id);
+          }
         } catch (err) {
           Sentry.captureException(err);
           logger.error(
-            "Error executing in fetching projects while iterating projects in API call"
+            "Error executing in fetch projects function while iterating projects in API call"
           );
           logger.error(err);
           logger.info("=========================================");
@@ -160,11 +200,11 @@ module.exports.addIntranetProjects = async (res) => {
     });
     await Promise.all(data);
     res.status(200).json({
-      message: "cron Job Activated successfully for inserting users",
+      message: "Cron Job Activated Successfully For Inserting Projects",
     });
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in while fetching projects in API call");
+    logger.error("Error executing while fetching projects in API call");
     logger.error(err);
     logger.info("=========================================");
     res.status(500).json({

@@ -30,7 +30,7 @@ const insertNewRepo = async (insertRepos, repo) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in insert new repo function"
+      "Error executing while inserting bitbucket repositories in insert new repo function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -74,7 +74,7 @@ const insertForkedRepoFunction = async (forkRepo, repo, insertRepos) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in insert forked repo function"
+      "Error executing while inserting bitbucket repositories in insert forked repo function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -93,7 +93,7 @@ const linkUserRepository = async (user, repo) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in link user repo function"
+      "Error executing while inserting bitbucket repositories in link user repo function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -117,7 +117,7 @@ const findRepoFunction = async (id) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in find repo function"
+      "Error executing while inserting bitbucket repositories in find repo function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -152,7 +152,7 @@ const updateRepo = async (insertParentRepo, insertRepos, ParentRepo, repo) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in update repo function"
+      "Error executing while inserting bitbucket repositories in update repo function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -189,7 +189,7 @@ const updateForkedRepo = async (insertRepos, forkRepo, repo) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in update forked repo function"
+      "Error executing while inserting bitbucket repositories in update forked repo function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -207,7 +207,7 @@ const getBitBucketRepos = async (databaseUser) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in get bitbucket repo function"
+      "Error executing while inserting bitbucket repositories in get bitbucket repo function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -294,7 +294,7 @@ const updateReviewStatus = async (item, findRepo, databaseUser) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in while inserting bitbucket repositories in update review status function"
+      "Error executing while inserting bitbucket repositories in update review status function"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -494,7 +494,7 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in while inserting bitbucket repositories");
+    logger.error("Error executing while inserting bitbucket repositories");
     logger.error(err);
     logger.info("=========================================");
     return null;

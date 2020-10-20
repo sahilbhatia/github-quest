@@ -107,7 +107,7 @@ const getProjects = async (req, res) => {
     }
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing while getting all projects");
+    logger.error("Error executing in projects api");
     logger.error(err);
     logger.info("=========================================");
     res.status(500).json({

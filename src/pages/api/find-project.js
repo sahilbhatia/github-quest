@@ -20,7 +20,7 @@ const findProject = async (req, res) => {
     res.status(200).json(projectList);
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in while find projects");
+    logger.error("Error executing in find projects api");
     logger.error(err);
     logger.info("=========================================");
     res.status(500).json({

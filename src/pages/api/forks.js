@@ -61,7 +61,9 @@ const getForkedRepos = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
-        logger.error("Error executing in while getting forked repositories");
+        logger.error(
+          "Error executing in fork api while getting forked repositories"
+        );
         logger.error(err);
         logger.info("=========================================");
         res.status(500).json({

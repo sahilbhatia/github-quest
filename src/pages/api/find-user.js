@@ -110,7 +110,7 @@ const findUser = async (req, res) => {
     }
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in while find user");
+    logger.error("Error executing in find user api");
     logger.error(err);
     logger.info("=========================================");
     res.status(500).json({

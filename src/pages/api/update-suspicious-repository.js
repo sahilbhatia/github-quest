@@ -83,7 +83,7 @@ const updateSuspiciousRepo = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
-        logger.error("Error executing while update suspicious repository");
+        logger.error("Error executing in update suspicious repository api");
         logger.error(err);
         logger.info("=========================================");
         res.status(500).json({

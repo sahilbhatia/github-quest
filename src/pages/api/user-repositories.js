@@ -179,7 +179,7 @@ const getAllPublicRepos = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
-        logger.error("Error executing while getting repositories of user");
+        logger.error("Error executing in user repositories api");
         logger.error(err);
         logger.info("=========================================");
         res.status(500).json({

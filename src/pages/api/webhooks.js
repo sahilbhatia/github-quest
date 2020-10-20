@@ -69,7 +69,7 @@ export default async function insertUsers(req, res) {
     }
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing while calling webhook");
+    logger.error("Error executing in webhook api");
     logger.error(err);
     logger.info("=========================================");
     res.status(500).json({

@@ -51,7 +51,7 @@ const insertRepos = async () => {
     }
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing in while inserting repositories");
+    logger.error("Error executing in inserting repositories");
     logger.error(err);
     logger.info("=========================================");
     return null;
@@ -105,7 +105,7 @@ const insertPublicRepos = async (req, res) => {
       });
     }
   } catch (err) {
-    logger.error("Error executing in while inserting repositories in api call");
+    logger.error("Error executing in inserting repositories api");
     logger.error(err);
     logger.info("=========================================");
     Sentry.captureException(err);

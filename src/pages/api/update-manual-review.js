@@ -24,6 +24,7 @@ const updateRepo = async (repoId, updatedAt) => {
   );
   return updateRepo;
 };
+
 //function for update parent repository
 const updateParentRepo = async (repoId, updatedAt) => {
   await Repositories.update(
@@ -82,7 +83,7 @@ const updateManualRepo = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
-        logger.error("Error executing while update manual review");
+        logger.error("Error executing in update manual review api");
         logger.error(err);
         logger.info("=========================================");
         res.status(500).json({

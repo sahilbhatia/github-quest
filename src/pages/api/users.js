@@ -130,7 +130,7 @@ const getUsers = async (req, res) => {
     res.status(200).json(data);
   } catch (err) {
     Sentry.captureException(err);
-    logger.error("Error executing while getting user list");
+    logger.error("Error executing in users api");
     logger.error(err);
     logger.info("=========================================");
     res.status(500).json({

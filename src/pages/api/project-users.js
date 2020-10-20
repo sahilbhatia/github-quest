@@ -67,7 +67,7 @@ const getUsers = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
-        logger.error("Error executing while getting all users of project");
+        logger.error("Error executing in project users api");
         logger.error(err);
         logger.info("=========================================");
         res.status(500).json({
