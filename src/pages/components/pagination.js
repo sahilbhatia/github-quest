@@ -46,7 +46,7 @@ export default function Index({
         {Math.trunc(count / limit) + 1}
       </Button>
       {data ? (
-        data.length < limit ? (
+        data.length < limit || offset == count - limit ? (
           <></>
         ) : (
           <Button onClick={next} className="mx-2 bg-white text-dark">

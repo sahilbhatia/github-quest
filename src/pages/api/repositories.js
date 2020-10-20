@@ -171,6 +171,7 @@ const getAllPublicRepos = async (req, res) => {
   try {
     let { userName, limit, offset } = req.query;
     limit = limit == undefined ? 10 : limit;
+    offset = userName == undefined ? offset : 0;
     //get all repositories
     const getIncludeUsersModel = await getUsersWhereClause(userName);
     let findAllClause = getFindAllClause(limit, offset, getIncludeUsersModel);
