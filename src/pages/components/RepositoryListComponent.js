@@ -23,6 +23,7 @@ export default function RepositoryListComponent({
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
     : undefined;
+  const repoCount = data ? data.count : undefined;
   data = data ? data.repositories : undefined;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
@@ -351,6 +352,7 @@ export default function RepositoryListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
+            count={repoCount}
           />
         )
       ) : (
