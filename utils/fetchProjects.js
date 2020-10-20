@@ -2,6 +2,8 @@ const request = require("superagent");
 const dbConn = require("../models/sequelize");
 const { headers } = require("../constants/intranetHeader");
 const { Sentry } = require("./sentry");
+const log4js = require("../config/loggerConfig");
+const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
@@ -21,6 +23,11 @@ const insertRepository = async (item, projectId) => {
         });
       } catch (err) {
         Sentry.captureException(err);
+        logger.error(
+          "Error executing while fetching projects in insert repository function"
+        );
+        logger.error(err);
+        logger.info("=========================================");
         return false;
       }
     });
@@ -45,6 +52,11 @@ const insertUsers = async (item, projectId) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error(
+          "Error executing while fetching projects in insert users function"
+        );
+        logger.error(err);
+        logger.info("=========================================");
         return false;
       }
     });
@@ -66,6 +78,11 @@ const findProject = async (id) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while fetching projects in find project function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -132,6 +149,11 @@ module.exports.addProjects = async () => {
           }
         } catch (err) {
           Sentry.captureException(err);
+          logger.error(
+            "Error executing in fetch projects function while iterating projects in API call"
+          );
+          logger.error(err);
+          logger.info("=========================================");
           return false;
         }
       }
@@ -140,6 +162,9 @@ module.exports.addProjects = async () => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing while fetching projects");
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -164,6 +189,11 @@ module.exports.addIntranetProjects = async (res) => {
           }
         } catch (err) {
           Sentry.captureException(err);
+          logger.error(
+            "Error executing in fetch projects function while iterating projects in API call"
+          );
+          logger.error(err);
+          logger.info("=========================================");
           return false;
         }
       }
@@ -174,6 +204,9 @@ module.exports.addIntranetProjects = async (res) => {
     });
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing while fetching projects in API call");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });
