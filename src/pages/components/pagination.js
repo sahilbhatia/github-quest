@@ -1,7 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Button, Dropdown, DropdownButton } from "react-bootstrap";
-export default function Index({ limit, offset, setLimit, setOffset, data }) {
+export default function Index({
+  limit,
+  offset,
+  setLimit,
+  setOffset,
+  data,
+  perPage,
+}) {
   const prev = () => {
     offset = offset - limit <= 0 ? 0 : offset - limit;
     setOffset(offset);
@@ -10,12 +17,15 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
     offset = data ? (data.length < limit ? offset : offset + limit) : 0;
     setOffset(offset);
   };
+
   return (
     <div className="d-flex justify-content-end my-3">
       <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
-        <Dropdown.Item onClick={() => setLimit(10)}>10</Dropdown.Item>
-        <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
-        <Dropdown.Item onClick={() => setLimit(20)}>20</Dropdown.Item>
+        {perPage.map((number, Index) => (
+          <Dropdown.Item key={Index} onClick={() => setLimit(number)}>
+            {number}
+          </Dropdown.Item>
+        ))}
       </DropdownButton>
 
       {offset == 0 ? (
@@ -48,6 +58,7 @@ export default function Index({ limit, offset, setLimit, setOffset, data }) {
 Index.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
+  perPage: PropTypes.array.isRequired,
   offset: PropTypes.number.isRequired,
   setOffset: PropTypes.func.isRequired,
   setLimit: PropTypes.func.isRequired,
