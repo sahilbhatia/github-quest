@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Button, Dropdown, DropdownButton, Form, Col } from "react-bootstrap";
+import { Button, Dropdown, DropdownButton, Col } from "react-bootstrap";
 import PageOption from "./pageOption";
 export default function Index({
   limit,
@@ -29,16 +29,6 @@ export default function Index({
           <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
           <Dropdown.Item onClick={() => setLimit(20)}>20</Dropdown.Item>
         </DropdownButton>
-        <span className="ml-2">got to page</span>
-        <Form.Control
-          style={{ width: "40px" }}
-          type="text"
-          size="sm"
-          className="m-1"
-          onChange={(e) => setOffset(e.target.value * limit - limit)}
-          placeholder="..."
-          hidden={!count}
-        />
         {offset == 0 ? (
           <Button onClick={prev} className=" ml-5 bg-white text-dark" disabled>
             &laquo;{"previous"}

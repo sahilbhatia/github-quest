@@ -22,7 +22,6 @@ export default function Index() {
     });
     return filterString;
   };
-  //console.log(offset);
   let { data, error } = useSWR(
     `/api/projects?limit=${limit}&offset=${offset}${getQueryString(filter)}`,
     fetcher
