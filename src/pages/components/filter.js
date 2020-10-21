@@ -8,7 +8,7 @@ import PropTypes from "prop-types";
 import moment from "moment";
 let limit = 10;
 let offset = 0;
-export default function Index({ filter, setFilter, minDate }) {
+export default function Index({ filter, setFilter, minDate, setOffset }) {
   let [name, setName] = useState(null);
   let [repositoryName, setRepositoryName] = useState(null);
   let usersList = [];
@@ -52,6 +52,7 @@ export default function Index({ filter, setFilter, minDate }) {
     let data = { ...filter };
     data.userName = userName.value;
     setFilter(data);
+    setOffset(0);
   };
   const filterOptions = (inputValue) => {
     return usersList.filter((i) =>
@@ -414,5 +415,6 @@ export default function Index({ filter, setFilter, minDate }) {
 Index.propTypes = {
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
+  setOffset: PropTypes.func,
   minDate: PropTypes.string.isRequired,
 };

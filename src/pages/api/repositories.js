@@ -171,13 +171,12 @@ const getAllPublicRepos = async (req, res) => {
   try {
     let { userName, limit, offset } = req.query;
     limit = limit == undefined ? 10 : limit;
-    offset = userName == undefined ? offset : 0;
     //get all repositories
     const getIncludeUsersModel = await getUsersWhereClause(userName);
     let findAllClause = getFindAllClause(limit, offset, getIncludeUsersModel);
     const getWhereClauseObject = await getWhereClause(req.query);
     findAllClause.where = getWhereClauseObject;
-    const { count, rows: repositories } = await Repositories.findAndCountAll(
+    let { count, rows: repositories } = await Repositories.findAndCountAll(
       findAllClause
     );
     const earliestDate = await Repositories.findAll({

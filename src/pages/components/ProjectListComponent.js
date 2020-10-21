@@ -15,6 +15,7 @@ export default function ProjectListComponent({
   data,
 }) {
   const minDate = data ? data.date.min : undefined;
+  const projectCount = data ? data.count : undefined;
   data = data ? data.projects : undefined;
   const columns = [
     {
@@ -146,6 +147,7 @@ export default function ProjectListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
+            count={filter.projectName ? undefined : projectCount}
           />
         )
       ) : (

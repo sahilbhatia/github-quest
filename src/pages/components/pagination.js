@@ -36,15 +36,24 @@ export default function Index({
           )}
         </Button>
       )}
-      <Button onClick={() => setOffset(0)} className="ml-2  bg-white text-dark">
-        1
-      </Button>
-      <Button
-        onClick={() => setOffset(count - limit)}
-        className="bg-white text-dark"
-      >
-        {Math.trunc(count / limit) + 1}
-      </Button>
+      {count ? (
+        <>
+          <Button
+            onClick={() => setOffset(0)}
+            className="ml-2  bg-white text-dark"
+          >
+            1
+          </Button>
+          <Button
+            onClick={() => setOffset(count - limit)}
+            className="bg-white text-dark"
+          >
+            {Math.trunc(count / limit) + 1}
+          </Button>
+        </>
+      ) : (
+        <></>
+      )}
       {data ? (
         data.length < limit || offset == count - limit ? (
           <></>

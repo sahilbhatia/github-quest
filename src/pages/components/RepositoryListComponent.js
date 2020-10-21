@@ -335,7 +335,12 @@ export default function RepositoryListComponent({
         }
         subHeader
         subHeaderComponent={
-          <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+          <Filter
+            filter={filter}
+            setFilter={setFilter}
+            minDate={minDate}
+            setOffset={setOffset}
+          />
         }
         columns={columns}
         customStyles={customStyles}
@@ -352,7 +357,7 @@ export default function RepositoryListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
-            count={repoCount}
+            count={filter.userName ? undefined : repoCount}
           />
         )
       ) : (
