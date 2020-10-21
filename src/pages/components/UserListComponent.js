@@ -16,6 +16,7 @@ export default function UserListComponent({
   data,
 }) {
   const minDate = data ? data.date.min : undefined;
+  const count = data ? data.count : undefined;
   data = data ? data.users : undefined;
   const columns = [
     {
@@ -144,6 +145,7 @@ export default function UserListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
+            count={filter.userName || filter.gitHandle ? undefined : count}
           />
         )
       ) : (

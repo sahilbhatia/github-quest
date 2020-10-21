@@ -84,8 +84,9 @@ const getWhereClause = (
 
 // function for get user list
 const getUserList = async (where, limit, offset) => {
-  const usersData = await Users.findAll({
+  const { count, rows: usersData } = await Users.findAndCountAll({
     where,
+    distinct: true,
     include: [
       {
         model: Users_projects,
@@ -104,7 +105,7 @@ const getUserList = async (where, limit, offset) => {
   });
   let data = {};
   (data.users = usersData), (data.date = earliestDate[0]);
-  return data;
+  return { count, data };
 };
 
 //get users
@@ -126,7 +127,8 @@ const getUsers = async (req, res) => {
       endDate,
       error_details
     );
-    const data = await getUserList(where, limit, offset);
+    const { count, data } = await getUserList(where, limit, offset);
+    data.count = count;
     res.status(200).json(data);
   } catch (err) {
     Sentry.captureException(err);
