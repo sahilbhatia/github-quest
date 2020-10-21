@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Button, Dropdown, DropdownButton } from "react-bootstrap";
+import { Button, Dropdown, DropdownButton, Form, Col } from "react-bootstrap";
+import PageOption from "./pageOption";
 export default function Index({
   limit,
   offset,
@@ -18,53 +19,88 @@ export default function Index({
     setOffset(offset);
   };
   return (
-    <div className="d-flex justify-content-end my-3">
-      <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
-        <Dropdown.Item onClick={() => setLimit(10)}>10</Dropdown.Item>
-        <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
-        <Dropdown.Item onClick={() => setLimit(20)}>20</Dropdown.Item>
-      </DropdownButton>
-      {offset == 0 ? (
-        <></>
-      ) : (
-        <Button onClick={prev} className=" ml-5 bg-white text-dark">
-          &laquo;{" "}
-          {offset - limit < 0 ? (
-            <>{`0 - ${limit}`}</>
-          ) : (
-            <>{`${offset - limit + 1} - ${offset}`}</>
-          )}
-        </Button>
-      )}
-      {count ? (
-        <>
-          <Button
-            onClick={() => setOffset(0)}
-            className="ml-2  bg-white text-dark"
-          >
-            1
+    <div>
+      <Col className="pt-3">
+        showing {offset + 1} to {offset + data.length} of {count} entries
+      </Col>
+      <Col className="d-flex justify-content-end">
+        <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
+          <Dropdown.Item onClick={() => setLimit(10)}>10</Dropdown.Item>
+          <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
+          <Dropdown.Item onClick={() => setLimit(20)}>20</Dropdown.Item>
+        </DropdownButton>
+        <span className="ml-2">got to page</span>
+        <Form.Control
+          style={{ width: "40px" }}
+          type="text"
+          size="sm"
+          className="m-1"
+          onChange={(e) => setOffset(e.target.value * limit - limit)}
+          placeholder="..."
+          hidden={!count}
+        />
+        {offset == 0 ? (
+          <Button onClick={prev} className=" ml-5 bg-white text-dark" disabled>
+            &laquo;{"previous"}
           </Button>
-          <Button
-            onClick={() => setOffset(count - limit)}
-            className="bg-white text-dark"
-          >
-            {Math.trunc(count / limit) + 1}
-          </Button>
-        </>
-      ) : (
-        <></>
-      )}
-      {data ? (
-        data.length < limit || offset == count - limit ? (
-          <></>
         ) : (
-          <Button onClick={next} className="mx-2 bg-white text-dark">
-            {`${offset + limit + 1} - ${limit + offset + limit}`} &raquo;
+          <Button onClick={prev} className=" ml-5 bg-white text-dark">
+            &laquo; previous
           </Button>
-        )
-      ) : (
-        <></>
-      )}
+        )}
+        {count ? (
+          <>
+            <Button
+              onClick={() => setOffset(0)}
+              className="ml-2"
+              variant={offset == 0 ? "dark" : "white"}
+              hidden={offset == 0}
+            >
+              1
+            </Button>
+            {offset <= 2 * limit ? <></> : <span className="mx-2">...</span>}
+            <PageOption
+              limit={limit}
+              setOffset={setOffset}
+              offset={offset}
+              count={count}
+            />
+            {count - offset <= 2 * limit ? (
+              <></>
+            ) : (
+              <span className="mx-2">...</span>
+            )}
+            <Button
+              onClick={() =>
+                setOffset(
+                  (count - limit) % limit == 0
+                    ? count - limit
+                    : count - ((count - limit) % limit)
+                )
+              }
+              variant={offset == count - limit ? "dark" : "white"}
+              hidden={count - offset <= 2 * limit}
+            >
+              {Math.trunc(count / limit) + 1}
+            </Button>
+          </>
+        ) : (
+          <></>
+        )}
+        {data ? (
+          data.length < limit || offset == count - limit ? (
+            <Button onClick={next} className="mx-2 bg-white text-dark" disabled>
+              next &raquo;
+            </Button>
+          ) : (
+            <Button onClick={next} className="mx-2 bg-white text-dark">
+              next &raquo;
+            </Button>
+          )
+        ) : (
+          <></>
+        )}
+      </Col>
     </div>
   );
 }
