@@ -746,7 +746,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
             } else {
               //insert parent repo
               try {
-                insertParentRepositories = await insertNewRepo(parentRepo.body);
+                insertParentRepositories = await insertNewRepo(
+                  parentRepo.body.parent
+                );
                 let userObject = await Users.findOne({
                   where: {
                     github_handle: parentRepo.body.parent.owner.login,
