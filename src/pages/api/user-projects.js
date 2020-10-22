@@ -3,56 +3,32 @@ const dbConn = require("../../../models/sequelize");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const Projects = db.projects;
 const Users_projects = db.users_projects;
 const Users = db.users;
 const Projects_Repositories = db.projects_repositories;
 
-Users_projects.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Users_projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Users_projects.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_projects, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Projects_Repositories.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Projects_Repositories, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-
 //function for get projects of user
-const getProjectsByUserId = async (userId, res) => {
-  try {
-    let data = await Users.findOne({
-      where: { id: userId },
-      include: {
-        model: Users_projects,
-        attributes: ["id"],
-        include: [
-          {
-            model: Projects,
-            include: [
-              { model: Users_projects },
-              { model: Projects_Repositories },
-            ],
-          },
-        ],
-      },
-    });
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
+const getProjectsByUserId = async (userId) => {
+  let data = await Users.findOne({
+    where: { id: userId },
+    include: {
+      model: Users_projects,
+      attributes: ["id"],
+      include: [
+        {
+          model: Projects,
+          include: [
+            { model: Users_projects },
+            { model: Projects_Repositories },
+          ],
+        },
+      ],
+    },
+  });
+  return data;
 };
 
 //get projects
@@ -76,11 +52,14 @@ const getProjects = async (req, res) => {
             message: "User Not Found For Specified Id",
           });
         } else {
-          const data = await getProjectsByUserId(userId, res);
+          const data = await getProjectsByUserId(userId);
           res.status(200).json(data);
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in user project api");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });

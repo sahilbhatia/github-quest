@@ -32,11 +32,11 @@ module.exports = (sequelize, Sequelize) => {
       },
       created_at: {
         type: "TIMESTAMP",
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updated_at: {
         type: "TIMESTAMP",
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
       },
     },
     {
@@ -45,5 +45,16 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
+  Projects.associate = (models) => {
+    Projects.hasMany(models.projects_repositories, {
+      foreignKey: { name: "project_id", allowNull: true },
+    });
+    Projects.belongsTo(models.users, {
+      foreignKey: { name: "project_manager", allowNull: true },
+    });
+    Projects.hasMany(models.users_projects, {
+      foreignKey: { name: "project_id", allowNull: true },
+    });
+  };
   return Projects;
 };
