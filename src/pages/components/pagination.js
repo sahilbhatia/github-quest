@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { Button, Dropdown, DropdownButton, Col } from "react-bootstrap";
-import PageOption from "./pageOption";
+import { Button, Dropdown, DropdownButton, Col, Form } from "react-bootstrap";
 export default function Index({
   limit,
   offset,
@@ -10,6 +9,7 @@ export default function Index({
   data,
   count,
 }) {
+  const [pageNo, setPageNo] = useState(0);
   const prev = () => {
     offset = offset - limit <= 0 ? 0 : offset - limit;
     setOffset(offset);
@@ -21,7 +21,13 @@ export default function Index({
   return (
     <div>
       <Col className="pt-3">
-        showing {offset + 1} to {offset + data.length} of {count} entries
+        {count ? (
+          <>
+            showing {offset + 1} to {offset + data.length} of {count} entries
+          </>
+        ) : (
+          <></>
+        )}
       </Col>
       <Col className="d-flex justify-content-end">
         <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
@@ -29,6 +35,18 @@ export default function Index({
           <Dropdown.Item onClick={() => setLimit(15)}>15</Dropdown.Item>
           <Dropdown.Item onClick={() => setLimit(20)}>20</Dropdown.Item>
         </DropdownButton>
+        <Form.Control
+          onChange={(e) => setPageNo(e.target.value * limit - limit)}
+          style={{ width: "80px" }}
+          placeholder={(offset + limit) / limit}
+          className="mr-1"
+          type="number"
+          min={1}
+          max={count / limit + 1}
+        />
+        <Button onClick={() => setOffset(pageNo <= 0 ? 0 : pageNo)}>
+          jump on
+        </Button>
         {offset == 0 ? (
           <Button onClick={prev} className=" ml-5 bg-white text-dark" disabled>
             &laquo;{"previous"}
@@ -49,12 +67,29 @@ export default function Index({
               1
             </Button>
             {offset <= 2 * limit ? <></> : <span className="mx-2">...</span>}
-            <PageOption
-              limit={limit}
-              setOffset={setOffset}
-              offset={offset}
-              count={count}
-            />
+            <Button
+              onClick={() => setOffset(offset - limit)}
+              className="ml-2"
+              variant="white"
+              hidden={offset == 0 || offset == limit}
+            >
+              {Math.trunc((offset + limit) / limit) - 1}
+            </Button>
+            <Button
+              onClick={() => setOffset(offset)}
+              className="ml-2"
+              variant="dark"
+            >
+              {Math.trunc((offset + limit) / limit)}
+            </Button>
+            <Button
+              onClick={() => setOffset(offset + limit)}
+              className="ml-2"
+              variant="white"
+              hidden={count - offset <= limit}
+            >
+              {Math.trunc((offset + limit) / limit) + 1}
+            </Button>
             {count - offset <= 2 * limit ? (
               <></>
             ) : (
