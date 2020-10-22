@@ -6,64 +6,37 @@ const Users_repositories = db.users_repositories;
 const Users = db.users;
 const yup = require("yup");
 const { Sentry } = require("../../../utils/sentry");
-
-Repositories.belongsTo(Repositories, {
-  foreignKey: { name: "parent_repo_id", allowNull: true },
-  as: "parent",
-});
-Repositories.hasMany(Repositories, {
-  foreignKey: { name: "parent_repo_id", allowNull: true },
-  as: "children",
-});
-Users_repositories.belongsTo(Repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-
-Repositories.hasMany(Users_repositories, {
-  foreignKey: { name: "repository_id", allowNull: true },
-});
-Users_repositories.belongsTo(Users, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
-Users.hasMany(Users_repositories, {
-  foreignKey: { name: "user_id", allowNull: true },
-});
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 
 //function for return forked repo
-const forkedRepos = async (repoId, res) => {
-  try {
-    const data = await Repositories.findAll({
-      where: { parent_repo_id: repoId },
-      include: [
-        {
-          model: Repositories,
-          as: "parent",
-          include: [
-            {
-              model: Repositories,
-              as: "children",
-            },
-          ],
-        },
-        {
-          model: Repositories,
-          as: "children",
-        },
-        {
-          model: Users_repositories,
-          include: {
-            model: Users,
+const forkedRepos = async (repoId) => {
+  const data = await Repositories.findAll({
+    where: { parent_repo_id: repoId },
+    include: [
+      {
+        model: Repositories,
+        as: "parent",
+        include: [
+          {
+            model: Repositories,
+            as: "children",
           },
+        ],
+      },
+      {
+        model: Repositories,
+        as: "children",
+      },
+      {
+        model: Users_repositories,
+        include: {
+          model: Users,
         },
-      ],
-    });
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
+      },
+    ],
+  });
+  return data;
 };
 
 //get forked repos
@@ -78,7 +51,7 @@ const getForkedRepos = async (req, res) => {
     })
     .then(async () => {
       try {
-        const data = await forkedRepos(req.query.id, res);
+        const data = await forkedRepos(req.query.id);
         if (data.length == 0) {
           res.status(404).json({
             message: "List Not found For Given Id",
@@ -88,6 +61,11 @@ const getForkedRepos = async (req, res) => {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error(
+          "Error executing in fork api while getting forked repositories"
+        );
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });

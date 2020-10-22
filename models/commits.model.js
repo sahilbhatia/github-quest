@@ -31,5 +31,10 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
+  Commits.associate = (models) => {
+    Commits.belongsTo(models.repositories, {
+      foreignKey: { name: "repository_id", allowNull: true },
+    });
+  };
   return Commits;
 };

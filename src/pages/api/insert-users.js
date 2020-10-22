@@ -5,6 +5,8 @@ const { headers } = require("../../../constants/intranetHeader");
 dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const Users = db.users;
 const Roles = db.roles;
 
@@ -43,6 +45,9 @@ const findUser = async (email) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in insert users api in find user function");
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -77,6 +82,9 @@ const newUser = async (item) => {
     });
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in insert users api in new user function");
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -114,6 +122,9 @@ const existUser = async (item, find_user) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in insert users api in exist user function");
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -144,6 +155,9 @@ const insertUsersFunction = async () => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in insert users api in insert user function");
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -168,14 +182,22 @@ export default async function insertUsers(req, res) {
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error(
+          "Error executing in insert users api while iterating user list"
+        );
+        logger.error(err);
+        logger.info("=========================================");
         return false;
       }
     });
     res.status(200).json({
-      message: "cron Job Activated successfully for inserting users",
+      message: "cron Job Activated Successfully For Inserting Users",
     });
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in insert users api");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });

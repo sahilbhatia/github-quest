@@ -3,6 +3,8 @@ const { headers } = require("../constants/githubHeader");
 const moment = require("moment");
 const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
+const log4js = require("../config/loggerConfig");
+const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
@@ -29,6 +31,11 @@ const getUpdatedRepositories = async (databaseUser) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in get updated repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -50,6 +57,11 @@ const getAllRepositories = async (databaseUser) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in get all repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     await Users.update(
       {
         error_details: "repositories not fetch for given github handle",
@@ -82,7 +94,7 @@ const insertNewRepo = async (item) => {
       source_type: "github",
       source_repo_id: item.id,
       name: item.name,
-      url: item.url,
+      url: item.html_url,
       description: item.description,
       is_disabled: item.disabled,
       is_archived: item.archived,
@@ -95,6 +107,11 @@ const insertNewRepo = async (item) => {
     return insertRepos;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in insert new repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -109,6 +126,11 @@ const linkUserRepository = async (user, repo) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in link user repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -128,6 +150,11 @@ const findRepoFunction = async (id) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories find repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -155,7 +182,7 @@ const insertSuspiciousChildRepos = async (
             source_type: "github",
             source_repo_id: value.id,
             name: value.name,
-            url: value.url,
+            url: value.html_url,
             description: value.description,
             is_disabled: value.disabled,
             is_archived: value.archived,
@@ -179,6 +206,11 @@ const insertSuspiciousChildRepos = async (
               });
             } catch (err) {
               Sentry.captureException(err);
+              logger.error(
+                "Error executing while inserting github repositories in insert suspicious child repository function"
+              );
+              logger.error(err);
+              logger.info("=========================================");
               await Users.update(
                 {
                   error_details: "error comes while fetching repositories",
@@ -195,6 +227,11 @@ const insertSuspiciousChildRepos = async (
           return null;
         } catch (err) {
           Sentry.captureException(err);
+          logger.error(
+            "Error executing while inserting github repositories in insert suspicious child repository function"
+          );
+          logger.error(err);
+          logger.info("=========================================");
           await Users.update(
             {
               error_details: "error comes while inserting repositories",
@@ -211,6 +248,11 @@ const insertSuspiciousChildRepos = async (
       return null;
     } catch (err) {
       Sentry.captureException(err);
+      logger.error(
+        "Error executing while inserting github repositories in insert suspicious child repository function"
+      );
+      logger.error(err);
+      logger.info("=========================================");
       await Users.update(
         {
           error_details: "error comes while fetching forks repositories",
@@ -235,7 +277,7 @@ const insertForkedRepo = async (item, insertParentRepositories) => {
       source_type: "github",
       source_repo_id: item.id,
       name: item.name,
-      url: item.url,
+      url: item.html_url,
       description: item.description,
       is_disabled: item.disabled,
       is_archived: item.archived,
@@ -263,6 +305,11 @@ const insertForkedRepo = async (item, insertParentRepositories) => {
     return insertRepos;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in insert forked repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -274,7 +321,7 @@ const insertErrorRepo = async (item, err) => {
       source_type: "github",
       source_repo_id: item.id,
       name: item.name,
-      url: item.url,
+      url: item.html_url,
       description: item.description,
       is_disabled: item.disabled,
       is_archived: item.archived,
@@ -290,6 +337,11 @@ const insertErrorRepo = async (item, err) => {
     return insertRepos;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in insert error function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -321,7 +373,7 @@ const getParentRepoData = async (item, result, databaseUser, parentRepo) => {
           source_type: "github",
           source_repo_id: parentRepo.body.parent.id,
           name: parentRepo.body.name,
-          url: parentRepo.body.parent.url,
+          url: parentRepo.body.parent.html_url,
           description: parentRepo.body.parent.description,
           is_private: parentRepo.body.parent.private,
           is_archived: parentRepo.body.archived,
@@ -336,6 +388,11 @@ const getParentRepoData = async (item, result, databaseUser, parentRepo) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in get parent repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -346,7 +403,7 @@ const updateRepo = async (result, item) => {
     await Repositories.update(
       {
         name: item.name,
-        url: item.url,
+        url: item.html_url,
         description: item.description,
         is_disabled: item.disabled,
         is_archived: item.archived,
@@ -365,6 +422,11 @@ const updateRepo = async (result, item) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in update repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -375,7 +437,7 @@ const updateChildRepo = async (item, result, insertParentRepositories) => {
     await Repositories.update(
       {
         name: item.name,
-        url: item.url,
+        url: item.html_url,
         description: item.description,
         is_disabled: item.disabled,
         is_archived: item.archived,
@@ -409,6 +471,47 @@ const updateChildRepo = async (item, result, insertParentRepositories) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in update child repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
+//function for update child repo
+const updateForkedRepo = async (item, insertParentRepositories) => {
+  try {
+    await Repositories.update(
+      {
+        parent_repo_id: insertParentRepositories.dataValues.id,
+        is_suspicious:
+          insertParentRepositories.dataValues.is_private ||
+          insertParentRepositories.dataValues.is_suspicious
+            ? true
+            : false,
+        review:
+          insertParentRepositories.dataValues.is_private ||
+          insertParentRepositories.dataValues.is_suspicious
+            ? "suspicious auto"
+            : "no action",
+        reviewed_at:
+          insertParentRepositories.dataValues.is_private ||
+          insertParentRepositories.dataValues.is_suspicious
+            ? moment.utc().format()
+            : null,
+      },
+      {
+        returning: true,
+        where: {
+          source_repo_id: item.id.toString(),
+        },
+      }
+    );
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
     return null;
   }
 };
@@ -429,6 +532,11 @@ const updateRepositoryError = async (id) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in update repository error function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -451,6 +559,11 @@ const updateRepositoryErrorBySourceId = async (id) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in update repository error by source id function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -471,6 +584,11 @@ const updateUserError = async (id) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in update user error function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -531,7 +649,13 @@ const updateReviewStatus = async (item, result, databaseUser) => {
     } else {
       return null;
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting github repositories in update review status function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -556,6 +680,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
             );
           } catch (err) {
             Sentry.captureException(err);
+            logger.error("Error executing while inserting github repositories");
+            logger.error(err);
+            logger.info("=========================================");
             await updateUserError(databaseUser.dataValues.id);
             return null;
           }
@@ -575,10 +702,16 @@ module.exports.insertGithubRepos = async (databaseUser) => {
             //if parent repo existing
             if (insertParentRepositories) {
               try {
-                const insertRepos = await insertForkedRepo(
-                  item,
-                  insertParentRepositories
-                );
+                let insertRepos;
+                insertRepos = await findRepoFunction(item.id);
+                if (insertRepos) {
+                  await updateForkedRepo(item, insertParentRepositories);
+                } else {
+                  insertRepos = await insertForkedRepo(
+                    item,
+                    insertParentRepositories
+                  );
+                }
                 await linkUserRepository(
                   databaseUser.dataValues,
                   insertRepos.dataValues
@@ -600,6 +733,11 @@ module.exports.insertGithubRepos = async (databaseUser) => {
                 );
               } catch (err) {
                 Sentry.captureException(err);
+                logger.error(
+                  "Error executing while inserting github repositories"
+                );
+                logger.error(err);
+                logger.info("=========================================");
                 await updateRepositoryError(
                   insertParentRepositories.dataValues.id
                 );
@@ -608,7 +746,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
             } else {
               //insert parent repo
               try {
-                insertParentRepositories = await insertNewRepo(parentRepo.body);
+                insertParentRepositories = await insertNewRepo(
+                  parentRepo.body.parent
+                );
                 let userObject = await Users.findOne({
                   where: {
                     github_handle: parentRepo.body.parent.owner.login,
@@ -623,14 +763,25 @@ module.exports.insertGithubRepos = async (databaseUser) => {
                     );
                   } catch (err) {
                     Sentry.captureException(err);
+                    logger.error(
+                      "Error executing while inserting github repositories"
+                    );
+                    logger.error(err);
+                    logger.info("=========================================");
                     await updateUserError(databaseUser.dataValues.id);
                     return null;
                   }
                 }
-                const insertRepos = await insertForkedRepo(
-                  item,
-                  insertParentRepositories
-                );
+                let insertRepos;
+                insertRepos = await findRepoFunction(item.id);
+                if (insertRepos) {
+                  await updateForkedRepo(item, insertParentRepositories);
+                } else {
+                  insertRepos = await insertForkedRepo(
+                    item,
+                    insertParentRepositories
+                  );
+                }
                 await linkUserRepository(
                   databaseUser.dataValues,
                   insertRepos.dataValues
@@ -643,6 +794,11 @@ module.exports.insertGithubRepos = async (databaseUser) => {
                 );
               } catch (err) {
                 Sentry.captureException(err);
+                logger.error(
+                  "Error executing while inserting github repositories"
+                );
+                logger.error(err);
+                logger.info("=========================================");
                 await updateRepositoryErrorBySourceId(
                   result[0].dataValues.source_repo_id
                 );
@@ -651,6 +807,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
             }
           } catch (err) {
             Sentry.captureException(err);
+            logger.error("Error executing while inserting github repositories");
+            logger.error(err);
+            logger.info("=========================================");
             const insertRepos = await insertErrorRepo(item, err);
             await linkUserRepository(
               databaseUser.dataValues,
@@ -664,6 +823,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
           try {
             await updateRepo(result, item);
           } catch (err) {
+            logger.error("Error executing while inserting github repositories");
+            logger.error(err);
+            logger.info("=========================================");
             Sentry.captureException(err);
             await updateRepositoryErrorBySourceId(
               result[0].dataValues.source_repo_id
@@ -686,6 +848,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
             await updateChildRepo(item, result, insertParentRepositories);
           } catch (err) {
             Sentry.captureException(err);
+            logger.error("Error executing while inserting github repositories");
+            logger.error(err);
+            logger.info("=========================================");
             await updateRepositoryErrorBySourceId(
               result[0].dataValues.source_repo_id
             );
@@ -698,6 +863,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
       await Promise.all(mapData);
     } catch (err) {
       Sentry.captureException(err);
+      logger.error("Error executing while inserting github repositories");
+      logger.error(err);
+      logger.info("=========================================");
       await updateUserError(databaseUser.dataValues.id);
       return null;
     }

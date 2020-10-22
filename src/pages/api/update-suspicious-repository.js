@@ -4,53 +4,42 @@ const db = require("../../../models/sequelize");
 const Repositories = db.repositories;
 const Commits = db.commits;
 const validation = require("../../../utils/validationSchema");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
 
 //function for update repository
-const updateRepo = async (repoId, updatedAt, res) => {
-  try {
-    const updateRepo = await Repositories.update(
-      {
-        is_suspicious: true,
-        review: "suspicious manual",
-        reviewed_at: updatedAt,
-      },
-      {
-        returning: true,
-        plain: true,
-        where: { id: repoId },
-      }
-    );
-    return updateRepo;
-  } catch (err) {
-    Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
+const updateRepo = async (repoId, updatedAt) => {
+  const updateRepo = await Repositories.update(
+    {
+      is_suspicious: true,
+      review: "suspicious manual",
+      reviewed_at: updatedAt,
+    },
+    {
+      returning: true,
+      plain: true,
+      where: { id: repoId },
+    }
+  );
+  return updateRepo;
 };
+
 //function for update parent repository
-const updateParentRepo = async (repoId, updatedAt, res) => {
-  try {
-    await Repositories.update(
-      {
-        is_suspicious: true,
-        review: "suspicious manual",
-        reviewed_at: updatedAt,
+const updateParentRepo = async (repoId, updatedAt) => {
+  await Repositories.update(
+    {
+      is_suspicious: true,
+      review: "suspicious manual",
+      reviewed_at: updatedAt,
+    },
+    {
+      returning: true,
+      where: {
+        parent_repo_id: repoId,
       },
-      {
-        returning: true,
-        where: {
-          parent_repo_id: repoId,
-        },
-      }
-    );
-  } catch (err) {
-    Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
+    }
+  );
 };
 
 //function for clear remark
@@ -81,12 +70,11 @@ const updateSuspiciousRepo = async (req, res) => {
               message: "Repository Not Found For Specified Id",
             });
           } else {
-            const updatedRepo = await updateRepo(id, updatedAt, res);
+            const updatedRepo = await updateRepo(id, updatedAt);
             if (updatedRepo[1].dataValues.parent_repo_id) {
               await updateParentRepo(
                 updatedRepo[1].dataValues.parent_repo_id,
-                updatedAt,
-                res
+                updatedAt
               );
               await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
             }
@@ -98,6 +86,9 @@ const updateSuspiciousRepo = async (req, res) => {
         });
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in update suspicious repository api");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "internal server error",
         });
