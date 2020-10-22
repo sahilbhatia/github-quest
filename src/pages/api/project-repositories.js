@@ -4,34 +4,22 @@ const yup = require("yup");
 const db = require("../../../models/sequelize");
 const Projects = db.projects;
 const { Sentry } = require("../../../utils/sentry");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const Projects_Repositories = db.projects_repositories;
 
-Projects_Repositories.belongsTo(Projects, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-Projects.hasMany(Projects_Repositories, {
-  foreignKey: { name: "project_id", allowNull: true },
-});
-
 //function for get repositories
-const getRepositories = async (limit, offset, projectId, res) => {
-  try {
-    let repoList = await Projects_Repositories.findAll({
-      where: { project_id: projectId },
-      limit: limit,
-      offset: offset,
-    });
-    let data = {};
-    const project = await Projects.findOne({ where: { id: projectId } });
-    data.repositories = repoList;
-    data.projectName = project.name;
-    return data;
-  } catch (err) {
-    Sentry.captureException(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
-  }
+const getRepositories = async (limit, offset, projectId) => {
+  let repoList = await Projects_Repositories.findAll({
+    where: { project_id: projectId },
+    limit: limit,
+    offset: offset,
+  });
+  let data = {};
+  const project = await Projects.findOne({ where: { id: projectId } });
+  data.repositories = repoList;
+  data.projectName = project.name;
+  return data;
 };
 
 const getProjectRepository = async (req, res) => {
@@ -54,11 +42,14 @@ const getProjectRepository = async (req, res) => {
             message: "Project Not Found For Specified Id",
           });
         } else {
-          const data = await getRepositories(limit, offset, projectId, res);
+          const data = await getRepositories(limit, offset, projectId);
           res.status(200).json(data);
         }
       } catch (err) {
         Sentry.captureException(err);
+        logger.error("Error executing in project repositories api");
+        logger.error(err);
+        logger.info("=========================================");
         res.status(500).json({
           message: "Internal Server Error",
         });

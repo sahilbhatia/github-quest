@@ -1,5 +1,7 @@
 const request = require("superagent");
 const { Sentry } = require("./sentry");
+const log4js = require("../config/loggerConfig");
+const logger = log4js.getLogger();
 const { headers } = require("../constants/githubHeader");
 
 //function for validate github access token
@@ -13,6 +15,9 @@ const gitHubValidation = async () => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in github token validation function");
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -30,6 +35,9 @@ const gitLabValidation = async () => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in gitlab token validation function");
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -47,6 +55,9 @@ const bitbucketValidation = async () => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in bitbucket token validation function");
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };

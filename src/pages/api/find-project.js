@@ -3,6 +3,8 @@ dbConn.sequelize;
 const db = require("../../../models/sequelize");
 const Projects = db.projects;
 const Sequelize = require("sequelize");
+const log4js = require("../../../config/loggerConfig");
+const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
 
 const findProject = async (req, res) => {
@@ -18,6 +20,9 @@ const findProject = async (req, res) => {
     res.status(200).json(projectList);
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing in find projects api");
+    logger.error(err);
+    logger.info("=========================================");
     res.status(500).json({
       message: "Internal Server Error",
     });

@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const projectRepositories = sequelize.define(
+  const ProjectRepositories = sequelize.define(
     "projects_repositories",
     {
       id: {
@@ -26,11 +26,11 @@ module.exports = (sequelize, Sequelize) => {
       },
       created_at: {
         type: "TIMESTAMP",
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updated_at: {
         type: "TIMESTAMP",
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
       },
     },
     {
@@ -39,5 +39,10 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
-  return projectRepositories;
+  ProjectRepositories.associate = (models) => {
+    ProjectRepositories.belongsTo(models.projects, {
+      foreignKey: { name: "project_id", allowNull: true },
+    });
+  };
+  return ProjectRepositories;
 };
