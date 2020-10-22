@@ -35,6 +35,7 @@
     "faker": "^4.1.0",
     "fs": "0.0.1-security",
     "jest-environment-jsdom-sixteen": "^1.0.3",
+    "log4js": "^6.3.0",
     "mocha": "^8.1.1",
     "moment": "^2.27.0",
     "msw": "^0.20.5",

@@ -100,5 +100,21 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
+  Repositories.associate = (models) => {
+    Repositories.hasMany(models.users_repositories, {
+      foreignKey: { name: "repository_id", allowNull: true },
+    });
+    Repositories.belongsTo(models.repositories, {
+      foreignKey: "parent_repo_id",
+      as: "parent",
+    });
+    Repositories.hasMany(models.repositories, {
+      foreignKey: "parent_repo_id",
+      as: "children",
+    });
+    Repositories.hasMany(models.commits, {
+      foreignKey: { name: "repository_id", allowNull: true },
+    });
+  };
   return Repositories;
 };

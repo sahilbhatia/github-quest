@@ -31,5 +31,13 @@ module.exports = (sequelize, Sequelize) => {
       updatedAt: false,
     }
   );
+  Users_Projects.associate = (models) => {
+    Users_Projects.belongsTo(models.projects, {
+      foreignKey: { name: "project_id", allowNull: true },
+    });
+    Users_Projects.belongsTo(models.users, {
+      foreignKey: { name: "user_id", allowNull: true },
+    });
+  };
   return Users_Projects;
 };

@@ -27,7 +27,7 @@ export default function Index() {
     return filterString;
   };
   let { data, error } = useSWR(
-    `/api/repositories?limit=${limit}&offset=${offset}&userId=${userId}${getQueryString(
+    `/api/user-repositories?limit=${limit}&offset=${offset}&userId=${userId}${getQueryString(
       filter
     )}`,
     fetcher

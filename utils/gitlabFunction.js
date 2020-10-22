@@ -2,6 +2,8 @@ const request = require("superagent");
 const moment = require("moment");
 const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
+const log4js = require("../config/loggerConfig");
+const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Users = db.users;
@@ -29,6 +31,11 @@ const insertNewRepo = async (insertRepos, repo) => {
     return insertRepos;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting gitlab repositories in insert new repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -68,6 +75,11 @@ const insertForkedRepoFunction = async (forkRepo, repo, insertRepos) => {
     return insertForkedRepo;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting gitlab repositories in insert forked repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -82,6 +94,11 @@ const linkUserRepository = async (user, repo) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting gitlab repositories in link user repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -101,6 +118,11 @@ const findRepoFunction = async (id) => {
     }
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting gitlab repositories in find repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -134,6 +156,11 @@ const updateRepo = async (insertParentRepo, insertRepos, ParentRepo, repo) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting gitlab repositories in update repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -170,6 +197,11 @@ const updateForkedRepo = async (insertRepos, forkRepo, repo) => {
     return null;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting gitlab repositories in update forked repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -232,7 +264,13 @@ const updateReviewStatus = async (item, findRepo) => {
     } else {
       return null;
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting gitlab repositories in update review status function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return null;
   }
 };
@@ -418,8 +456,8 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
             forkedRepos.body.map(async (forkRepo) => {
               const findForkedRepo = await findRepoFunction(forkRepo.id);
               if (findForkedRepo) {
-                await updateForkedRepo(findRepo.dataValues, forkRepo, repo);
                 if (repo.visibility != "private") {
+                  await updateForkedRepo(findRepo.dataValues, forkRepo, repo);
                 }
               } else {
                 if (forkRepo.visibility != "private") {
@@ -469,6 +507,9 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
     return;
   } catch (err) {
     Sentry.captureException(err);
+    logger.error("Error executing while inserting gitlab repositories");
+    logger.error(err);
+    logger.info("=========================================");
     return;
   }
 };

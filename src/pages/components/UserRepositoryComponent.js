@@ -139,10 +139,10 @@ export default function UserRepositoryComponent({
     {
       name: "Forked",
       selector: function func(d) {
-        return d.parent_of.length > 0 ? (
+        return d.children.length > 0 ? (
           <Link href="/forks/[userId]" as={`/forks/${d.id}`}>
             <Button className="bg-white border-white text-primary btn-sm">
-              {d.parent_of.length}
+              {d.children.length}
             </Button>
           </Link>
         ) : d.is_forked ? (
