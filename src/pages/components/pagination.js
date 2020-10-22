@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { Button, Dropdown, DropdownButton, Col, Form } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  DropdownButton,
+  Col,
+  Form,
+  Tooltip,
+  OverlayTrigger,
+} from "react-bootstrap";
 export default function Index({
   limit,
   offset,
@@ -10,6 +18,7 @@ export default function Index({
   count,
 }) {
   const [pageNo, setPageNo] = useState(0);
+  const [disableJump, seyDisableJump] = useState(false);
   const prev = () => {
     offset = offset - limit <= 0 ? 0 : offset - limit;
     setOffset(offset);
@@ -17,6 +26,17 @@ export default function Index({
   const next = () => {
     offset = data ? (data.length < limit ? offset : offset + limit) : 0;
     setOffset(offset);
+  };
+  const validatePageNo = (e) => {
+    if (
+      parseInt(e.target.value) < 1 ||
+      parseInt(e.target.value) >= count / limit + 1
+    ) {
+      seyDisableJump(true);
+    } else {
+      seyDisableJump(false);
+      setPageNo(e.target.value * limit - limit);
+    }
   };
   return (
     <div>
@@ -36,7 +56,7 @@ export default function Index({
           <Dropdown.Item onClick={() => setLimit(20)}>20</Dropdown.Item>
         </DropdownButton>
         <Form.Control
-          onChange={(e) => setPageNo(e.target.value * limit - limit)}
+          onChange={validatePageNo}
           style={{ width: "80px" }}
           placeholder={(offset + limit) / limit}
           className="mr-1"
@@ -44,9 +64,31 @@ export default function Index({
           min={1}
           max={count / limit + 1}
         />
-        <Button onClick={() => setOffset(pageNo <= 0 ? 0 : pageNo)}>
-          jump on
-        </Button>
+
+        {disableJump ? (
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>Exceeds page limit</Tooltip>}
+          >
+            <span>
+              <Button
+                onClick={() => setOffset(pageNo <= 0 ? 0 : pageNo)}
+                disabled={disableJump}
+                style={{ pointerEvents: "none" }}
+              >
+                jump on
+              </Button>
+            </span>
+          </OverlayTrigger>
+        ) : (
+          <Button
+            onClick={() => setOffset(pageNo <= 0 ? 0 : pageNo)}
+            disabled={disableJump}
+          >
+            jump on
+          </Button>
+        )}
         {offset == 0 ? (
           <Button onClick={prev} className=" ml-5 bg-white text-dark" disabled>
             &laquo;{"previous"}
