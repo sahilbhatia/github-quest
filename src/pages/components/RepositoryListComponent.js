@@ -34,8 +34,8 @@ export default function RepositoryListComponent({
 }) {
   const minDate = data ? data.date.min : undefined;
   const [stateData, dispatch] = useReducer(
-    repoMarkReducer.repoMarkReducer,
-    repoMarkReducer.repoMarkState
+    repoMarkReducer.reducer,
+    repoMarkReducer.state
   );
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()

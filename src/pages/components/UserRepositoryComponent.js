@@ -33,8 +33,8 @@ export default function UserRepositoryComponent({
   onSelectSuspeciousMark,
 }) {
   const [stateData, dispatch] = useReducer(
-    repoMarkReducer.repoMarkReducer,
-    repoMarkReducer.repoMarkState
+    repoMarkReducer.reducer,
+    repoMarkReducer.state
   );
   const minDate = data ? data.date.min : undefined;
   const userName = data ? data.userName : undefined;

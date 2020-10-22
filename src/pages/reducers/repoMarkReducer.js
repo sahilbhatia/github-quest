@@ -1,10 +1,10 @@
-module.exports.repoMarkState = {
+module.exports.state = {
   checkAll: false,
   actionDisabled: true,
   commentDisabled: true,
 };
 
-module.exports.repoMarkReducer = (state, action) => {
+module.exports.reducer = (state, action) => {
   switch (action.type) {
     case "CHECK_ALL":
       return {
