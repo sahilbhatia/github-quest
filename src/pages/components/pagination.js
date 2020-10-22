@@ -58,8 +58,12 @@ export default function Index({
 Index.propTypes = {
   data: PropTypes.array.isRequired,
   limit: PropTypes.number.isRequired,
-  perPage: PropTypes.array.isRequired,
+  perPage: PropTypes.array,
   offset: PropTypes.number.isRequired,
   setOffset: PropTypes.func.isRequired,
   setLimit: PropTypes.func.isRequired,
+};
+
+Index.defaultProps = {
+  perPage: [10, 15, 20, 50, 100, 200],
 };

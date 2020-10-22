@@ -146,7 +146,6 @@ export default function ProjectListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
-            perPage={[10, 15, 20, 50, 100, 200]}
           />
         )
       ) : (

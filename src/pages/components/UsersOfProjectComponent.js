@@ -124,7 +124,6 @@ export default function UsersOfProjectComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
-            perPage={[10, 15, 20, 50]}
           />
         )
       ) : (
