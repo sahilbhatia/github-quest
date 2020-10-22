@@ -70,12 +70,11 @@ const updateManualRepo = async (req, res) => {
               message: "Repository Not Found For Given Id",
             });
           } else {
-            const updatedRepo = await updateRepo(id, updatedAt, res);
+            const updatedRepo = await updateRepo(id, updatedAt);
             if (updatedRepo[1].dataValues.parent_repo_id) {
               await updateParentRepo(
                 updatedRepo[1].dataValues.parent_repo_id,
-                updatedAt,
-                res
+                updatedAt
               );
               await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
             }
