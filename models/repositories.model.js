@@ -60,7 +60,7 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: true,
       },
       comment: {
-        type: Sequelize.STRING(50),
+        type: Sequelize.TEXT,
         allowNull: true,
       },
       reviewed_at: {

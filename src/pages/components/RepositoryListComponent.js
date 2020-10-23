@@ -14,7 +14,6 @@ import Pagination from "./pagination";
 import Link from "next/link";
 import PropTypes from "prop-types";
 import moment from "moment";
-import repoMarkReducer from "../reducers/repoMarkReducer";
 
 export default function RepositoryListComponent({
   filter,
@@ -33,10 +32,15 @@ export default function RepositoryListComponent({
   reFetch,
 }) {
   const minDate = data ? data.date.min : undefined;
-  const [stateData, dispatch] = useReducer(
-    repoMarkReducer.reducer,
-    repoMarkReducer.state
+  const [state, setState] = useReducer(
+    (state, newState) => ({ ...state, ...newState }),
+    {
+      checkAll: false,
+      actionDisabled: true,
+      commentDisabled: true,
+    }
   );
+
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
     : undefined;
@@ -55,17 +59,19 @@ export default function RepositoryListComponent({
   const markId = (id) => {
     arr.includes(id) ? arr.splice(arr.indexOf(id), 1) : arr.push(id);
     setArr(arr);
-    dispatch({ type: "ACTION_DISABLED", payload: arr.length == 0 });
-    dispatch({ type: "COMMENT_DISABLED", payload: arr.length != 1 });
+    setState({
+      actionDisabled: arr.length == 0,
+      commentDisabled: arr.length != 1,
+    });
   };
 
   const markAll = (check) => {
     if (check) {
-      dispatch({ type: "CHECK_ALL", payload: false });
+      setState({ checkAll: false });
       arr = [];
       setArr(arr);
     } else {
-      dispatch({ type: "CHECK_ALL", payload: true });
+      setState({ checkAll: true });
       arr = [];
       setArr(arr);
       data.map((item) => {
@@ -75,8 +81,7 @@ export default function RepositoryListComponent({
       });
       setArr(arr);
     }
-    dispatch({ type: "ACTION_DISABLED", payload: arr.length == 0 });
-    dispatch({ type: "COMMENT_DISABLED", payload: true });
+    setState({ actionDisabled: arr.length == 0, commentDisabled: true });
   };
 
   const columns = [
@@ -383,13 +388,13 @@ export default function RepositoryListComponent({
               >
                 <FormCheck
                   className="mt-2 ml-2"
-                  defaultChecked={stateData.checkAll}
+                  defaultChecked={state.checkAll}
                   onClick={() => {
-                    markAll(stateData.checkAll);
+                    markAll(state.checkAll);
                   }}
                 />
               </OverlayTrigger>
-              {stateData.actionDisabled ? (
+              {state.actionDisabled ? (
                 <div>
                   <OverlayTrigger
                     placement="right"
@@ -401,7 +406,7 @@ export default function RepositoryListComponent({
                         className="ml-2 mt-1"
                         title="Action"
                         size="sm"
-                        disabled={stateData.actionDisabled}
+                        disabled={state.actionDisabled}
                         style={{ pointerEvents: "none" }}
                       >
                         <Dropdown.Item
@@ -425,7 +430,7 @@ export default function RepositoryListComponent({
                   className="ml-2 mt-1"
                   title="Action"
                   size="sm"
-                  disabled={stateData.actionDisabled}
+                  disabled={state.actionDisabled}
                 >
                   <Dropdown.Item
                     onClick={() => onSelectManualReview(arr, comment)}
@@ -441,7 +446,7 @@ export default function RepositoryListComponent({
                   </Dropdown.Item>
                 </DropdownButton>
               )}
-              {stateData.commentDisabled ? (
+              {state.commentDisabled ? (
                 <OverlayTrigger
                   placement="bottom"
                   delay={{ show: 250, hide: 400 }}
@@ -458,7 +463,7 @@ export default function RepositoryListComponent({
                       className="m-1"
                       onChange={(e) => setComment(e.target.value)}
                       placeholder="Add Comment..."
-                      disabled={stateData.commentDisabled}
+                      disabled={state.commentDisabled}
                       style={{ pointerEvents: "none", width: "220px" }}
                     />
                   </span>
@@ -471,7 +476,7 @@ export default function RepositoryListComponent({
                   className="m-1"
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Add Comment..."
-                  disabled={stateData.commentDisabled}
+                  disabled={state.commentDisabled}
                 />
               )}
             </div>

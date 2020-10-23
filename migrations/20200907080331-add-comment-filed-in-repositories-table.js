@@ -4,7 +4,7 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return Promise.all([
       queryInterface.addColumn("repositories", "comment", {
-        type: Sequelize.STRING(50),
+        type: Sequelize.TEXT,
         allowNull: true,
       }),
     ]);
