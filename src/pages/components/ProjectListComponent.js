@@ -147,7 +147,7 @@ export default function ProjectListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
-            count={filter.projectName ? undefined : projectCount}
+            count={projectCount}
           />
         )
       ) : (

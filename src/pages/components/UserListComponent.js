@@ -145,7 +145,7 @@ export default function UserListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
-            count={filter.userName || filter.gitHandle ? undefined : count}
+            count={count}
           />
         )
       ) : (
