@@ -15,6 +15,8 @@ export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
+  let [arr, setArr] = useState([]);
+  let [comment, setComment] = useState();
   const router = useRouter();
   const { userId } = router.query;
   const getQueryString = (filterObject) => {
@@ -33,15 +35,23 @@ export default function Index() {
   if (error || code == 400 || code == 404 || code == 500)
     return <ErrorComponent code={code} />;
   if (!data) return <LoadingComponent />;
-  const onSelectManualReview = (id) => {
+  const onSelectManualReview = (ids, comment) => {
     fetch(
-      `/api/update-manual-review?id=${id}&updatedAt=${moment().toISOString()}`
+      `/api/update-manual-review?ids=${ids}&updatedAt=${moment().toISOString()}`,
+      {
+        method: "POST",
+        body: comment,
+      }
     );
     window.location.reload(false);
   };
-  const onSelectSuspeciousMark = (id) => {
+  const onSelectSuspeciousMark = (ids, comment) => {
     fetch(
-      `/api/update-suspicious-repository?id=${id}&updatedAt=${moment().toISOString()}`
+      `/api/update-suspicious-repository?ids=${ids}&updatedAt=${moment().toISOString()}`,
+      {
+        method: "POST",
+        body: comment,
+      }
     );
     window.location.reload(false);
   };
@@ -55,6 +65,10 @@ export default function Index() {
       setOffset={setOffset}
       setLimit={setLimit}
       data={data}
+      arr={arr}
+      setArr={setArr}
+      comment={comment}
+      setComment={setComment}
       userId={userId}
       onSelectManualReview={onSelectManualReview}
       onSelectSuspeciousMark={onSelectSuspeciousMark}

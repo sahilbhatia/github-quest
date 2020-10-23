@@ -1,6 +1,14 @@
 import DataTable from "react-data-table-component";
-import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
-import React from "react";
+import {
+  Tooltip,
+  OverlayTrigger,
+  Button,
+  FormCheck,
+  DropdownButton,
+  Dropdown,
+  Form,
+} from "react-bootstrap";
+import React, { useReducer } from "react";
 import Filter from "./filter";
 import Pagination from "./pagination";
 import Link from "next/link";
@@ -14,18 +22,32 @@ export default function RepositoryListComponent({
   offset,
   setOffset,
   setLimit,
+  arr,
+  setArr,
+  comment,
+  setComment,
   data,
   onSelectManualReview,
   onSelectSuspeciousMark,
   reFetch,
 }) {
   const minDate = data ? data.date.min : undefined;
+  const [state, setState] = useReducer(
+    (state, newState) => ({ ...state, ...newState }),
+    {
+      checkAll: false,
+      actionDisabled: true,
+      commentDisabled: true,
+    }
+  );
+
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
     : undefined;
   data = data ? data.repositories : undefined;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
+
   const getRemark = (commits) => {
     let message = "review status changed because of ";
     commits.map((commit, index) => {
@@ -33,7 +55,54 @@ export default function RepositoryListComponent({
     });
     return message;
   };
+
+  const markId = (id) => {
+    arr.includes(id) ? arr.splice(arr.indexOf(id), 1) : arr.push(id);
+    setArr(arr);
+    setState({
+      actionDisabled: arr.length == 0,
+      commentDisabled: arr.length != 1,
+    });
+  };
+
+  const markAll = (check) => {
+    if (check) {
+      setState({ checkAll: false });
+      arr = [];
+      setArr(arr);
+    } else {
+      setState({ checkAll: true });
+      arr = [];
+      setArr(arr);
+      data.map((item) => {
+        if (item.review == "pending") {
+          arr.push(item.id);
+        }
+      });
+      setArr(arr);
+    }
+    setState({ actionDisabled: arr.length == 0, commentDisabled: true });
+  };
+
   const columns = [
+    {
+      selector: function func(d) {
+        return d.review == "pending" ? (
+          <div>
+            <FormCheck
+              className="mx-4"
+              defaultChecked={arr.includes(d.id)}
+              onClick={() => {
+                markId(d.id);
+              }}
+            />
+          </div>
+        ) : (
+          <span className="mx-4">-</span>
+        );
+      },
+      maxWidth: "40px",
+    },
     {
       name: "Owner Name",
       selector: function func(d) {
@@ -125,6 +194,23 @@ export default function RepositoryListComponent({
       maxWidth: "10px",
     },
     {
+      name: "Comment",
+      selector: function func(d) {
+        return d.comment ? (
+          <OverlayTrigger
+            placement="top"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>{d.comment}</Tooltip>}
+          >
+            <span>{d.comment}</span>
+          </OverlayTrigger>
+        ) : (
+          "-"
+        );
+      },
+      maxWidth: "40px",
+    },
+    {
       name: "Review Status",
       selector: function func(d) {
         return (
@@ -172,48 +258,6 @@ export default function RepositoryListComponent({
         );
       },
       maxWidth: "40px",
-    },
-    {
-      name: "Action",
-      selector: function func(d) {
-        return d.review == "pending" ? (
-          <div className="d-flex">
-            <OverlayTrigger
-              placement="top"
-              delay={{ show: 250, hide: 400 }}
-              overlay={<Tooltip>mark as manual review</Tooltip>}
-            >
-              <Button
-                size="sm"
-                onClick={() => {
-                  onSelectManualReview(d.id);
-                }}
-                className="text-success mx-1 bg-white"
-              >
-                ✔
-              </Button>
-            </OverlayTrigger>
-            <OverlayTrigger
-              placement="top"
-              delay={{ show: 250, hide: 400 }}
-              overlay={<Tooltip>mark as a suspicious</Tooltip>}
-            >
-              <Button
-                size="sm"
-                onClick={() => {
-                  onSelectSuspeciousMark(d.id);
-                }}
-                className="text-danger mx-2 bg-white"
-              >
-                ✘
-              </Button>
-            </OverlayTrigger>
-          </div>
-        ) : (
-          <>-</>
-        );
-      },
-      maxWidth: "120px",
     },
     {
       name: "Error Details",
@@ -334,7 +378,109 @@ export default function RepositoryListComponent({
         }
         subHeader
         subHeaderComponent={
-          <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+          <div>
+            <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+            <div className="d-flex">
+              <OverlayTrigger
+                placement="bottom"
+                delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip>Selecte All</Tooltip>}
+              >
+                <FormCheck
+                  className="mt-2 ml-2"
+                  defaultChecked={state.checkAll}
+                  onClick={() => {
+                    markAll(state.checkAll);
+                  }}
+                />
+              </OverlayTrigger>
+              {state.actionDisabled ? (
+                <div>
+                  <OverlayTrigger
+                    placement="right"
+                    delay={{ show: 250, hide: 400 }}
+                    overlay={<Tooltip>Repositories Not Selected</Tooltip>}
+                  >
+                    <span>
+                      <DropdownButton
+                        className="ml-2 mt-1"
+                        title="Action"
+                        size="sm"
+                        disabled={state.actionDisabled}
+                        style={{ pointerEvents: "none" }}
+                      >
+                        <Dropdown.Item
+                          onClick={() => onSelectManualReview(arr)}
+                          className="bg-success"
+                        >
+                          Approved
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => onSelectSuspeciousMark(arr)}
+                          className="bg-warning"
+                        >
+                          mark suspicious
+                        </Dropdown.Item>
+                      </DropdownButton>
+                    </span>
+                  </OverlayTrigger>
+                </div>
+              ) : (
+                <DropdownButton
+                  className="ml-2 mt-1"
+                  title="Action"
+                  size="sm"
+                  disabled={state.actionDisabled}
+                >
+                  <Dropdown.Item
+                    onClick={() => onSelectManualReview(arr, comment)}
+                    className="bg-success"
+                  >
+                    Approved
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => onSelectSuspeciousMark(arr, comment)}
+                    className="bg-warning"
+                  >
+                    mark suspicious
+                  </Dropdown.Item>
+                </DropdownButton>
+              )}
+              {state.commentDisabled ? (
+                <OverlayTrigger
+                  placement="bottom"
+                  delay={{ show: 250, hide: 400 }}
+                  overlay={
+                    <Tooltip>
+                      Enable to add comment for multiple repositories
+                    </Tooltip>
+                  }
+                >
+                  <span>
+                    <Form.Control
+                      type="text"
+                      size="sm"
+                      className="m-1"
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Add Comment..."
+                      disabled={state.commentDisabled}
+                      style={{ pointerEvents: "none", width: "220px" }}
+                    />
+                  </span>
+                </OverlayTrigger>
+              ) : (
+                <Form.Control
+                  style={{ width: "220px" }}
+                  type="text"
+                  size="sm"
+                  className="m-1"
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Add Comment..."
+                  disabled={state.commentDisabled}
+                />
+              )}
+            </div>
+          </div>
         }
         columns={columns}
         customStyles={customStyles}
@@ -368,6 +514,10 @@ RepositoryListComponent.propTypes = {
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,
   setOffset: PropTypes.func.isRequired,
+  arr: PropTypes.array.isRequired,
+  setArr: PropTypes.func.isRequired,
+  comment: PropTypes.string.isRequired,
+  setComment: PropTypes.func.isRequired,
   setLimit: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,

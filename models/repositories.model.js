@@ -59,6 +59,10 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING(50),
         allowNull: true,
       },
+      comment: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
       reviewed_at: {
         type: "TIMESTAMP",
         allowNull: true,

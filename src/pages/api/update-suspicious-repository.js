@@ -9,12 +9,13 @@ const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
 
 //function for update repository
-const updateRepo = async (repoId, updatedAt) => {
+const updateRepo = async (repoId, updatedAt, comment) => {
   const updateRepo = await Repositories.update(
     {
       is_suspicious: true,
       review: "suspicious manual",
       reviewed_at: updatedAt,
+      comment: comment ? comment : null,
     },
     {
       returning: true,
@@ -26,12 +27,13 @@ const updateRepo = async (repoId, updatedAt) => {
 };
 
 //function for update parent repository
-const updateParentRepo = async (repoId, updatedAt) => {
+const updateParentRepo = async (repoId, updatedAt, comment) => {
   await Repositories.update(
     {
       is_suspicious: true,
       review: "suspicious manual",
       reviewed_at: updatedAt,
+      comment: comment ? comment : null,
     },
     {
       returning: true,
@@ -49,38 +51,43 @@ const clearRemark = async (id) => {
 
 //function for update suspicious repo
 const updateSuspiciousRepo = async (req, res) => {
-  const repoId = req.query.id;
+  let repoIds = req.query.ids.split(",");
+  repoIds = repoIds.map(Number);
   const updatedAt = req.query.updatedAt;
   await validation
     .reviewSchema()
     .validate(
       {
-        repoId: req.query.id,
+        repoIds: repoIds,
         updatedAt: updatedAt,
       },
       { abortEarly: false }
     )
     .then(async () => {
       try {
-        let repo = await Repositories.findOne({ where: { id: repoId } });
-        if (!repo) {
-          res.status(404).json({
-            message: "Repository Not Found For Specified Id",
-          });
-        } else {
-          const updatedRepo = await updateRepo(repoId, updatedAt);
-          if (updatedRepo[1].dataValues.parent_repo_id) {
-            await updateParentRepo(
-              updatedRepo[1].dataValues.parent_repo_id,
-              updatedAt
-            );
-            await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
+        await repoIds.map(async (id) => {
+          let repo = await Repositories.findOne({ where: { id: id } });
+          if (!repo) {
+            res.status(404).json({
+              message: "Repository Not Found For Specified Id",
+            });
+          } else {
+            let comment = req.body;
+            const updatedRepo = await updateRepo(id, updatedAt, comment);
+            if (updatedRepo[1].dataValues.parent_repo_id) {
+              await updateParentRepo(
+                updatedRepo[1].dataValues.parent_repo_id,
+                updatedAt,
+                comment
+              );
+              await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
+            }
+            await clearRemark(id);
           }
-          await clearRemark(repoId);
-          res.status(200).json({
-            message: "Repository Updated Successfully",
-          });
-        }
+        });
+        res.status(200).json({
+          message: "Repository Updated Successfully",
+        });
       } catch (err) {
         Sentry.captureException(err);
         logger.error("Error executing in update suspicious repository api");
