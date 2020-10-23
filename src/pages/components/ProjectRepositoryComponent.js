@@ -9,8 +9,11 @@ export default function ProjectRepositoryComponent({
   offset,
   setOffset,
 }) {
-  let projectName = data ? data.projectName : undefined;
-  data = data ? data.repositories : undefined;
+  let projectName;
+  if (data) {
+    projectName = data.projectName;
+    data = data.repositories;
+  }
   const columns = [
     {
       name: "Host",

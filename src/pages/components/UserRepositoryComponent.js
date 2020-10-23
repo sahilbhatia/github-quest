@@ -18,9 +18,13 @@ export default function UserRepositoryComponent({
   onSelectManualReview,
   onSelectSuspeciousMark,
 }) {
-  const minDate = data ? data.date.min : undefined;
-  const userName = data ? data.userName : undefined;
-  data = data ? data.repositories : undefined;
+  let minDate;
+  let userName;
+  if (data) {
+    minDate = data.date.min;
+    userName = data.userName;
+    data = data.repositories;
+  }
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
   const getRemark = (commits) => {

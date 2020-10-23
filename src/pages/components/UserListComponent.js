@@ -15,9 +15,13 @@ export default function UserListComponent({
   setLimit,
   data,
 }) {
-  const minDate = data ? data.date.min : undefined;
-  const count = data ? data.count : undefined;
-  data = data ? data.users : undefined;
+  let minDate;
+  let count;
+  if (data) {
+    minDate = data.date.min;
+    count = data.count;
+    data = data.users;
+  }
   const columns = [
     {
       name: "Name",

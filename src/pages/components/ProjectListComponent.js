@@ -14,9 +14,13 @@ export default function ProjectListComponent({
   setLimit,
   data,
 }) {
-  const minDate = data ? data.date.min : undefined;
-  const projectCount = data ? data.count : undefined;
-  data = data ? data.projects : undefined;
+  let minDate;
+  let projectCount;
+  if (data) {
+    minDate = data.date.min;
+    projectCount = data.count;
+    data = data.projects;
+  }
   const columns = [
     {
       name: "Name",

@@ -14,7 +14,9 @@ import {
 const DisableButton = styled(Button)`
   ${(props) => `pointer-events:${props.event ? "none" : "all"}`}
 `;
-
+const FormControlWrapper = styled(Form.Control)`
+  width: 80px;
+`;
 export default function Index({
   limit,
   offset,
@@ -83,7 +85,7 @@ export default function Index({
             </Dropdown.Item>
           ))}
         </DropdownButton>
-        <Form.Control
+        <FormControlWrapper
           onChange={validatePageNo}
           style={{ width: "80px" }}
           placeholder={defaultPageNo}

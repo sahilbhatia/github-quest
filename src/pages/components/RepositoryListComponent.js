@@ -19,14 +19,20 @@ export default function RepositoryListComponent({
   onSelectSuspeciousMark,
   reFetch,
 }) {
-  const minDate = data ? data.date.min : undefined;
-  const lastFetchedAt = data
-    ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
-    : undefined;
-  const repoCount = data ? data.count : undefined;
-  data = data ? data.repositories : undefined;
+  let minDate;
+  let lastFetchedAt;
+  let repoCount;
+  if (data) {
+    minDate = data.date.min;
+    lastFetchedAt = moment(data.last_fetched_at)
+      .utcOffset(660)
+      .toLocaleString();
+    if (!filter.userName) repoCount = data.count;
+    data = data.repositories;
+  }
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
+
   const getRemark = (commits) => {
     let message = "review status changed because of ";
     commits.map((commit, index) => {
@@ -357,7 +363,7 @@ export default function RepositoryListComponent({
             setOffset={setOffset}
             setLimit={setLimit}
             data={data}
-            count={filter.userName ? undefined : repoCount}
+            count={repoCount}
           />
         )
       ) : (

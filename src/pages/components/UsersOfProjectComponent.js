@@ -10,8 +10,12 @@ export default function UsersOfProjectComponent({
   setLimit,
   data,
 }) {
-  const projectName = data ? data.projectName : undefined;
-  data = data ? data.users : undefined;
+  let projectName;
+  if (data) {
+    projectName = data.projectName;
+    data = data.users;
+  }
+
   const columns = [
     {
       name: "Name",
