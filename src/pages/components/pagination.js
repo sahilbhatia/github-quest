@@ -17,17 +17,17 @@ export default function Index({
     offset = data ? (data.length < limit ? offset : offset + limit) : 0;
     setOffset(offset);
   };
+  const changeLimit = (e) => {
+    setLimit(e.target.value);
+  };
+
+  const Limits = perPage.map((number) => (
+    <Dropdown.Item key={number} onClick={changeLimit} value={number}>
+      {number}
+    </Dropdown.Item>
+  ));
 
   const LimitOptions = () => {
-    const Limits = perPage.map((number) => (
-      <Dropdown.Item
-        key={number}
-        onClick={() => setLimit(number)}
-        value={number}
-      >
-        {number}
-      </Dropdown.Item>
-    ));
     return (
       <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
         {Limits}
