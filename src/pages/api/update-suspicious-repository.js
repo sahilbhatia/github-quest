@@ -44,6 +44,17 @@ const clearRemark = async (id) => {
   await Commits.destroy({ where: { repository_id: id } });
 };
 
+//function for get invalid repository ids
+const getInvalidRepoIds = async (arr) => {
+  let invalidIds = [];
+  const repo = await arr.map(async (id) => {
+    const repo = await Repositories.findOne({ where: { id: id } });
+    if (!repo) invalidIds.push(id);
+  });
+  await Promise.all(repo);
+  return invalidIds;
+};
+
 //function for update suspicious repo
 const updateSuspiciousRepo = async (req, res) => {
   const repoIds = req.body.ids;
@@ -57,13 +68,11 @@ const updateSuspiciousRepo = async (req, res) => {
       },
       { abortEarly: false }
     )
-    .then(() => {
+    .then(async () => {
       try {
-        repoIds.map(async (id) => {
-          let repo = await Repositories.findOne({ where: { id: id } });
-          if (!repo) {
-            res.status(404).json(REPOSITORY_NOT_FOUND);
-          } else {
+        const invalidRepos = await getInvalidRepoIds(repoIds);
+        if (invalidRepos.length == 0) {
+          const updateData = await repoIds.map(async (id) => {
             const updatedRepo = await updateRepo(id, updatedAt);
             if (updatedRepo[1].dataValues.parent_repo_id) {
               await updateParentRepo(
@@ -73,9 +82,13 @@ const updateSuspiciousRepo = async (req, res) => {
               await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
             }
             await clearRemark(id);
-          }
-        });
-        res.status(200).json(REPOSITORY_UPDATED);
+          });
+          await Promise.all(updateData);
+          res.status(200).json(REPOSITORY_UPDATED);
+        } else {
+          REPOSITORY_NOT_FOUND.ids = invalidRepos;
+          res.status(404).json(REPOSITORY_NOT_FOUND);
+        }
       } catch (err) {
         Sentry.captureException(err);
         logger.error("Error executing in update suspicious repository api");
