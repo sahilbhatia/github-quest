@@ -19,18 +19,25 @@ export default function Index({
   };
 
   const LimitOptions = () => {
-    return perPage.map((number, Index) => (
-      <Dropdown.Item key={Index} onClick={() => setLimit(number)}>
+    const Limits = perPage.map((number) => (
+      <Dropdown.Item
+        key={number}
+        onClick={() => setLimit(number)}
+        value={number}
+      >
         {number}
       </Dropdown.Item>
     ));
+    return (
+      <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
+        {Limits}
+      </DropdownButton>
+    );
   };
 
   return (
     <div className="d-flex justify-content-end my-3">
-      <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
-        <LimitOptions />
-      </DropdownButton>
+      <LimitOptions />
 
       {offset == 0 ? (
         <></>
