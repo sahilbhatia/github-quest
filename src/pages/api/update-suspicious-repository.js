@@ -13,39 +13,30 @@ const {
   REPOSITORY_UPDATED,
   VALIDATION_ERROR,
 } = require("../../../constants/responseConstants");
+const {
+  UPDATE_SUSPICIOUS_REPOSITORY,
+} = require("../../../constants/objectConstants");
 
 //function for update repository
 const updateRepo = async (repoId, updatedAt) => {
-  const updateRepo = await Repositories.update(
-    {
-      is_suspicious: true,
-      review: "suspicious manual",
-      reviewed_at: updatedAt,
-    },
-    {
-      returning: true,
-      plain: true,
-      where: { id: repoId },
-    }
-  );
+  UPDATE_SUSPICIOUS_REPOSITORY.reviewed_at = updatedAt;
+  const updateRepo = await Repositories.update(UPDATE_SUSPICIOUS_REPOSITORY, {
+    returning: true,
+    plain: true,
+    where: { id: repoId },
+  });
   return updateRepo;
 };
 
 //function for update parent repository
 const updateParentRepo = async (repoId, updatedAt) => {
-  await Repositories.update(
-    {
-      is_suspicious: true,
-      review: "suspicious manual",
-      reviewed_at: updatedAt,
+  UPDATE_SUSPICIOUS_REPOSITORY.reviewed_at = updatedAt;
+  await Repositories.update(UPDATE_SUSPICIOUS_REPOSITORY, {
+    returning: true,
+    where: {
+      parent_repo_id: repoId,
     },
-    {
-      returning: true,
-      where: {
-        parent_repo_id: repoId,
-      },
-    }
-  );
+  });
 };
 
 //function for clear remark
