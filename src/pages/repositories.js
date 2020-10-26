@@ -34,17 +34,27 @@ export default function Index() {
   if (!data) return <LoadingComponent />;
   const onSelectManualReview = (ids) => {
     if (ids != "") {
-      fetch(
-        `/api/update-manual-review?ids=${ids}&updatedAt=${moment().toISOString()}`,
-        { data: null }
-      );
+      fetch(`/api/update-manual-review?updatedAt=${moment().toISOString()}`, {
+        method: "POST",
+        body: JSON.stringify({ ids: ids }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       window.location.reload(false);
     }
   };
   const onSelectSuspeciousMark = (ids) => {
     if (ids != "") {
       fetch(
-        `/api/update-suspicious-repository?ids=${ids}&updatedAt=${moment().toISOString()}`
+        `/api/update-suspicious-repository?updatedAt=${moment().toISOString()}`,
+        {
+          method: "POST",
+          body: JSON.stringify({ ids: ids }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
       window.location.reload(false);
     }

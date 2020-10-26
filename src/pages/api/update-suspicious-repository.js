@@ -7,6 +7,12 @@ const validation = require("../../../utils/validationSchema");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
+const {
+  REPOSITORY_NOT_FOUND,
+  INTERNAL_SERVER_ERROR,
+  REPOSITORY_UPDATED,
+  VALIDATION_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for update repository
 const updateRepo = async (repoId, updatedAt) => {
@@ -49,8 +55,7 @@ const clearRemark = async (id) => {
 
 //function for update suspicious repo
 const updateSuspiciousRepo = async (req, res) => {
-  let repoIds = req.query.ids.split(",");
-  repoIds = repoIds.map(Number);
+  const repoIds = req.body.ids;
   const updatedAt = req.query.updatedAt;
   await validation
     .reviewSchema()
@@ -61,14 +66,12 @@ const updateSuspiciousRepo = async (req, res) => {
       },
       { abortEarly: false }
     )
-    .then(async () => {
+    .then(() => {
       try {
-        await repoIds.map(async (id) => {
+        repoIds.map(async (id) => {
           let repo = await Repositories.findOne({ where: { id: id } });
           if (!repo) {
-            res.status(404).json({
-              message: "Repository Not Found For Specified Id",
-            });
+            res.status(404).json(REPOSITORY_NOT_FOUND);
           } else {
             const updatedRepo = await updateRepo(id, updatedAt);
             if (updatedRepo[1].dataValues.parent_repo_id) {
@@ -81,24 +84,20 @@ const updateSuspiciousRepo = async (req, res) => {
             await clearRemark(id);
           }
         });
-        res.status(200).json({
-          message: "Repository Updated Successfully",
-        });
+        res.status(200).json(REPOSITORY_UPDATED);
       } catch (err) {
         Sentry.captureException(err);
         logger.error("Error executing in update suspicious repository api");
         logger.error(err);
         logger.info("=========================================");
-        res.status(500).json({
-          message: "internal server error",
-        });
+        res.status(500).json(INTERNAL_SERVER_ERROR);
       }
     })
     .catch((err) => {
       Sentry.captureException(err);
       const errors = err.errors;
       res.status(400).json({
-        message: "Validation Error",
+        VALIDATION_ERROR,
         errors,
       });
     });
