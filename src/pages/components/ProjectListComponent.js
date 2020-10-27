@@ -141,22 +141,14 @@ export default function ProjectListComponent({
         customStyles={customStyles}
         data={data}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-            count={projectCount}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={data}
+        count={projectCount}
+      />
       <Button href="/" className="m-3 bg-dark">
         Back
       </Button>

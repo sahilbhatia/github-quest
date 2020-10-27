@@ -4,13 +4,26 @@ import DatePicker from "react-datepicker";
 import { useState } from "react";
 import moment from "moment";
 import PropTypes from "prop-types";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  width: 150px;
+`;
+
 export default function Index({ filter, setFilter, minDate, userId }) {
   let [repositoryName, setRepositoryName] = useState(null);
   let repositoryList = [];
   let reposData = fetch(
     `/api/find-repository?userId=${userId}&repositoryName=${repositoryName}`
   );
-
+  let startDate;
+  let endDate;
+  let reviewDate;
+  if (filter) {
+    if (filter.startDate) startDate = new Date(filter.startDate);
+    if (filter.endDate) endDate = new Date(filter.endDate);
+    if (filter.reviewDate) endDate = new Date(filter.reviewDate);
+  }
   reposData
     .then((response) => {
       return response.json();
@@ -126,57 +139,41 @@ export default function Index({ filter, setFilter, minDate, userId }) {
     <div>
       <div className="d-flex justify-content-end mb-2">
         <DatePicker
-          onSelect={(e) => setDateFrom(e)}
-          selected={filter ? filter.startDate : ""}
+          onSelect={setDateFrom}
+          selected={startDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date from"
-          className={`${
-            filter
-              ? filter.startDate != undefined
-                ? "border-success"
-                : ""
-              : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DatePicker
-          onSelect={(e) => setDateTo(e)}
-          selected={filter ? filter.endDate : ""}
+          onSelect={setDateTo}
+          selected={endDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date to"
-          className={`${
-            filter ? (filter.endDate != undefined ? "border-success" : "") : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DatePicker
-          onSelect={(e) => setDateReview(e)}
-          selected={
-            filter ? (filter.reviewDate ? new Date(filter.reviewDate) : "") : ""
-          }
+          onSelect={setDateReview}
+          selected={reviewDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select reviewed date"
-          className={`${
-            filter
-              ? filter.reviewDate != undefined
-                ? "border-success"
-                : ""
-              : ""
-          } mx-1`}
+          className="mx-1"
         />
       </div>
       <div className="d-flex">
-        <div style={{ width: "150px" }}>
+        <Wrapper>
           <AsyncSelect
             loadOptions={promiseOptionsRepos}
             name="select repository"
             placeholder="repository..."
-            defaultInputValue={filter ? filter.repoName : ""}
+            defaultInputValue={filter.repoName}
             onChange={setRepoName}
             className="w-100"
           />
-        </div>
+        </Wrapper>
         <DropdownButton
           className="ml-2"
           variant={setColor(filter ? filter.is_forked : "all")}
@@ -257,7 +254,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.review : "")}
+          variant={setColor(filter.review)}
           title="Review Status"
         >
           <Dropdown.Item

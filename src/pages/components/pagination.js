@@ -14,9 +14,11 @@ import {
 const DisableButton = styled(Button)`
   ${(props) => `pointer-events:${props.event ? "none" : "all"}`}
 `;
+
 const FormControlWrapper = styled(Form.Control)`
   width: 80px;
 `;
+
 export default function Index({
   limit,
   offset,
@@ -39,7 +41,7 @@ export default function Index({
       ? count - limit
       : count - ((count - limit) % limit);
   let pageValue = Math.trunc((offset + limit) / limit);
-  let lastPage = Math.trunc(count / limit) + 1;
+  let lastPageValue = Math.trunc(count / limit) + 1;
 
   const prev = () => {
     offset = offset - limit <= 0 ? 0 : offset - limit;
@@ -50,6 +52,11 @@ export default function Index({
     offset = data ? (data.length < limit ? offset : offset + limit) : 0;
     setOffset(offset);
   };
+
+  const nextPage = () => setOffset(offset + limit);
+  const previousPage = () => setOffset(offset - limit);
+  const firstPage = () => setOffset(0);
+  const lastPage = () => setOffset(lastPageOffset);
 
   const hiddenOption = {
     firstButton: offset == 0 || offset == limit,
@@ -79,15 +86,14 @@ export default function Index({
       </Col>
       <Col className="d-flex justify-content-end">
         <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
-          {perPage.map((number, Index) => (
-            <Dropdown.Item key={Index} onClick={() => setLimit(number)}>
+          {perPage.map((number) => (
+            <Dropdown.Item key={number} onClick={() => setLimit(number)}>
               {number}
             </Dropdown.Item>
           ))}
         </DropdownButton>
         <FormControlWrapper
           onChange={validatePageNo}
-          style={{ width: "80px" }}
           placeholder={defaultPageNo}
           className="mr-1"
           type="number"
@@ -119,7 +125,7 @@ export default function Index({
         {count && (
           <>
             <Button
-              onClick={() => setOffset(0)}
+              onClick={firstPage}
               className="ml-2"
               variant="white"
               hidden={!offset}
@@ -128,22 +134,18 @@ export default function Index({
             </Button>
             {!firstDot && <span className="mx-2">...</span>}
             <Button
-              onClick={() => setOffset(offset - limit)}
+              onClick={previousPage}
               className="ml-2"
               variant="white"
               hidden={hiddenOption.firstButton}
             >
               {pageValue - 1}
             </Button>
-            <Button
-              onClick={() => setOffset(offset)}
-              className="ml-2"
-              variant="dark"
-            >
+            <Button className="ml-2" variant="dark">
               {pageValue}
             </Button>
             <Button
-              onClick={() => setOffset(offset + limit)}
+              onClick={nextPage}
               className="ml-2"
               variant="white"
               hidden={hiddenOption.middleButton}
@@ -152,11 +154,11 @@ export default function Index({
             </Button>
             {!lastDot && <span className="mx-2">...</span>}
             <Button
-              onClick={() => setOffset(lastPageOffset)}
+              onClick={lastPage}
               variant="white"
               hidden={hiddenOption.lastButton}
             >
-              {lastPage}
+              {lastPageValue}
             </Button>
           </>
         )}

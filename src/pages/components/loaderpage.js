@@ -1,13 +1,17 @@
 import React from "react";
 import { Spinner } from "react-bootstrap";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+`;
+
 export default function LoadingPage() {
   return (
-    <div
-      data-testid="spinner"
-      style={{ position: "fixed", top: "50%", left: "50%" }}
-      className="text-center"
-    >
+    <Wrapper data-testid="spinner" className="text-center">
       <Spinner animation="border" role="status" />
-    </div>
+    </Wrapper>
   );
 }
