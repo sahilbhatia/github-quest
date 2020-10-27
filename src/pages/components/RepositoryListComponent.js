@@ -6,6 +6,7 @@ import {
   FormCheck,
   DropdownButton,
   Dropdown,
+  Modal,
 } from "react-bootstrap";
 import React, { useState } from "react";
 import Filter from "./filter";
@@ -26,11 +27,14 @@ export default function RepositoryListComponent({
   data,
   onSelectManualReview,
   onSelectSuspeciousMark,
+  invalidRepo,
+  setInvalidRepo,
   reFetch,
 }) {
   const minDate = data ? data.date.min : undefined;
   let [checkAll, setCheckAll] = useState(false);
   let [actionHidden, setActionHidden] = useState(true);
+  const handleClose = () => setInvalidRepo({ show: false });
   const lastFetchedAt = data
     ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
     : undefined;
@@ -69,6 +73,11 @@ export default function RepositoryListComponent({
       setArr(arr);
     }
     arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
+  };
+
+  const Ids = () => {
+    const ids = invalidRepo.list.map((id) => <div key={id}>{id}</div>);
+    return ids;
   };
 
   const columns = [
@@ -328,6 +337,14 @@ export default function RepositoryListComponent({
   ];
   return (
     <div>
+      <Modal show={invalidRepo.show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>you have selected invalid ids</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Ids />
+        </Modal.Body>
+      </Modal>
       <div className="text-right ">
         <span className="text-dark">last fetched at </span>
         <span className="border border-dark pl-1 text-danger">
@@ -459,4 +476,6 @@ RepositoryListComponent.propTypes = {
   onSelectManualReview: PropTypes.func.isRequired,
   onSelectSuspeciousMark: PropTypes.func.isRequired,
   reFetch: PropTypes.func.isRequired,
+  invalidRepo: PropTypes.object.isRequired,
+  setInvalidRepo: PropTypes.func.isRequired,
 };

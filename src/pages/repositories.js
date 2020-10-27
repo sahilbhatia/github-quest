@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 import ErrorComponent from "./components/errorpage";
 import LoadingComponent from "./components/loaderpage";
 import moment from "moment";
@@ -16,6 +16,13 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
   let [arr, setArr] = useState([]);
+  const [invalidRepo, setInvalidRepo] = useReducer(
+    (state, newState) => ({ ...state, ...newState }),
+    {
+      list: [],
+      show: false,
+    }
+  );
   const getQueryString = (filterObject) => {
     let filterString = "";
     Object.keys(filterObject).map((key) => {
@@ -40,8 +47,17 @@ export default function Index() {
         headers: {
           "Content-Type": "application/json",
         },
+      }).then(async (res) => {
+        if (res.status == 404) {
+          const data = await res.json();
+          setInvalidRepo({
+            list: data.ids,
+            show: true,
+          });
+        } else {
+          window.location.reload(false);
+        }
       });
-      window.location.reload(false);
     }
   };
   const onSelectSuspeciousMark = (ids) => {
@@ -55,8 +71,17 @@ export default function Index() {
             "Content-Type": "application/json",
           },
         }
-      );
-      window.location.reload(false);
+      ).then(async (res) => {
+        if (res.status == 404) {
+          const data = await res.json();
+          setInvalidRepo({
+            list: data.ids,
+            show: true,
+          });
+        } else {
+          window.location.reload(false);
+        }
+      });
     }
   };
   const reFetch = async () => {
@@ -76,6 +101,8 @@ export default function Index() {
       setArr={setArr}
       onSelectManualReview={onSelectManualReview}
       onSelectSuspeciousMark={onSelectSuspeciousMark}
+      invalidRepo={invalidRepo}
+      setInvalidRepo={setInvalidRepo}
       reFetch={reFetch}
     />
   );

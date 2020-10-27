@@ -6,6 +6,7 @@ import {
   FormCheck,
   DropdownButton,
   Dropdown,
+  Modal,
 } from "react-bootstrap";
 import React, { useState } from "react";
 import Filter from "../components/RepoFilterByUser";
@@ -27,9 +28,12 @@ export default function UserRepositoryComponent({
   userId,
   onSelectManualReview,
   onSelectSuspeciousMark,
+  invalidRepo,
+  setInvalidRepo,
 }) {
   let [checkAll, setCheckAll] = useState(false);
   let [actionHidden, setActionHidden] = useState(true);
+  const handleClose = () => setInvalidRepo({ show: false });
   const minDate = data ? data.date.min : undefined;
   const userName = data ? data.userName : undefined;
   data = data ? data.repositories : undefined;
@@ -66,6 +70,11 @@ export default function UserRepositoryComponent({
       setArr(arr);
     }
     arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
+  };
+
+  const Ids = () => {
+    const ids = invalidRepo.list.map((id) => <div key={id}>{id}</div>);
+    return ids;
   };
 
   const columns = [
@@ -308,6 +317,14 @@ export default function UserRepositoryComponent({
 
   return (
     <div>
+      <Modal show={invalidRepo.show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>you have selected invalid ids</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Ids />
+        </Modal.Body>
+      </Modal>
       <DataTable
         title={
           <div className="text-right text-primary">
@@ -435,4 +452,6 @@ UserRepositoryComponent.propTypes = {
   setFilter: PropTypes.func.isRequired,
   onSelectManualReview: PropTypes.func.isRequired,
   onSelectSuspeciousMark: PropTypes.func.isRequired,
+  invalidRepo: PropTypes.object.isRequired,
+  setInvalidRepo: PropTypes.func.isRequired,
 };

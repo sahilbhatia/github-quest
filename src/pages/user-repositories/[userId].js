@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useReducer } from "react";
 import ErrorComponent from "../components/errorpage";
 import LoadingComponent from "../components/loaderpage";
 import UserRepositoryComponent from "../components/UserRepositoryComponent";
@@ -16,6 +16,13 @@ export default function Index() {
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
   let [arr, setArr] = useState([]);
+  const [invalidRepo, setInvalidRepo] = useReducer(
+    (state, newState) => ({ ...state, ...newState }),
+    {
+      list: [],
+      show: false,
+    }
+  );
   const router = useRouter();
   const { userId } = router.query;
   const getQueryString = (filterObject) => {
@@ -41,8 +48,17 @@ export default function Index() {
       headers: {
         "Content-Type": "application/json",
       },
+    }).then(async (res) => {
+      if (res.status == 404) {
+        const data = await res.json();
+        setInvalidRepo({
+          list: data.ids,
+          show: true,
+        });
+      } else {
+        window.location.reload(false);
+      }
     });
-    window.location.reload(false);
   };
   const onSelectSuspeciousMark = (ids) => {
     fetch(
@@ -54,8 +70,17 @@ export default function Index() {
           "Content-Type": "application/json",
         },
       }
-    );
-    window.location.reload(false);
+    ).then(async (res) => {
+      if (res.status == 404) {
+        const data = await res.json();
+        setInvalidRepo({
+          list: data.ids,
+          show: true,
+        });
+      } else {
+        window.location.reload(false);
+      }
+    });
   };
 
   return (
@@ -72,6 +97,8 @@ export default function Index() {
       userId={userId}
       onSelectManualReview={onSelectManualReview}
       onSelectSuspeciousMark={onSelectSuspeciousMark}
+      invalidRepo={invalidRepo}
+      setInvalidRepo={setInvalidRepo}
     />
   );
 }
