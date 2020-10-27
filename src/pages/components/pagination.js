@@ -17,28 +17,25 @@ export default function Index({
     offset = data ? (data.length < limit ? offset : offset + limit) : 0;
     setOffset(offset);
   };
-  const changeLimit = (e) => {
-    setLimit(e.target.value);
-  };
 
-  const Limits = perPage.map((number) => (
-    <Dropdown.Item key={number} onClick={changeLimit} value={number}>
-      {number}
-    </Dropdown.Item>
-  ));
-
-  const LimitOptions = () => {
-    return (
-      <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
-        {Limits}
-      </DropdownButton>
-    );
+  const Limits = () => {
+    const limit = perPage.map((number) => (
+      <Dropdown.Item
+        key={number}
+        onClick={() => setLimit(number)}
+        value={number}
+      >
+        {number}
+      </Dropdown.Item>
+    ));
+    return limit;
   };
 
   return (
     <div className="d-flex justify-content-end my-3">
-      <LimitOptions />
-
+      <DropdownButton variant="light" title={`Rows per page: ${limit}`}>
+        <Limits />
+      </DropdownButton>
       {offset == 0 ? (
         <></>
       ) : (
