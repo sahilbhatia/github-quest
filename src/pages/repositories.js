@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 import ErrorComponent from "./components/errorpage";
 import LoadingComponent from "./components/loaderpage";
 import moment from "moment";
@@ -15,7 +15,14 @@ export default function Index() {
   let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
-
+  let [arr, setArr] = useState([]);
+  const [invalidRepo, setInvalidRepo] = useReducer(
+    (state, newState) => ({ ...state, ...newState }),
+    {
+      list: [],
+      show: false,
+    }
+  );
   const getQueryString = (filterObject) => {
     let filterString = "";
     Object.keys(filterObject).map((key) => {
@@ -32,18 +39,50 @@ export default function Index() {
   if (error || code == 400 || code == 404 || code == 500)
     return <ErrorComponent code={code} />;
   if (!data) return <LoadingComponent />;
-  const onSelectManualReview = (id) => {
-    fetch(
-      `/api/update-manual-review?id=${id}&updatedAt=${moment().toISOString()}`,
-      { data: null }
-    );
-    window.location.reload(false);
+  const onSelectManualReview = (ids) => {
+    if (ids != "") {
+      fetch(`/api/update-manual-review?updatedAt=${moment().toISOString()}`, {
+        method: "POST",
+        body: JSON.stringify({ ids: ids }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then(async (res) => {
+        if (res.status == 404) {
+          const data = await res.json();
+          setInvalidRepo({
+            list: data.ids,
+            show: true,
+          });
+        } else {
+          window.location.reload(false);
+        }
+      });
+    }
   };
-  const onSelectSuspeciousMark = (id) => {
-    fetch(
-      `/api/update-suspicious-repository?id=${id}&updatedAt=${moment().toISOString()}`
-    );
-    window.location.reload(false);
+  const onSelectSuspeciousMark = (ids) => {
+    if (ids != "") {
+      fetch(
+        `/api/update-suspicious-repository?updatedAt=${moment().toISOString()}`,
+        {
+          method: "POST",
+          body: JSON.stringify({ ids: ids }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ).then(async (res) => {
+        if (res.status == 404) {
+          const data = await res.json();
+          setInvalidRepo({
+            list: data.ids,
+            show: true,
+          });
+        } else {
+          window.location.reload(false);
+        }
+      });
+    }
   };
   const reFetch = async () => {
     await fetch(`/api/insert-repositories`);
@@ -58,8 +97,12 @@ export default function Index() {
       setOffset={setOffset}
       setLimit={setLimit}
       data={data}
+      arr={arr}
+      setArr={setArr}
       onSelectManualReview={onSelectManualReview}
       onSelectSuspeciousMark={onSelectSuspeciousMark}
+      invalidRepo={invalidRepo}
+      setInvalidRepo={setInvalidRepo}
       reFetch={reFetch}
     />
   );

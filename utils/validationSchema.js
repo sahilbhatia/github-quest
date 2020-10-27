@@ -38,7 +38,7 @@ module.exports.repositoryInsertSchema = () => {
 
 module.exports.reviewSchema = () => {
   return yup.object().shape({
-    repoId: yup.number().required({ repoId: "required" }),
+    repoIds: yup.array().required({ repoIds: "required" }),
     updatedAt: yup.string().required({ updatedAt: "required" }),
   });
 };

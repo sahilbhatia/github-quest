@@ -1,5 +1,14 @@
 import DataTable from "react-data-table-component";
-import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
+import {
+  Tooltip,
+  OverlayTrigger,
+  Button,
+  FormCheck,
+  DropdownButton,
+  Dropdown,
+  Modal,
+} from "react-bootstrap";
+import React, { useState } from "react";
 import Filter from "../components/RepoFilterByUser";
 import Pagination from "../components/pagination";
 import Link from "next/link";
@@ -14,10 +23,17 @@ export default function UserRepositoryComponent({
   setOffset,
   setLimit,
   data,
+  arr,
+  setArr,
   userId,
   onSelectManualReview,
   onSelectSuspeciousMark,
+  invalidRepo,
+  setInvalidRepo,
 }) {
+  let [checkAll, setCheckAll] = useState(false);
+  let [actionHidden, setActionHidden] = useState(true);
+  const handleClose = () => setInvalidRepo({ show: false });
   const minDate = data ? data.date.min : undefined;
   const userName = data ? data.userName : undefined;
   data = data ? data.repositories : undefined;
@@ -30,7 +46,56 @@ export default function UserRepositoryComponent({
     });
     return message;
   };
+
+  const markId = (id) => {
+    arr.includes(id) ? arr.splice(arr.indexOf(id), 1) : arr.push(id);
+    setArr(arr);
+    arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
+  };
+
+  const markAll = async (check) => {
+    if (check) {
+      setCheckAll(false);
+      arr = [];
+      setArr(arr);
+    } else {
+      setCheckAll(true);
+      arr = [];
+      setArr(arr);
+      await data.map((item) => {
+        if (item.review == "pending") {
+          arr.push(item.id);
+        }
+      });
+      setArr(arr);
+    }
+    arr.length == 0 ? setActionHidden(true) : setActionHidden(false);
+  };
+
+  const Ids = () => {
+    const ids = invalidRepo.list.map((id) => <div key={id}>{id}</div>);
+    return ids;
+  };
+
   const columns = [
+    {
+      selector: function func(d) {
+        return d.review == "pending" ? (
+          <div>
+            <FormCheck
+              className="mx-4"
+              defaultChecked={checkAll || arr.includes(d.id)}
+              onClick={() => {
+                markId(d.id);
+              }}
+            />
+          </div>
+        ) : (
+          <span className="mx-4">-</span>
+        );
+      },
+      maxWidth: "40px",
+    },
     {
       name: "Name",
       selector: function func(d) {
@@ -154,48 +219,6 @@ export default function UserRepositoryComponent({
       maxWidth: "40px",
     },
     {
-      name: "Action",
-      selector: function func(d) {
-        return d.review == "pending" ? (
-          <div className="d-flex">
-            <OverlayTrigger
-              placement="top"
-              delay={{ show: 250, hide: 400 }}
-              overlay={<Tooltip>mark as manual review</Tooltip>}
-            >
-              <Button
-                size="sm"
-                onClick={() => {
-                  onSelectManualReview(d.id);
-                }}
-                className="text-success mx-1 bg-white"
-              >
-                ✔
-              </Button>
-            </OverlayTrigger>
-            <OverlayTrigger
-              placement="top"
-              delay={{ show: 250, hide: 400 }}
-              overlay={<Tooltip>mark as a suspicious</Tooltip>}
-            >
-              <Button
-                size="sm"
-                onClick={() => {
-                  onSelectSuspeciousMark(d.id);
-                }}
-                className="text-danger mx-2 bg-white"
-              >
-                ✘
-              </Button>
-            </OverlayTrigger>
-          </div>
-        ) : (
-          <>-</>
-        );
-      },
-      maxWidth: "120px",
-    },
-    {
       name: "Error Details",
       selector: function func(d) {
         return d.error_details ? (
@@ -294,6 +317,14 @@ export default function UserRepositoryComponent({
 
   return (
     <div>
+      <Modal show={invalidRepo.show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>you have selected invalid ids</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Ids />
+        </Modal.Body>
+      </Modal>
       <DataTable
         title={
           <div className="text-right text-primary">
@@ -305,12 +336,81 @@ export default function UserRepositoryComponent({
         }
         subHeader
         subHeaderComponent={
-          <Filter
-            filter={filter}
-            setFilter={setFilter}
-            minDate={minDate}
-            userId={userId}
-          />
+          <div className="w-100">
+            <Filter
+              filter={filter}
+              setFilter={setFilter}
+              minDate={minDate}
+              userId={userId}
+            />
+            <div className="d-flex">
+              <OverlayTrigger
+                placement="bottom"
+                delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip>Selecte All</Tooltip>}
+              >
+                <FormCheck
+                  className="mt-2 "
+                  defaultChecked={checkAll}
+                  onClick={() => {
+                    markAll(checkAll);
+                  }}
+                />
+              </OverlayTrigger>
+              {actionHidden ? (
+                <div>
+                  <OverlayTrigger
+                    placement="right"
+                    delay={{ show: 250, hide: 400 }}
+                    overlay={<Tooltip>Repositories Not Selected</Tooltip>}
+                  >
+                    <span>
+                      <DropdownButton
+                        className="ml-2 mt-1"
+                        title="Action"
+                        size="sm"
+                        disabled={actionHidden}
+                        style={{ pointerEvents: "none" }}
+                      >
+                        <Dropdown.Item
+                          onClick={() => onSelectManualReview(arr)}
+                          className="bg-success"
+                        >
+                          Approved
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => onSelectSuspeciousMark(arr)}
+                          className="bg-warning"
+                        >
+                          mark suspicious
+                        </Dropdown.Item>
+                      </DropdownButton>
+                    </span>
+                  </OverlayTrigger>
+                </div>
+              ) : (
+                <DropdownButton
+                  className="ml-2 mt-1"
+                  title="Action"
+                  size="sm"
+                  disabled={actionHidden}
+                >
+                  <Dropdown.Item
+                    onClick={() => onSelectManualReview(arr)}
+                    className="bg-success"
+                  >
+                    Approved
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => onSelectSuspeciousMark(arr)}
+                    className="bg-warning"
+                  >
+                    mark suspicious
+                  </Dropdown.Item>
+                </DropdownButton>
+              )}
+            </div>
+          </div>
         }
         columns={columns}
         customStyles={customStyles}
@@ -345,9 +445,13 @@ UserRepositoryComponent.propTypes = {
   limit: PropTypes.number.isRequired,
   offset: PropTypes.number.isRequired,
   setOffset: PropTypes.func.isRequired,
+  arr: PropTypes.array.isRequired,
+  setArr: PropTypes.func.isRequired,
   setLimit: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
   onSelectManualReview: PropTypes.func.isRequired,
   onSelectSuspeciousMark: PropTypes.func.isRequired,
+  invalidRepo: PropTypes.object.isRequired,
+  setInvalidRepo: PropTypes.func.isRequired,
 };
