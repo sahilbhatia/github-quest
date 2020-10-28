@@ -8,6 +8,9 @@ const logger = log4js.getLogger();
 const Users_projects = db.users_projects;
 const Users = db.users;
 const Users_repositories = db.users_repositories;
+const {
+  INTERNAL_SERVER_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for get git handle where clause
 const getGitHandleClause = (gitHandle) => {
@@ -133,9 +136,7 @@ const getUsers = async (req, res) => {
     logger.error("Error executing in users api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 };
 

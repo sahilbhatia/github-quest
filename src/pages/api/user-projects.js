@@ -9,6 +9,11 @@ const Projects = db.projects;
 const Users_projects = db.users_projects;
 const Users = db.users;
 const Projects_Repositories = db.projects_repositories;
+const {
+  INTERNAL_SERVER_ERROR,
+  User_NOT_FOUND,
+  VALIDATION_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for get projects of user
 const getProjectsByUserId = async (userId) => {
@@ -48,9 +53,7 @@ const getProjects = async (req, res) => {
           where: { id: userId },
         });
         if (!user) {
-          res.status(404).json({
-            message: "User Not Found For Specified Id",
-          });
+          res.status(404).json(User_NOT_FOUND);
         } else {
           const data = await getProjectsByUserId(userId);
           res.status(200).json(data);
@@ -60,18 +63,13 @@ const getProjects = async (req, res) => {
         logger.error("Error executing in user project api");
         logger.error(err);
         logger.info("=========================================");
-        res.status(500).json({
-          message: "Internal Server Error",
-        });
+        res.status(500).json(INTERNAL_SERVER_ERROR);
       }
     })
     .catch((err) => {
       Sentry.captureException(err);
-      const errors = err.errors;
-      res.status(400).json({
-        message: "Validation Error",
-        errors,
-      });
+      VALIDATION_ERROR.errors = err.errors;
+      res.status(400).json(VALIDATION_ERROR);
     });
 };
 

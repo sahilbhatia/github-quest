@@ -7,6 +7,11 @@ const { Sentry } = require("../../../utils/sentry");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const Projects_Repositories = db.projects_repositories;
+const {
+  INTERNAL_SERVER_ERROR,
+  PROJECT_NOT_FOUND,
+  VALIDATION_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for get repositories
 const getRepositories = async (limit, offset, projectId) => {
@@ -38,9 +43,7 @@ const getProjectRepository = async (req, res) => {
           where: { id: projectId },
         });
         if (!project) {
-          res.status(404).json({
-            message: "Project Not Found For Specified Id",
-          });
+          res.status(404).json(PROJECT_NOT_FOUND);
         } else {
           const data = await getRepositories(limit, offset, projectId);
           res.status(200).json(data);
@@ -50,18 +53,13 @@ const getProjectRepository = async (req, res) => {
         logger.error("Error executing in project repositories api");
         logger.error(err);
         logger.info("=========================================");
-        res.status(500).json({
-          message: "Internal Server Error",
-        });
+        res.status(500).json(INTERNAL_SERVER_ERROR);
       }
     })
     .catch((err) => {
       Sentry.captureException(err);
-      const errors = err.errors;
-      res.status(400).json({
-        message: "Validation Error",
-        errors,
-      });
+      VALIDATION_ERROR.errors = err.errors;
+      res.status(400).json(VALIDATION_ERROR);
     });
 };
 

@@ -11,6 +11,10 @@ const Users_repositories = db.users_repositories;
 const Users = db.users;
 const Commits = db.commits;
 const yup = require("yup");
+const {
+  INTERNAL_SERVER_ERROR,
+  User_NOT_FOUND,
+} = require("../../../constants/responseConstants");
 
 //function for get where clause
 const getWhereClause = ({
@@ -157,9 +161,7 @@ const getAllPublicRepos = async (req, res) => {
           },
         });
         if (!user) {
-          res.status(404).json({
-            message: "User Not Found For Specified Id",
-          });
+          res.status(404).json(User_NOT_FOUND);
         } else {
           let findAllClause = getFindAllUserClause(userId, limit, offset);
           const getWhereClauseObject = await getWhereClause(req.query);
@@ -182,9 +184,7 @@ const getAllPublicRepos = async (req, res) => {
         logger.error("Error executing in user repositories api");
         logger.error(err);
         logger.info("=========================================");
-        res.status(500).json({
-          message: "Internal Server Error",
-        });
+        res.status(500).json(INTERNAL_SERVER_ERROR);
       }
     })
     .catch((err) => {

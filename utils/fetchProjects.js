@@ -10,6 +10,10 @@ const Users = db.users;
 const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Users_projects = db.users_projects;
+const {
+  INTERNAL_SERVER_ERROR,
+  CRON_JOB_ACTIVATED_PROJECTS,
+} = require("../../../constants/responseConstants");
 
 //function for insert repositories
 const insertRepository = async (item, projectId) => {
@@ -199,16 +203,12 @@ module.exports.addIntranetProjects = async (res) => {
       }
     });
     await Promise.all(data);
-    res.status(200).json({
-      message: "Cron Job Activated Successfully For Inserting Projects",
-    });
+    res.status(200).json(CRON_JOB_ACTIVATED_PROJECTS);
   } catch (err) {
     Sentry.captureException(err);
     logger.error("Error executing while fetching projects in API call");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 };

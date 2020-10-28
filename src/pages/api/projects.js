@@ -10,6 +10,9 @@ const Users_projects = db.users_projects;
 const Users = db.users;
 const Project_Repositories = db.projects_repositories;
 const logger = log4js.getLogger();
+const {
+  INTERNAL_SERVER_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for get project model
 const getProjectModel = (limit, offset) => {
@@ -110,9 +113,7 @@ const getProjects = async (req, res) => {
     logger.error("Error executing in projects api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 };
 

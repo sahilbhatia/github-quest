@@ -7,6 +7,11 @@ const Sequelize = require("sequelize");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
+const {
+  INTERNAL_SERVER_ERROR,
+  USER_NOT_FOUND,
+  VALIDATION_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for find user by username
 const findUserByUserName = async (userName) => {
@@ -48,7 +53,7 @@ const findUserByGitHandle = async (gitHandle) => {
 
 //function for find user by user id
 const validateUserId = async (userId) => {
-  await yup
+  let valid = await yup
     .object()
     .shape({
       userId: yup.number().required({ userId: "required" }),
@@ -64,6 +69,7 @@ const validateUserId = async (userId) => {
       const errors = err.errors;
       return errors;
     });
+  return valid;
 };
 
 //function for find user by user id
@@ -93,29 +99,21 @@ const findUser = async (req, res) => {
         if (user) {
           res.status(200).json(user);
         } else {
-          res.status(404).json({
-            message: "User Not Found For Specified Id",
-          });
+          res.status(404).json(USER_NOT_FOUND);
         }
       } else {
-        res.status(400).json({
-          message: "Validation Error",
-          validateError,
-        });
+        VALIDATION_ERROR.errors = validateError;
+        res.status(400).json(VALIDATION_ERROR);
       }
     } else {
-      res.status(400).json({
-        message: "Params Required",
-      });
+      res.status(400).json(VALIDATION_ERROR);
     }
   } catch (err) {
     Sentry.captureException(err);
     logger.error("Error executing in find user api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 };
 

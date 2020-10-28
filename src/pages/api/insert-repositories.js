@@ -11,6 +11,9 @@ const validation = require("../../../utils/validation");
 const { Sentry } = require("../../../utils/sentry");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
+const {
+  CRON_JOB_ACTIVATED_REPOSITORIES,
+} = require("../../../constants/responseConstants");
 
 //function for cron schedule
 const insertRepos = async () => {
@@ -100,9 +103,7 @@ const insertPublicRepos = async (req, res) => {
           }
         );
       });
-      res.status(200).json({
-        message: "cron Job Activated successfully for inserting repositories",
-      });
+      res.status(200).json(CRON_JOB_ACTIVATED_REPOSITORIES);
     }
   } catch (err) {
     logger.error("Error executing in inserting repositories api");

@@ -6,6 +6,9 @@ const Sequelize = require("sequelize");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
+const {
+  INTERNAL_SERVER_ERROR,
+} = require("../../../constants/responseConstants");
 
 const findProject = async (req, res) => {
   try {
@@ -23,9 +26,7 @@ const findProject = async (req, res) => {
     logger.error("Error executing in find projects api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 };
 
