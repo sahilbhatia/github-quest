@@ -353,22 +353,14 @@ export default function RepositoryListComponent({
         data={data}
         conditionalRowStyles={conditionalRowStyles}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-            count={repoCount}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={data}
+        count={repoCount}
+      />
       <Button href="/" className="m-3 bg-dark">
         Back
       </Button>

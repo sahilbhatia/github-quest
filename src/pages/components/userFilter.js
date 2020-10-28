@@ -3,11 +3,29 @@ import AsyncSelect from "react-select/async";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 import PropTypes from "prop-types";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  width: 150px;
+`;
+
 export default function Index({ filter, setFilter, minDate }) {
   let [userName, setuserName] = useState(null);
   let userList = [];
   let userData = fetch(`/api/find-user?userName=${userName}`);
   let [gitHandle, setgitHandle] = useState(null);
+  let startDate;
+  let endDate;
+  let selectUser;
+  let selectGitHandle;
+  let errorDetails;
+  if (filter) {
+    if (filter.startDate) startDate = new Date(filter.startDate);
+    if (filter.endDate) endDate = new Date(filter.endDate);
+    if (filter.userName) selectUser = filter.userName;
+    if (filter.gitHandle) selectGitHandle = filter.gitHandle;
+    if (filter.error_details != undefined) errorDetails = filter.error_details;
+  }
   let gitHandleList = [];
   let gitHandleData = fetch(`/api/find-user?gitHandle=${gitHandle}`);
   userData
@@ -131,54 +149,46 @@ export default function Index({ filter, setFilter, minDate }) {
   return (
     <div>
       <div className="d-flex">
-        <div style={{ width: "150px" }}>
+        <Wrapper>
           <AsyncSelect
             loadOptions={promiseOptionsUsers}
             name="select User"
             placeholder="Users..."
-            defaultInputValue={filter ? filter.userName : ""}
+            defaultInputValue={selectUser}
             onChange={setUser}
             className="w-100"
           />
-        </div>
-        <div style={{ width: "150px" }}>
+        </Wrapper>
+        <Wrapper>
           <AsyncSelect
             loadOptions={promiseOptionsGitHandle}
             name="select git handel"
             placeholder="git handel..."
-            defaultInputValue={filter ? filter.gitHandle : ""}
+            defaultInputValue={selectGitHandle}
             onChange={setGitHandle}
             styles={colourStyles}
             className="w-100"
           />
-        </div>
+        </Wrapper>
         <DatePicker
-          onSelect={(e) => setDateFrom(e)}
-          selected={filter ? filter.startDate : ""}
+          onSelect={setDateFrom}
+          selected={startDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date from"
-          className={`${
-            filter
-              ? filter.startDate != undefined
-                ? "border-success"
-                : ""
-              : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DatePicker
-          onSelect={(e) => setDateTo(e)}
-          selected={filter ? filter.endDate : ""}
+          onSelect={setDateTo}
+          selected={endDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date to"
-          className={`${
-            filter ? (filter.endDate != undefined ? "border-success" : "") : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.error_details : "")}
+          variant={setColor(errorDetails)}
           title="Error Status"
         >
           <Dropdown.Item

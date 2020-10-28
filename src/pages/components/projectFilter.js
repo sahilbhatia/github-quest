@@ -12,11 +12,11 @@ const Wrapper = styled.div`
 
 export default function Index({ filter, setFilter, minDate }) {
   let [projectName, setProjectName] = useState(null);
-  let startDate;
-  let endDate;
+  let startDate, endDate, project;
   if (filter) {
     if (filter.startDate) startDate = new Date(filter.startDate);
     if (filter.endDate) endDate = new Date(filter.endDate);
+    project = filter.projectName;
   }
   let projectList = [];
   let projectData = fetch(`/api/find-project?projectName=${projectName}`);
@@ -108,7 +108,7 @@ export default function Index({ filter, setFilter, minDate }) {
             loadOptions={promiseOptionsProjects}
             name="select project"
             placeholder="project..."
-            defaultInputValue={filter.projectName}
+            defaultInputValue={project}
             onChange={setProject}
             className="w-100"
           />

@@ -321,21 +321,13 @@ export default function UserRepositoryComponent({
         data={data}
         conditionalRowStyles={conditionalRowStyles}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={data}
+      />
       <Button href="/users" className="m-3 bg-dark">
         Back
       </Button>

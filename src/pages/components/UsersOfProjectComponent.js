@@ -118,21 +118,13 @@ export default function UsersOfProjectComponent({
         customStyles={customStyles}
         data={data}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={data}
+      />
       <Button href="/projects" className="m-3 bg-dark">
         Back
       </Button>

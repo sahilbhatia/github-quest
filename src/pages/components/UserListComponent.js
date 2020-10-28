@@ -139,22 +139,14 @@ export default function UserListComponent({
         customStyles={customStyles}
         data={data}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-            count={count}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={data}
+        count={count}
+      />
       <Button href="/" className="m-3 bg-dark">
         Back
       </Button>
