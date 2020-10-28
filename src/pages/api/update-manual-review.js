@@ -7,6 +7,12 @@ const validation = require("../../../utils/validationSchema");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
+const {
+  INTERNAL_SERVER_ERROR,
+  REPOSITORY_UPDATED,
+  VALIDATION_ERROR,
+  REPOSITORY_NOT_FOUND,
+} = require("../../../constants/responseConstants");
 
 //function for update repository
 const updateRepo = async (repoId, updatedAt) => {
@@ -64,9 +70,7 @@ const updateManualRepo = async (req, res) => {
       try {
         let repo = await Repositories.findOne({ where: { id: repoId } });
         if (!repo) {
-          res.status(404).json({
-            message: "Repository Not Found For Given Id",
-          });
+          res.status(404).json(REPOSITORY_NOT_FOUND);
         } else {
           const updatedRepo = await updateRepo(repoId, updatedAt);
           if (updatedRepo[1].dataValues.parent_repo_id) {
@@ -77,27 +81,20 @@ const updateManualRepo = async (req, res) => {
             await clearRemark(updatedRepo[1].dataValues.parent_repo_id);
           }
           await clearRemark(repoId);
-          res.status(200).json({
-            message: "Repository Updated Successfully",
-          });
+          res.status(200).json(REPOSITORY_UPDATED);
         }
       } catch (err) {
         Sentry.captureException(err);
         logger.error("Error executing in update manual review api");
         logger.error(err);
         logger.info("=========================================");
-        res.status(500).json({
-          message: "Internal Server Error",
-        });
+        res.status(500).json(INTERNAL_SERVER_ERROR);
       }
     })
     .catch((err) => {
       Sentry.captureException(err);
-      const errors = err.errors;
-      res.status(400).json({
-        message: "Validation Error",
-        errors,
-      });
+      VALIDATION_ERROR.errors = err.errors;
+      res.status(400).json(VALIDATION_ERROR);
     });
 };
 

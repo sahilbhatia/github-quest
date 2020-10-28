@@ -3,6 +3,13 @@ const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
 const { headers } = require("../constants/githubHeader");
+const {
+  INVALID_BITBUCKET_ACCESS_TOKEN,
+  INVALID_GITLAB_ACCESS_TOKEN,
+  INVALID_GITHUB_ACCESS_TOKEN,
+  RATE_LIMIT_EXCEEDED_GITLAB_TOKEN,
+  RATE_LIMIT_EXCEEDED_GITHUB_TOKEN,
+} = require("../../../constants/responseConstants");
 
 //function for validate github access token
 const gitHubValidation = async () => {
@@ -77,16 +84,10 @@ const isRateLimitExceed = (githubValidate, gitlabValidate) => {
       delete process.env.RETRY;
       return false;
     } else {
-      return {
-        status: 403,
-        message: "Rate Limit Exceeded Of GitLab Access Token",
-      };
+      return RATE_LIMIT_EXCEEDED_GITLAB_TOKEN;
     }
   } else {
-    return {
-      status: 403,
-      message: "Rate Limit Exceeded Of GitHub Access Token",
-    };
+    return RATE_LIMIT_EXCEEDED_GITHUB_TOKEN;
   }
 };
 
@@ -100,12 +101,12 @@ module.exports.validateToken = async () => {
       if (bitbucketValidate) {
         return isRateLimitExceed(githubValidate, gitlabValidate);
       } else {
-        return { status: 401, message: "Invalid BitBucket Access Token" };
+        return INVALID_BITBUCKET_ACCESS_TOKEN;
       }
     } else {
-      return { status: 401, message: "Invalid GiLab Access Token" };
+      return INVALID_GITLAB_ACCESS_TOKEN;
     }
   } else {
-    return { status: 401, message: "Invalid GitHub Access Token" };
+    return INVALID_GITHUB_ACCESS_TOKEN;
   }
 };

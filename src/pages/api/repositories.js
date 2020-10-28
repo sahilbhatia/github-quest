@@ -10,6 +10,9 @@ const Users_repositories = db.users_repositories;
 const Users = db.users;
 const Commits = db.commits;
 const logger = log4js.getLogger();
+const {
+  INTERNAL_SERVER_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for get where clause
 const getWhereClause = ({
@@ -190,9 +193,7 @@ const getAllPublicRepos = async (req, res) => {
     logger.error("Error executing in repositories api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 };
 

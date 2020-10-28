@@ -8,6 +8,11 @@ const yup = require("yup");
 const { Sentry } = require("../../../utils/sentry");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
+const {
+  INTERNAL_SERVER_ERROR,
+  FORK_REPOSITORY_NOT_FOUND,
+  VALIDATION_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for return forked repo
 const forkedRepos = async (repoId) => {
@@ -53,9 +58,7 @@ const getForkedRepos = async (req, res) => {
       try {
         const data = await forkedRepos(req.query.id);
         if (data.length == 0) {
-          res.status(404).json({
-            message: "List Not found For Given Id",
-          });
+          res.status(404).json(FORK_REPOSITORY_NOT_FOUND);
         } else {
           res.status(200).json(data);
         }
@@ -66,18 +69,13 @@ const getForkedRepos = async (req, res) => {
         );
         logger.error(err);
         logger.info("=========================================");
-        res.status(500).json({
-          message: "Internal Server Error",
-        });
+        res.status(500).json(INTERNAL_SERVER_ERROR);
       }
     })
     .catch((err) => {
       Sentry.captureException(err);
-      const errors = err.errors;
-      res.status(400).json({
-        message: "Validation Error",
-        errors,
-      });
+      VALIDATION_ERROR.errors = err.errors;
+      res.status(400).json(VALIDATION_ERROR);
     });
 };
 

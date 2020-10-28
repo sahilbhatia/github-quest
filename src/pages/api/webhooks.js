@@ -5,6 +5,9 @@ const fetchProjects = require("../../../utils/fetchProjects");
 const { Sentry } = require("../../../utils/sentry");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
+const {
+  INTERNAL_SERVER_ERROR,
+} = require("../../../constants/responseConstants");
 
 export default async function insertUsers(req, res) {
   try {
@@ -72,8 +75,6 @@ export default async function insertUsers(req, res) {
     logger.error("Error executing in webhook api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 }

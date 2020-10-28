@@ -9,6 +9,11 @@ const yup = require("yup");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const { Sentry } = require("../../../utils/sentry");
+const {
+  INTERNAL_SERVER_ERROR,
+  USER_NOT_FOUND,
+  VALIDATION_ERROR,
+} = require("../../../constants/responseConstants");
 
 //function for get repository list by user id
 const getRepositoriesByUserId = async (userId, repositoryName) => {
@@ -87,9 +92,7 @@ const findRepository = async (req, res) => {
               );
               res.status(200).json(repoList);
             } else {
-              res.status(404).json({
-                message: "User Not Found For Specified Id",
-              });
+              res.status(404).json(USER_NOT_FOUND);
             }
           } catch (err) {
             Sentry.captureException(err);
@@ -98,18 +101,13 @@ const findRepository = async (req, res) => {
             );
             logger.error(err);
             logger.info("=========================================");
-            res.status(500).json({
-              message: "Internal Server Error",
-            });
+            res.status(500).json(INTERNAL_SERVER_ERROR);
           }
         })
         .catch((err) => {
           Sentry.captureException(err);
-          const errors = err.errors;
-          res.status(400).json({
-            message: "Validation Error",
-            errors,
-          });
+          VALIDATION_ERROR.errors = err.errors;
+          res.status(400).json(VALIDATION_ERROR);
         });
     } else if (
       userName == "undefined" ||
@@ -136,9 +134,7 @@ const findRepository = async (req, res) => {
     logger.error("Error executing in find repository api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 };
 

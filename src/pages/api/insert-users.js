@@ -9,6 +9,10 @@ const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const Users = db.users;
 const Roles = db.roles;
+const {
+  INTERNAL_SERVER_ERROR,
+  CRON_JOB_ACTIVATED_USERS,
+} = require("../../../constants/responseConstants");
 
 //function for get valid git handle
 const getValidGitHandle = (gitHandle) => {
@@ -190,17 +194,13 @@ export default async function insertUsers(req, res) {
         return false;
       }
     });
-    res.status(200).json({
-      message: "cron Job Activated Successfully For Inserting Users",
-    });
+    res.status(200).json(CRON_JOB_ACTIVATED_USERS);
   } catch (err) {
     Sentry.captureException(err);
     logger.error("Error executing in insert users api");
     logger.error(err);
     logger.info("=========================================");
-    res.status(500).json({
-      message: "Internal Server Error",
-    });
+    res.status(500).json(INTERNAL_SERVER_ERROR);
   }
 
   //cron scheduler
