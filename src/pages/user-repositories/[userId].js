@@ -1,9 +1,9 @@
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import ErrorComponent from "../components/errorpage";
-import LoadingComponent from "../components/loaderpage";
-import UserRepositoryComponent from "../components/UserRepositoryComponent";
+import ErrorComponent from "../../../components/errorpage";
+import LoadingComponent from "../../../components/loaderpage";
+import UserRepositoryComponent from "../../../components/UserRepositoryComponent";
 import moment from "moment";
 let code;
 const fetcher = (url) =>

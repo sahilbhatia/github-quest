@@ -1,8 +1,8 @@
 import useSWR from "swr";
 import { useRouter } from "next/router";
-import ErrorComponent from "../components/errorpage";
-import LoadingComponent from "../components/loaderpage";
-import ProjectsOfUserComponent from "../components/ProjectsOfUserComponent";
+import ErrorComponent from "../../../components/errorpage";
+import LoadingComponent from "../../../components/loaderpage";
+import ProjectsOfUserComponent from "../../../components/ProjectsOfUserComponent";
 let code;
 const fetcher = (url) =>
   fetch(url).then((res) => {

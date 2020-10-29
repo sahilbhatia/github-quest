@@ -65,7 +65,7 @@ export default function UsersOfProjectComponent({
       selector: function func(d) {
         return d.users_repositories.length != 0 ? (
           <Link
-            href="/user-epositories/[userId]"
+            href="/user-repositories/[userId]"
             as={`/user-repositories/${d.id}`}
           >
             <Button className="bg-white border-white text-primary btn-sm">
