@@ -4,13 +4,42 @@ import DatePicker from "react-datepicker";
 import { useState } from "react";
 import moment from "moment";
 import PropTypes from "prop-types";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  width: 150px;
+`;
+
 export default function Index({ filter, setFilter, minDate, userId }) {
   let [repositoryName, setRepositoryName] = useState(null);
   let repositoryList = [];
   let reposData = fetch(
     `/api/find-repository?userId=${userId}&repositoryName=${repositoryName}`
   );
-
+  let startDate,
+    endDate,
+    reviewDate,
+    repoName,
+    isForked,
+    isArchived,
+    isDisabled,
+    isSuspicious,
+    reviewStatus,
+    sourceType,
+    errorDetails;
+  if (filter) {
+    if (filter.startDate) startDate = new Date(filter.startDate);
+    if (filter.endDate) endDate = new Date(filter.endDate);
+    if (filter.reviewDate) reviewDate = new Date(filter.reviewDate);
+    isForked = filter.is_forked;
+    isArchived = filter.is_archived;
+    isDisabled = filter.is_disabled;
+    isSuspicious = filter.is_suspicious;
+    reviewStatus = filter.review;
+    sourceType = filter.source_type;
+    errorDetails = filter.error_details;
+    repoName = filter.repoName;
+  }
   reposData
     .then((response) => {
       return response.json();
@@ -126,60 +155,44 @@ export default function Index({ filter, setFilter, minDate, userId }) {
     <div>
       <div className="d-flex justify-content-end mb-2">
         <DatePicker
-          onSelect={(e) => setDateFrom(e)}
-          selected={filter ? filter.startDate : ""}
+          onSelect={setDateFrom}
+          selected={startDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date from"
-          className={`${
-            filter
-              ? filter.startDate != undefined
-                ? "border-success"
-                : ""
-              : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DatePicker
-          onSelect={(e) => setDateTo(e)}
-          selected={filter ? filter.endDate : ""}
+          onSelect={setDateTo}
+          selected={endDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date to"
-          className={`${
-            filter ? (filter.endDate != undefined ? "border-success" : "") : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DatePicker
-          onSelect={(e) => setDateReview(e)}
-          selected={
-            filter ? (filter.reviewDate ? new Date(filter.reviewDate) : "") : ""
-          }
+          onSelect={setDateReview}
+          selected={reviewDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select reviewed date"
-          className={`${
-            filter
-              ? filter.reviewDate != undefined
-                ? "border-success"
-                : ""
-              : ""
-          } mx-1`}
+          className="mx-1"
         />
       </div>
       <div className="d-flex">
-        <div style={{ width: "150px" }}>
+        <Wrapper>
           <AsyncSelect
             loadOptions={promiseOptionsRepos}
             name="select repository"
             placeholder="repository..."
-            defaultInputValue={filter ? filter.repoName : ""}
+            defaultInputValue={repoName}
             onChange={setRepoName}
             className="w-100"
           />
-        </div>
+        </Wrapper>
         <DropdownButton
           className="ml-2"
-          variant={setColor(filter ? filter.is_forked : "all")}
+          variant={setColor(isForked)}
           title="Forked"
         >
           <Dropdown.Item onClick={() => forked(true)} className="bg-success">
@@ -197,7 +210,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         </DropdownButton>
         <DropdownButton
           className="ml-2"
-          variant={setColor(filter ? filter.is_archived : "all")}
+          variant={setColor(isArchived)}
           title="Archived"
         >
           <Dropdown.Item onClick={() => archived(true)} className="bg-success">
@@ -215,7 +228,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.is_disabled : "all")}
+          variant={setColor(isDisabled)}
           title="Disabled"
         >
           <Dropdown.Item onClick={() => disabled(true)} className="bg-success">
@@ -233,7 +246,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.is_suspicious : "all")}
+          variant={setColor(isSuspicious)}
           title="Suspicious"
         >
           <Dropdown.Item
@@ -257,7 +270,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.review : "")}
+          variant={setColor(reviewStatus)}
           title="Review Status"
         >
           <Dropdown.Item
@@ -299,7 +312,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.source_type : "all")}
+          variant={setColor(sourceType)}
           title="Source Type"
         >
           <Dropdown.Item
@@ -329,7 +342,7 @@ export default function Index({ filter, setFilter, minDate, userId }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.error_details : "all")}
+          variant={setColor(errorDetails)}
           title="Error Status"
         >
           <Dropdown.Item

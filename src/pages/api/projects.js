@@ -28,6 +28,7 @@ const getProjectModel = (limit, offset) => {
         model: Users,
       },
     ],
+    distinct: true,
     limit: limit,
     offset: offset,
   };
@@ -89,20 +90,28 @@ const getProjects = async (req, res) => {
 
     if (whereClauseData) {
       findAllClause.where = whereClauseData;
-      let projectData = await Projects.findAll(findAllClause);
+      let { count, rows: projectData } = await Projects.findAndCountAll(
+        findAllClause
+      );
       const earliestDate = await Projects.findAll({
         attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
       });
       let data = {};
-      (data.projects = projectData), (data.date = earliestDate[0]);
+      (data.projects = projectData),
+        (data.count = count),
+        (data.date = earliestDate[0]);
       res.status(200).json(data);
     } else {
-      let projectData = await Projects.findAll(findAllClause);
+      let { count, rows: projectData } = await Projects.findAndCountAll(
+        findAllClause
+      );
       const earliestDate = await Projects.findAll({
         attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
       });
       let data = {};
-      (data.projects = projectData), (data.date = earliestDate[0]);
+      (data.projects = projectData),
+        (data.count = count),
+        (data.date = earliestDate[0]);
       res.status(200).json(data);
     }
   } catch (err) {

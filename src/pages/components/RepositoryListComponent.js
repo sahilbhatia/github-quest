@@ -19,13 +19,13 @@ export default function RepositoryListComponent({
   onSelectSuspeciousMark,
   reFetch,
 }) {
-  const minDate = data ? data.date.min : undefined;
-  const lastFetchedAt = data
-    ? moment(data.last_fetched_at).utcOffset(660).toLocaleString()
-    : undefined;
-  data = data ? data.repositories : undefined;
+  let { date, last_fetched_at, repositories } = data;
+  let lastFetchedAt = moment(last_fetched_at).utcOffset(660).toLocaleString();
+  let repoCount;
+  if (!filter.userName) repoCount = data.count;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
+
   const getRemark = (commits) => {
     let message = "review status changed because of ";
     commits.map((commit, index) => {
@@ -334,28 +334,26 @@ export default function RepositoryListComponent({
         }
         subHeader
         subHeaderComponent={
-          <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+          <Filter
+            filter={filter}
+            setFilter={setFilter}
+            minDate={date.min}
+            setOffset={setOffset}
+          />
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={repositories}
         conditionalRowStyles={conditionalRowStyles}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={repositories}
+        count={repoCount}
+      />
       <Button href="/" className="m-3 bg-dark">
         Back
       </Button>

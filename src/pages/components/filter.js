@@ -8,11 +8,37 @@ import PropTypes from "prop-types";
 import moment from "moment";
 let limit = 10;
 let offset = 0;
-export default function Index({ filter, setFilter, minDate }) {
+export default function Index({ filter, setFilter, minDate, setOffset }) {
   let [name, setName] = useState(null);
   let [repositoryName, setRepositoryName] = useState(null);
   let usersList = [];
   let repositoryList = [];
+  let startDate,
+    endDate,
+    reviewDate,
+    repoName,
+    userName,
+    isForked,
+    isArchived,
+    isDisabled,
+    isSuspicious,
+    reviewStatus,
+    sourceType,
+    errorDetails;
+  if (filter) {
+    if (filter.startDate) startDate = new Date(filter.startDate);
+    if (filter.endDate) endDate = new Date(filter.endDate);
+    if (filter.reviewDate) reviewDate = new Date(filter.reviewDate);
+    isForked = filter.is_forked;
+    isArchived = filter.is_archived;
+    isDisabled = filter.is_disabled;
+    isSuspicious = filter.is_suspicious;
+    reviewStatus = filter.review;
+    sourceType = filter.source_type;
+    errorDetails = filter.error_details;
+    repoName = filter.repoName;
+    userName = filter.userName;
+  }
   let usersData = fetch(
     `/api/find-user?limit=${limit}&offset=${offset}&userName=${name}`
   );
@@ -52,6 +78,7 @@ export default function Index({ filter, setFilter, minDate }) {
     let data = { ...filter };
     data.userName = userName.value;
     setFilter(data);
+    setOffset(0);
   };
   const filterOptions = (inputValue) => {
     return usersList.filter((i) =>
@@ -168,44 +195,28 @@ export default function Index({ filter, setFilter, minDate }) {
     <div>
       <div className="d-flex justify-content-end mb-2">
         <DatePicker
-          onSelect={(e) => setDateFrom(e)}
-          selected={filter ? filter.startDate : ""}
+          onSelect={setDateFrom}
+          selected={startDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date from"
-          className={`${
-            filter
-              ? filter.startDate != undefined
-                ? "border-success"
-                : ""
-              : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DatePicker
-          onSelect={(e) => setDateTo(e)}
-          selected={filter ? filter.endDate : ""}
+          onSelect={setDateTo}
+          selected={endDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select search date to"
-          className={`${
-            filter ? (filter.endDate != undefined ? "border-success" : "") : ""
-          } mx-1`}
+          className="mx-1"
         />
         <DatePicker
-          onSelect={(e) => setDateReview(e)}
-          selected={
-            filter ? (filter.reviewDate ? new Date(filter.reviewDate) : "") : ""
-          }
+          onSelect={setDateReview}
+          selected={reviewDate}
           maxDate={new Date()}
           minDate={new Date(minDate)}
           placeholderText="Select reviewed date"
-          className={`${
-            filter
-              ? filter.reviewDate != undefined
-                ? "border-success"
-                : ""
-              : ""
-          } mx-1`}
+          className="mx-1"
         />
       </div>
       <div className="d-flex">
@@ -214,7 +225,7 @@ export default function Index({ filter, setFilter, minDate }) {
             loadOptions={promiseOptions}
             name="select username"
             placeholder="username..."
-            defaultInputValue={filter ? filter.userName : ""}
+            defaultInputValue={userName}
             onChange={setUserName}
             className="w-100"
           />
@@ -224,14 +235,14 @@ export default function Index({ filter, setFilter, minDate }) {
             loadOptions={promiseOptionsRepos}
             name="select repository"
             placeholder="repository..."
-            defaultInputValue={filter ? filter.repoName : ""}
+            defaultInputValue={repoName}
             onChange={setRepoName}
             className="w-100"
           />
         </div>
         <DropdownButton
           className="ml-2"
-          variant={setColor(filter ? filter.is_forked : "all")}
+          variant={setColor(isForked)}
           title="Forked"
         >
           <Dropdown.Item onClick={() => forked(true)} className="bg-success">
@@ -249,7 +260,7 @@ export default function Index({ filter, setFilter, minDate }) {
         </DropdownButton>
         <DropdownButton
           className="ml-2"
-          variant={setColor(filter ? filter.is_archived : "all")}
+          variant={setColor(isArchived)}
           title="Archived"
         >
           <Dropdown.Item onClick={() => archived(true)} className="bg-success">
@@ -267,7 +278,7 @@ export default function Index({ filter, setFilter, minDate }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.is_disabled : "all")}
+          variant={setColor(isDisabled)}
           title="Disabled"
         >
           <Dropdown.Item onClick={() => disabled(true)} className="bg-success">
@@ -285,7 +296,7 @@ export default function Index({ filter, setFilter, minDate }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.is_suspicious : "all")}
+          variant={setColor(isSuspicious)}
           title="Suspicious"
         >
           <Dropdown.Item
@@ -309,7 +320,7 @@ export default function Index({ filter, setFilter, minDate }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.review : "all")}
+          variant={setColor(reviewStatus)}
           title="Review Status"
         >
           <Dropdown.Item
@@ -351,7 +362,7 @@ export default function Index({ filter, setFilter, minDate }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.source_type : "all")}
+          variant={setColor(sourceType)}
           title="Source Type"
         >
           <Dropdown.Item
@@ -381,7 +392,7 @@ export default function Index({ filter, setFilter, minDate }) {
         </DropdownButton>
         <DropdownButton
           className="mx-2"
-          variant={setColor(filter ? filter.error_details : "all")}
+          variant={setColor(errorDetails)}
           title="Error Status"
         >
           <Dropdown.Item
@@ -414,5 +425,6 @@ export default function Index({ filter, setFilter, minDate }) {
 Index.propTypes = {
   filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
+  setOffset: PropTypes.func,
   minDate: PropTypes.string.isRequired,
 };

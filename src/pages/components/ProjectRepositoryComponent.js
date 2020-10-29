@@ -9,8 +9,7 @@ export default function ProjectRepositoryComponent({
   offset,
   setOffset,
 }) {
-  let projectName = data ? data.projectName : undefined;
-  data = data ? data.repositories : undefined;
+  let { projectName, repositories } = data;
   const columns = [
     {
       name: "Host",
@@ -56,23 +55,15 @@ export default function ProjectRepositoryComponent({
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={repositories}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={repositories}
+      />
       <Button href="/projects" className="m-3 bg-dark">
         Back
       </Button>

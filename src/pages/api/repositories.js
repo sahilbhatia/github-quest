@@ -136,6 +136,7 @@ const getUsersWhereClause = (userName) => {
 const getFindAllClause = (limit, offset, getIncludeUsersModel) => {
   let findAllClause = {
     order: [["id", "ASC"]],
+    distinct: true,
     include: [
       getIncludeUsersModel,
       {
@@ -167,15 +168,17 @@ const getLastFetchedAt = async () => {
 
 //get repositories
 const getAllPublicRepos = async (req, res) => {
-  let { userName, limit, offset } = req.query;
-  limit = limit == undefined ? 10 : limit;
-  //get all repositories
-  const getIncludeUsersModel = await getUsersWhereClause(userName);
-  let findAllClause = getFindAllClause(limit, offset, getIncludeUsersModel);
-  const getWhereClauseObject = await getWhereClause(req.query);
   try {
+    let { userName, limit, offset } = req.query;
+    limit = limit == undefined ? 10 : limit;
+    //get all repositories
+    const getIncludeUsersModel = await getUsersWhereClause(userName);
+    let findAllClause = getFindAllClause(limit, offset, getIncludeUsersModel);
+    const getWhereClauseObject = await getWhereClause(req.query);
     findAllClause.where = getWhereClauseObject;
-    const repositories = await Repositories.findAll(findAllClause);
+    let { count, rows: repositories } = await Repositories.findAndCountAll(
+      findAllClause
+    );
     const earliestDate = await Repositories.findAll({
       attributes: [[Sequelize.fn("min", Sequelize.col("created_at")), "min"]],
     });
@@ -183,7 +186,8 @@ const getAllPublicRepos = async (req, res) => {
     let data = {};
     (data.repositories = repositories),
       (data.date = earliestDate[0]),
-      (data.last_fetched_at = lastFetchedAt);
+      (data.last_fetched_at = lastFetchedAt),
+      (data.count = count);
     res.status(200).json(data);
   } catch (err) {
     Sentry.captureException(err);

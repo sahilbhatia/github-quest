@@ -15,8 +15,7 @@ export default function UserListComponent({
   setLimit,
   data,
 }) {
-  const minDate = data ? data.date.min : undefined;
-  data = data ? data.users : undefined;
+  let { count, users, date } = data;
   const columns = [
     {
       name: "Name",
@@ -123,7 +122,7 @@ export default function UserListComponent({
       <DataTable
         subHeader
         subHeaderComponent={
-          <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+          <Filter filter={filter} setFilter={setFilter} minDate={date.min} />
         }
         title={
           <div className="text-right text-primary">
@@ -132,23 +131,16 @@ export default function UserListComponent({
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={users}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={users}
+        count={count}
+      />
       <Button href="/" className="m-3 bg-dark">
         Back
       </Button>

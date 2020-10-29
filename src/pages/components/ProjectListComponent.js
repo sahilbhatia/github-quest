@@ -14,8 +14,7 @@ export default function ProjectListComponent({
   setLimit,
   data,
 }) {
-  const minDate = data ? data.date.min : undefined;
-  data = data ? data.projects : undefined;
+  let { projects, date, count } = data;
   const columns = [
     {
       name: "Name",
@@ -130,27 +129,20 @@ export default function ProjectListComponent({
         }
         subHeader
         subHeaderComponent={
-          <Filter filter={filter} setFilter={setFilter} minDate={minDate} />
+          <Filter filter={filter} setFilter={setFilter} minDate={date.min} />
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={projects}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={projects}
+        count={count}
+      />
       <Button href="/" className="m-3 bg-dark">
         Back
       </Button>

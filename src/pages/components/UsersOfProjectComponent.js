@@ -10,8 +10,7 @@ export default function UsersOfProjectComponent({
   setLimit,
   data,
 }) {
-  const projectName = data ? data.projectName : undefined;
-  data = data ? data.users : undefined;
+  let { projectName, users } = data;
   const columns = [
     {
       name: "Name",
@@ -112,23 +111,15 @@ export default function UsersOfProjectComponent({
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={users}
       />
-      {data ? (
-        data.length == 0 ? (
-          <></>
-        ) : (
-          <Pagination
-            limit={limit}
-            offset={offset}
-            setOffset={setOffset}
-            setLimit={setLimit}
-            data={data}
-          />
-        )
-      ) : (
-        <></>
-      )}
+      <Pagination
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={users}
+      />
       <Button href="/projects" className="m-3 bg-dark">
         Back
       </Button>
