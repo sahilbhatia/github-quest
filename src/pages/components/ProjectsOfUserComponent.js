@@ -3,11 +3,7 @@ import { Tooltip, OverlayTrigger, Button } from "react-bootstrap";
 import Link from "next/link";
 import PropTypes from "prop-types";
 export default function ProjectsOfUserComponent({ data }) {
-  let name;
-  if (data) {
-    name = data.name;
-    data = data.users_projects;
-  }
+  let { name, users_projects } = data;
   const columns = [
     {
       name: "Name",
@@ -103,7 +99,7 @@ export default function ProjectsOfUserComponent({ data }) {
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={users_projects}
       />
       <Button href="/projects" className="m-3 bg-dark">
         Back

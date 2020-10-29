@@ -18,13 +18,7 @@ export default function UserRepositoryComponent({
   onSelectManualReview,
   onSelectSuspeciousMark,
 }) {
-  let minDate;
-  let userName;
-  if (data) {
-    minDate = data.date.min;
-    userName = data.userName;
-    data = data.repositories;
-  }
+  let { userName, repositories, date } = data;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
   const getRemark = (commits) => {
@@ -312,13 +306,13 @@ export default function UserRepositoryComponent({
           <Filter
             filter={filter}
             setFilter={setFilter}
-            minDate={minDate}
+            minDate={date.min}
             userId={userId}
           />
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={repositories}
         conditionalRowStyles={conditionalRowStyles}
       />
       <Pagination
@@ -326,7 +320,7 @@ export default function UserRepositoryComponent({
         offset={offset}
         setOffset={setOffset}
         setLimit={setLimit}
-        data={data}
+        data={repositories}
       />
       <Button href="/users" className="m-3 bg-dark">
         Back

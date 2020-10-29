@@ -19,17 +19,10 @@ export default function RepositoryListComponent({
   onSelectSuspeciousMark,
   reFetch,
 }) {
-  let minDate;
-  let lastFetchedAt;
+  let { date, last_fetched_at, repositories } = data;
+  let lastFetchedAt = moment(last_fetched_at).utcOffset(660).toLocaleString();
   let repoCount;
-  if (data) {
-    minDate = data.date.min;
-    lastFetchedAt = moment(data.last_fetched_at)
-      .utcOffset(660)
-      .toLocaleString();
-    if (!filter.userName) repoCount = data.count;
-    data = data.repositories;
-  }
+  if (!filter.userName) repoCount = data.count;
   let utcTimeOffset = new Date().getTimezoneOffset();
   let utc = utcTimeOffset * -2;
 
@@ -344,13 +337,13 @@ export default function RepositoryListComponent({
           <Filter
             filter={filter}
             setFilter={setFilter}
-            minDate={minDate}
+            minDate={date.min}
             setOffset={setOffset}
           />
         }
         columns={columns}
         customStyles={customStyles}
-        data={data}
+        data={repositories}
         conditionalRowStyles={conditionalRowStyles}
       />
       <Pagination
@@ -358,7 +351,7 @@ export default function RepositoryListComponent({
         offset={offset}
         setOffset={setOffset}
         setLimit={setLimit}
-        data={data}
+        data={repositories}
         count={repoCount}
       />
       <Button href="/" className="m-3 bg-dark">
