@@ -1,9 +1,9 @@
 import useSWR from "swr";
 import React, { useState } from "react";
-import ErrorComponent from "./components/errorpage";
-import LoadingComponent from "./components/loaderpage";
+import ErrorComponent from "../../components/errorpage";
+import LoadingComponent from "../../components/loaderpage";
 import moment from "moment";
-import RepositoryListComponent from "./components/RepositoryListComponent";
+import RepositoryListComponent from "../../components/RepositoryListComponent";
 let code;
 const fetcher = (url) =>
   fetch(url).then((res) => {

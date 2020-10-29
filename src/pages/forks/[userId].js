@@ -1,9 +1,9 @@
 import { useRouter } from "next/router";
 import React from "react";
 import useSWR from "swr";
-import ErrorComponent from "../components/errorpage";
-import LoadingComponent from "../components/loaderpage";
-import ForkedRepoComponent from "../components/ForkedRepoComponent";
+import ErrorComponent from "../../../components/errorpage";
+import LoadingComponent from "../../../components/loaderpage";
+import ForkedRepoComponent from "../../../components/ForkedRepoComponent";
 let code;
 const fetcher = (url) =>
   fetch(url).then((res) => {
