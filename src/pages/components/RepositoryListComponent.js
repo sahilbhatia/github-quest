@@ -33,7 +33,6 @@ export default function RepositoryListComponent({
     });
     return message;
   };
-
   const columns = [
     {
       name: "Owner Name",

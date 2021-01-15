@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ErrorComponent from "./components/errorpage";
 import LoadingComponent from "./components/loaderpage";
 import moment from "moment";
@@ -12,7 +12,7 @@ const fetcher = (url) =>
   });
 
 export default function Index() {
-  let [limit, setLimit] = useState(0);
+  let [limit, setLimit] = useState(10);
   let [offset, setOffset] = useState(0);
   let [filter, setFilter] = useState({});
   const getQueryString = (filterObject) => {
@@ -28,38 +28,77 @@ export default function Index() {
     )}`,
     fetcher
   );
+  let [newData, setData] = useState(data);
+  useEffect(() => {
+    if (!newData) {
+      setData(data);
+    }
+  }, [newData, data]);
+  useEffect(() => {
+    setData(data);
+  }, [offset, limit]);
   if (error || code == 400 || code == 404 || code == 500)
     return <ErrorComponent code={code} />;
   if (!data) return <LoadingComponent />;
-  const onSelectManualReview = (id) => {
-    fetch(
+  const onSelectManualReview = async (id) => {
+    let res = await fetch(
       `/api/update-manual-review?id=${id}&updatedAt=${moment().toISOString()}`,
       { data: null }
     );
-    window.location.reload(false);
+    if (res.status == 200) {
+      fetch(
+        `/api/repositories?limit=${limit}&offset=${offset}${getQueryString(
+          filter
+        )}`,
+        { data: null }
+      ).then(async (response) => {
+        let code = response.status;
+        if (code == 200) {
+          let updateData = await response.json();
+          setData(updateData);
+        }
+      });
+    }
   };
-  const onSelectSuspeciousMark = (id) => {
-    fetch(
+  const onSelectSuspeciousMark = async (id) => {
+    let res = await fetch(
       `/api/update-suspicious-repository?id=${id}&updatedAt=${moment().toISOString()}`
     );
-    window.location.reload(false);
+    if (res.status == 200) {
+      fetch(
+        `/api/repositories?limit=${limit}&offset=${offset}${getQueryString(
+          filter
+        )}`,
+        { data: null }
+      ).then(async (response) => {
+        let code = response.status;
+        if (code == 200) {
+          let updateData = await response.json();
+          setData(updateData);
+        }
+      });
+    }
   };
   const reFetch = async () => {
     await fetch(`/api/insert-repositories`);
     window.location.reload(false);
   };
-  return (
-    <RepositoryListComponent
-      filter={filter}
-      setFilter={setFilter}
-      limit={limit}
-      offset={offset}
-      setOffset={setOffset}
-      setLimit={setLimit}
-      data={data}
-      onSelectManualReview={onSelectManualReview}
-      onSelectSuspeciousMark={onSelectSuspeciousMark}
-      reFetch={reFetch}
-    />
-  );
+  if (newData) {
+    return (
+      <RepositoryListComponent
+        filter={filter}
+        setFilter={setFilter}
+        limit={limit}
+        offset={offset}
+        setOffset={setOffset}
+        setLimit={setLimit}
+        data={newData}
+        onSelectManualReview={onSelectManualReview}
+        onSelectSuspeciousMark={onSelectSuspeciousMark}
+        reFetch={reFetch}
+      />
+    );
+  } else {
+    return <></>;
+  }
 }
