@@ -9,6 +9,7 @@ const db = require("../models/sequelize");
 const Users = db.users;
 const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
+const Repositories = db.repositories;
 const Users_projects = db.users_projects;
 
 //function for insert repositories
@@ -152,10 +153,34 @@ const getProjects = async () => {
     return false;
   }
 };
+//function for get all public repo
+const getPublicRepositories = async () => {
+  try {
+    const repositories = [];
+    const listOfPublicRepositories = await Repositories.findAll();
+    listOfPublicRepositories.map((item) => {
+      if (item.dataValues) {
+        if (item.dataValues.url != null) {
+          repositories.push(item.dataValues);
+        }
+      }
+    });
+    return repositories;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in fetch projects function while iterating repositories from database"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 
 //function for compare the public repositories and project repositories and avoid dublicates entries
 const removeDuplicatesRepositories = async () => {
   await getProjects();
+  await getPublicRepositories();
 };
 
 //function for cron schedule
