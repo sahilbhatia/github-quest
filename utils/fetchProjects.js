@@ -177,10 +177,29 @@ const getPublicRepositories = async () => {
   }
 };
 
+//function for get handle by project repo url
+const getHandleByProjectUrl = (url) => {
+  const splitArray = url.split("/");
+  if (splitArray.length > 3) {
+    let handle = splitArray[2].split(".")[0];
+    if (
+      handle.localeCompare("github") ||
+      handle.localeCompare("bitbucket") ||
+      handle.localeCompare("gitlab")
+    ) {
+      return handle;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+};
 //function for compare the public repositories and project repositories and avoid dublicates entries
 const removeDuplicatesRepositories = async () => {
   await getProjects();
   await getPublicRepositories();
+  getHandleByProjectUrl();
 };
 
 //function for cron schedule
