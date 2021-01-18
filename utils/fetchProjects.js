@@ -199,13 +199,55 @@ const getInfoByProjectUrl = (url) => {
     return false;
   }
 };
+//function return a query for find user base on handle
+const getUserQueryBYHandle = (handle) => {
+  let query = {};
+  if (handle === "github") {
+    query.github_handle = "github";
+  } else if (handle === "gitlab") {
+    query.gitlab_handle = "gitlab";
+  } else if (handle === "bitbucket") {
+    query.bitbucket_handle = "bitbucket";
+  }
+  return query;
+};
+
+// function for get a repositores by user has equal hangle as a project handle
+const getRepoListByProjectHandle = async (project) => {
+  try {
+    let query = getUserQueryBYHandle(project.handle);
+    const user = await Users.findOne({
+      where: query,
+      attributes: ["id"],
+    });
+    if (user == null) {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in remove duplicates repositories function while get repo list by project hanlde"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 //function for compare the public repositories and project repositories and avoid dublicates entries
 const removeDuplicatesRepositories = async () => {
   const listOfProjects = await getProjects();
   await getPublicRepositories();
   try {
     const data = await listOfProjects.map(async (item) => {
-      getInfoByProjectUrl(item.repository_url);
+      const project = getInfoByProjectUrl(item.repository_url);
+      if (project) {
+        const listOfUserRepositories = await getRepoListByProjectHandle(
+          project
+        );
+        if (listOfUserRepositories) {
+          isNaN();
+        }
+      }
     });
     await Promise.all(data);
   } catch (err) {
