@@ -11,6 +11,7 @@ const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Repositories = db.repositories;
 const Users_projects = db.users_projects;
+const Users_Repositories = db.users_repositories;
 
 //function for insert repositories
 const insertRepository = async (item, projectId) => {
@@ -153,11 +154,46 @@ const getProjects = async () => {
     return false;
   }
 };
-//function for get all public repo
-const getPublicRepositories = async () => {
+//function for get all public repo of one user
+const getRepositoriesIdsByUserId = async (userId) => {
+  try {
+    const repositoriesIds = [];
+    const listOfUsersRepositories = await Users_Repositories.findAll({
+      where: {
+        user_id: userId,
+      },
+    });
+    listOfUsersRepositories.map((item) => {
+      if (item.dataValues) {
+        if (item.dataValues.url != null) {
+          repositoriesIds.push(item.dataValues.repository_id);
+        }
+      }
+    });
+    return repositoriesIds;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in fetch projects function while iterating repositories ids from database"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+//function for get all public repo by array of repositoryId
+const getPublicRepositoriesByIds = async (repositoryIds) => {
   try {
     const repositories = [];
-    const listOfPublicRepositories = await Repositories.findAll();
+    const listOfPublicRepositories = await Repositories.findAll({
+      where: {
+        id: {
+          $in: repositoryIds,
+        },
+        is_private: "f",
+      },
+      attributes: ["id", "source_type", "url"],
+    });
     listOfPublicRepositories.map((item) => {
       if (item.dataValues) {
         if (item.dataValues.url != null) {
@@ -200,14 +236,14 @@ const getInfoByProjectUrl = (url) => {
   }
 };
 //function return a query for find user base on handle
-const getUserQueryBYHandle = (handle) => {
+const getUserQueryBYHandle = (project) => {
   let query = {};
-  if (handle === "github") {
-    query.github_handle = "github";
-  } else if (handle === "gitlab") {
-    query.gitlab_handle = "gitlab";
-  } else if (handle === "bitbucket") {
-    query.bitbucket_handle = "bitbucket";
+  if (project.sourceType === "github") {
+    query.github_handle = project.handle;
+  } else if (project.sourceType === "gitlab") {
+    query.gitlab_handle = project.handle;
+  } else if (project.sourceType === "bitbucket") {
+    query.bitbucket_handle = project.handle;
   }
   return query;
 };
@@ -215,7 +251,7 @@ const getUserQueryBYHandle = (handle) => {
 // function for get a repositores by user has equal hangle as a project handle
 const getRepoListByProjectHandle = async (project) => {
   try {
-    let query = getUserQueryBYHandle(project.handle);
+    let query = getUserQueryBYHandle(project);
     const user = await Users.findOne({
       where: query,
       attributes: ["id"],
@@ -223,6 +259,9 @@ const getRepoListByProjectHandle = async (project) => {
     if (user == null) {
       return false;
     }
+    let RepositoryIds = await getRepositoriesIdsByUserId(user.dataValues.id);
+    let listOfRepository = await getPublicRepositoriesByIds(RepositoryIds);
+    return listOfRepository;
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
@@ -236,7 +275,6 @@ const getRepoListByProjectHandle = async (project) => {
 //function for compare the public repositories and project repositories and avoid dublicates entries
 const removeDuplicatesRepositories = async () => {
   const listOfProjects = await getProjects();
-  await getPublicRepositories();
   try {
     const data = await listOfProjects.map(async (item) => {
       const project = getInfoByProjectUrl(item.repository_url);
