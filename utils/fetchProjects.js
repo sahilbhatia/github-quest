@@ -129,6 +129,35 @@ const addProject = async (item) => {
   }
 };
 
+//function for get projects from database
+const getProjects = async () => {
+  try {
+    const projects = [];
+    const listOfProjects = await Projects_Repositories.findAll();
+    listOfProjects.map((item) => {
+      if (item.dataValues) {
+        if (item.dataValues.repository_url != null) {
+          projects.push(item.dataValues);
+        }
+      }
+    });
+    return projects;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in fetch projects function while iterating projects from database"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
+//function for compare the public repositories and project repositories and avoid dublicates entries
+const removeDuplicatesRepositories = async () => {
+  await getProjects();
+};
+
 //function for cron schedule
 module.exports.addProjects = async () => {
   try {
@@ -199,6 +228,7 @@ module.exports.addIntranetProjects = async (res) => {
       }
     });
     await Promise.all(data);
+    await removeDuplicatesRepositories();
     res.status(200).json({
       message: "Cron Job Activated Successfully For Inserting Projects",
     });
