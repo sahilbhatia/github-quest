@@ -177,17 +177,21 @@ const getPublicRepositories = async () => {
   }
 };
 
-//function for get handle by project repo url
-const getHandleByProjectUrl = (url) => {
+//function for get project info by project repo url
+const getInfoByProjectUrl = (url) => {
+  let project = {};
   const splitArray = url.split("/");
-  if (splitArray.length > 3) {
-    let handle = splitArray[2].split(".")[0];
+  if (splitArray.length > 4) {
+    let sourceType = splitArray[2].split(".")[0];
     if (
-      handle.localeCompare("github") ||
-      handle.localeCompare("bitbucket") ||
-      handle.localeCompare("gitlab")
+      sourceType.localeCompare("github") ||
+      sourceType.localeCompare("bitbucket") ||
+      sourceType.localeCompare("gitlab")
     ) {
-      return handle;
+      project.sourceType = sourceType;
+      project.handle = splitArray[3];
+      project.repositorieName = splitArray[4];
+      return project;
     } else {
       return false;
     }
@@ -197,9 +201,20 @@ const getHandleByProjectUrl = (url) => {
 };
 //function for compare the public repositories and project repositories and avoid dublicates entries
 const removeDuplicatesRepositories = async () => {
-  await getProjects();
+  const listOfProjects = await getProjects();
   await getPublicRepositories();
-  getHandleByProjectUrl();
+  try {
+    const data = await listOfProjects.map(async (item) => {
+      getInfoByProjectUrl(item.repository_url);
+    });
+    await Promise.all(data);
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing in remove duplicates repositories function");
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
 };
 
 //function for cron schedule
