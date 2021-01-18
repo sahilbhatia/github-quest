@@ -165,16 +165,14 @@ const getRepositoriesIdsByUserId = async (userId) => {
     });
     listOfUsersRepositories.map((item) => {
       if (item.dataValues) {
-        if (item.dataValues.url != null) {
-          repositoriesIds.push(item.dataValues.repository_id);
-        }
+        repositoriesIds.push(item.dataValues.repository_id);
       }
     });
     return repositoriesIds;
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in fetch projects function while iterating repositories ids from database"
+      "Error executing in fetch projects function while getting Users_Repositories list user id from database"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -187,12 +185,9 @@ const getPublicRepositoriesByIds = async (repositoryIds) => {
     const repositories = [];
     const listOfPublicRepositories = await Repositories.findAll({
       where: {
-        id: {
-          $in: repositoryIds,
-        },
+        id: repositoryIds,
         is_private: "f",
       },
-      attributes: ["id", "source_type", "url"],
     });
     listOfPublicRepositories.map((item) => {
       if (item.dataValues) {
@@ -205,7 +200,7 @@ const getPublicRepositoriesByIds = async (repositoryIds) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in fetch projects function while iterating repositories from database"
+      "Error executing in fetch projects function while iterating repositories by id from database"
     );
     logger.error(err);
     logger.info("=========================================");
@@ -265,12 +260,16 @@ const getRepoListByProjectHandle = async (project) => {
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
-      "Error executing in remove duplicates repositories function while get repo list by project hanlde"
+      "Error executing in remove duplicates repositories function while get repository list by project hanlde"
     );
     logger.error(err);
     logger.info("=========================================");
     return false;
   }
+};
+//function for delete a duplicate entry in repositories and user_repositories
+const deleteDuplicateEntry = async (repositoryId) => {
+  return repositoryId;
 };
 //function for compare the public repositories and project repositories and avoid dublicates entries
 const removeDuplicatesRepositories = async () => {
@@ -283,7 +282,15 @@ const removeDuplicatesRepositories = async () => {
           project
         );
         if (listOfUserRepositories) {
-          isNaN();
+          const repoData = await listOfUserRepositories.map(async (item) => {
+            if (
+              project.sourceType == item.source_type &&
+              project.repositorieName == item.name
+            ) {
+              await deleteDuplicateEntry(item.id);
+            }
+          });
+          await Promise.all(repoData);
         }
       }
     });
