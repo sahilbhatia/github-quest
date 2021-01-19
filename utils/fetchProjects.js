@@ -269,7 +269,27 @@ const getRepoListByProjectHandle = async (project) => {
 };
 //function for delete a duplicate entry in repositories and user_repositories
 const deleteDuplicateEntry = async (repositoryId) => {
-  return repositoryId;
+  try {
+    await Users_Repositories.destroy({
+      where: {
+        repository_id: repositoryId,
+      },
+    });
+    await Repositories.destroy({
+      where: {
+        id: repositoryId,
+      },
+    });
+    return true;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in remove duplicates repositories function while deleting the entries in database"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
 };
 //function for compare the public repositories and project repositories and avoid dublicates entries
 const removeDuplicatesRepositories = async () => {
