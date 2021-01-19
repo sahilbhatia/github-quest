@@ -7,7 +7,31 @@ const { Sentry } = require("../../../utils/sentry");
 const log4js = require("../../../config/loggerConfig");
 const logger = log4js.getLogger();
 const Projects_Repositories = db.projects_repositories;
+const Repositories = db.repositories;
 
+//function for get project_repositories list return repositories list
+const getRepositoriesIds = async (repoList) => {
+  try {
+    let repoIds = [];
+    repoList.map((item) => {
+      if (item.dataValues) {
+        repoIds.push(item.dataValues.repository_id);
+      }
+    });
+    let ListOfRepositories = await Repositories.findAll({
+      where: {
+        id: repoIds,
+      },
+    });
+    return ListOfRepositories;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing in project repositories api");
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 //function for get repositories
 const getRepositories = async (limit, offset, projectId) => {
   let repoList = await Projects_Repositories.findAll({
@@ -15,6 +39,7 @@ const getRepositories = async (limit, offset, projectId) => {
     limit: limit,
     offset: offset,
   });
+  await getRepositoriesIds(repoList);
   let data = {};
   const project = await Projects.findOne({ where: { id: projectId } });
   data.repositories = repoList;
