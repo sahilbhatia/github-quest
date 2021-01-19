@@ -11,13 +11,13 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true,
         },
-        repository_url: {
-          type: Sequelize.TEXT,
-          allowNull: true,
-        },
-        host: {
-          type: Sequelize.STRING(70),
-          allowNull: true,
+        repository_id: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          references: {
+            model: "repositories",
+            key: "id",
+          },
         },
         project_id: {
           type: Sequelize.INTEGER,
