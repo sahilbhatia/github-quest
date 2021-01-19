@@ -100,6 +100,9 @@ module.exports = (sequelize, Sequelize) => {
     Repositories.hasMany(models.users_repositories, {
       foreignKey: { name: "repository_id", allowNull: true },
     });
+    Repositories.hasMany(models.projects_repositories, {
+      foreignKey: { name: "repository_id", allowNull: true },
+    });
     Repositories.belongsTo(models.repositories, {
       foreignKey: "parent_repo_id",
       as: "parent",
