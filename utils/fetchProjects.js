@@ -11,6 +11,30 @@ const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Users_projects = db.users_projects;
 
+//function for get project info by project repo url
+const getInfoByProjectUrl = (url) => {
+  let project = {};
+  const splitArray = url.split("/");
+  if (splitArray.length > 4) {
+    let sourceType = splitArray[2].split(".")[0];
+    if (
+      sourceType.localeCompare("github") ||
+      sourceType.localeCompare("bitbucket") ||
+      sourceType.localeCompare("gitlab")
+    ) {
+      project.sourceType = sourceType;
+      project.handle = splitArray[3];
+      project.repositorieName = splitArray[4];
+      project.url = url;
+      return project;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+};
+
 //function for insert repositories
 const insertRepository = async (item, projectId) => {
   if (item.repositories.length > 0) {
@@ -21,6 +45,16 @@ const insertRepository = async (item, projectId) => {
           host: item.host ? item.host : null,
           project_id: projectId,
         });
+        if (item.url != null) {
+          let projectInfo = getInfoByProjectUrl(item.url);
+          if (projectInfo.sourceType == "github") {
+            return true;
+          } else if (projectInfo.sourceType == "gitlab") {
+            return true;
+          } else if (projectInfo.sourceType == "bitbucket") {
+            return true;
+          }
+        }
       } catch (err) {
         Sentry.captureException(err);
         logger.error(
