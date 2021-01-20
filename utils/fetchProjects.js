@@ -1,6 +1,7 @@
 const request = require("superagent");
 const dbConn = require("../models/sequelize");
 const { headers } = require("../constants/intranetHeader");
+const gitHeaders = require("../constants/githubHeader").headers;
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
@@ -34,7 +35,23 @@ const getInfoByProjectUrl = (url) => {
     return false;
   }
 };
-
+// function for get project details from github
+const getRepositoryFromGithub = async (project) => {
+  try {
+    let projectRepo = await request
+      .get(
+        `https://api.github.com/repos/${project.handle}/${project.repositorieName}`
+      )
+      .set(gitHeaders);
+    if (projectRepo) {
+      return projectRepo.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return false;
+  }
+};
 //function for insert repositories
 const insertRepository = async (item, projectId) => {
   if (item.repositories.length > 0) {
@@ -47,11 +64,17 @@ const insertRepository = async (item, projectId) => {
         });
         if (item.url != null) {
           let projectInfo = getInfoByProjectUrl(item.url);
-          if (projectInfo.sourceType == "github") {
-            return true;
-          } else if (projectInfo.sourceType == "gitlab") {
-            return true;
-          } else if (projectInfo.sourceType == "bitbucket") {
+          let projectRepo = false;
+          if (projectInfo) {
+            if (projectInfo.sourceType == "github") {
+              projectRepo = await getRepositoryFromGithub(projectInfo);
+            } else if (projectInfo.sourceType == "gitlab") {
+              return true;
+            } else if (projectInfo.sourceType == "bitbucket") {
+              return true;
+            }
+          }
+          if (projectRepo) {
             return true;
           }
         }
