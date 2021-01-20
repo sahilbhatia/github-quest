@@ -92,6 +92,21 @@ const getRepositoryFromGitlab = async (project) => {
     return false;
   }
 };
+// function for get project details from bitbucket
+const getRepositoryFromBitbucket = async (project) => {
+  try {
+    const projectRepo = await request.get(
+      `https://api.bitbucket.org/2.0/repositories/${project.handle}/${project.repositorieName}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
+    );
+    if (projectRepo.body) {
+      return projectRepo.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return false;
+  }
+};
 //function for insert repositories
 const insertRepository = async (item, projectId) => {
   if (item.repositories.length > 0) {
@@ -111,7 +126,7 @@ const insertRepository = async (item, projectId) => {
             } else if (projectInfo.sourceType == "gitlab") {
               projectRepo = await getRepositoryFromGitlab(projectInfo);
             } else if (projectInfo.sourceType == "bitbucket") {
-              return true;
+              projectRepo = await getRepositoryFromBitbucket(projectInfo);
             }
           }
           if (projectRepo) {
