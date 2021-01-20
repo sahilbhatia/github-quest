@@ -104,7 +104,63 @@ const getRepositoryFromBitbucket = async (project) => {
       return false;
     }
   } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while fetching projects in get repositories from bitbucket function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return false;
+  }
+};
+
+//funtion for create a repository database object as per project source  type
+const getRepositoryObjBySourceType = (repo, sourceType) => {
+  let customRepoObj = {
+    source_type: sourceType,
+    name: repo.name,
+    description: repo.description,
+    url: repo.html_url,
+    source_repo_id: repo.id,
+    is_personal: false,
+    is_disabled: repo.disabled,
+    is_archived: repo.archived,
+    is_private: repo.private,
+    is_forked: repo.fork,
+    created_at: repo.created_at,
+    updated_at: repo.updated_at,
+    review: "pending",
+  };
+  if (sourceType == "gitlab") {
+    customRepoObj.url = repo.web_url;
+    customRepoObj.is_disabled = !repo.packages_enabled;
+    customRepoObj.is_private = repo.visibility == "private" ? true : false;
+    customRepoObj.is_forked = repo.forked_from_project ? true : false;
+    customRepoObj.updated_at = repo.last_activity_at;
+  } else if (sourceType == "bitbucket") {
+    customRepoObj.url = repo.links.html.href;
+    customRepoObj.source_repo_id = repo.uuid;
+    customRepoObj.is_private = repo.is_private;
+    customRepoObj.is_forked = repo.parent ? true : false;
+    customRepoObj.created_at = repo.created_on;
+    customRepoObj.updated_at = repo.updated_on;
+    delete customRepoObj.is_disabled;
+    delete customRepoObj.is_archived;
+  }
+  return customRepoObj;
+};
+//function for add entry in repositories table
+const insertRepositoryInRepositories = async (repo, projectInfo) => {
+  try {
+    getRepositoryObjBySourceType(repo, projectInfo.sourceType);
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting bitbucket repositories in insert new repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
   }
 };
 //function for insert repositories
@@ -130,7 +186,7 @@ const insertRepository = async (item, projectId) => {
             }
           }
           if (projectRepo) {
-            return true;
+            await insertRepositoryInRepositories(projectRepo, projectInfo);
           }
         }
       } catch (err) {
