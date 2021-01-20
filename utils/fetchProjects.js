@@ -19,9 +19,9 @@ const getInfoByProjectUrl = (url) => {
   if (splitArray.length > 4) {
     let sourceType = splitArray[2].split(".")[0];
     if (
-      sourceType.localeCompare("github") ||
-      sourceType.localeCompare("bitbucket") ||
-      sourceType.localeCompare("gitlab")
+      sourceType.localeCompare("github") == 0 ||
+      sourceType.localeCompare("bitbucket") == 0 ||
+      sourceType.localeCompare("gitlab") == 0
     ) {
       project.sourceType = sourceType;
       project.handle = splitArray[3];
@@ -52,6 +52,34 @@ const getRepositoryFromGithub = async (project) => {
     return false;
   }
 };
+// function for get project details from gitlab
+const getRepositoryFromGitlab = async (project) => {
+  try {
+    let projectStatus = false;
+    const gitlabUser = await request.get(
+      `https://gitlab.com/api/v4/users?username=${project.handle}`
+    );
+    if (gitlabUser.body.length != 0) {
+      const gitlabRepos = await request
+        .get(
+          `https://gitlab.com/api/v4/users/${gitlabUser.body[0].id}/projects`
+        )
+        .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+      gitlabRepos.body.forEach((repo) => {
+        if (
+          project.repositorieName.localeCompare(repo.name.toLowerCase()) == 0
+        ) {
+          projectStatus = repo;
+        }
+      });
+      return projectStatus;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    return false;
+  }
+};
 //function for insert repositories
 const insertRepository = async (item, projectId) => {
   if (item.repositories.length > 0) {
@@ -69,7 +97,7 @@ const insertRepository = async (item, projectId) => {
             if (projectInfo.sourceType == "github") {
               projectRepo = await getRepositoryFromGithub(projectInfo);
             } else if (projectInfo.sourceType == "gitlab") {
-              return true;
+              projectRepo = await getRepositoryFromGitlab(projectInfo);
             } else if (projectInfo.sourceType == "bitbucket") {
               return true;
             }
