@@ -49,6 +49,12 @@ const getRepositoryFromGithub = async (project) => {
       return false;
     }
   } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while fetching projects in get repositories from github function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
@@ -77,6 +83,12 @@ const getRepositoryFromGitlab = async (project) => {
       return false;
     }
   } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while fetching projects in get repositories from gitlab function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
     return false;
   }
 };
