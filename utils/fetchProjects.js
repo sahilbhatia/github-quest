@@ -10,6 +10,7 @@ const db = require("../models/sequelize");
 const Users = db.users;
 const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
+const Repositories = db.repositories;
 const Users_projects = db.users_projects;
 
 //function for get project info by project repo url
@@ -152,7 +153,12 @@ const getRepositoryObjBySourceType = (repo, sourceType) => {
 //function for add entry in repositories table
 const insertRepositoryInRepositories = async (repo, projectInfo) => {
   try {
-    getRepositoryObjBySourceType(repo, projectInfo.sourceType);
+    const customRepoObj = getRepositoryObjBySourceType(
+      repo,
+      projectInfo.sourceType
+    );
+    let insertRepos = await Repositories.create(customRepoObj);
+    return insertRepos;
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
@@ -160,7 +166,7 @@ const insertRepositoryInRepositories = async (repo, projectInfo) => {
     );
     logger.error(err);
     logger.info("=========================================");
-    return null;
+    return false;
   }
 };
 //function for insert repositories
@@ -168,11 +174,6 @@ const insertRepository = async (item, projectId) => {
   if (item.repositories.length > 0) {
     await item.repositories.map(async (item) => {
       try {
-        await Projects_Repositories.create({
-          repository_url: item.url ? item.url : null,
-          host: item.host ? item.host : null,
-          project_id: projectId,
-        });
         if (item.url != null) {
           let projectInfo = getInfoByProjectUrl(item.url);
           let projectRepo = false;
@@ -186,7 +187,17 @@ const insertRepository = async (item, projectId) => {
             }
           }
           if (projectRepo) {
-            await insertRepositoryInRepositories(projectRepo, projectInfo);
+            let insertRepos = await insertRepositoryInRepositories(
+              projectRepo,
+              projectInfo
+            );
+            if (insertRepos) {
+              await Projects_Repositories.create({
+                repository_id: insertRepos.dataValues.id,
+                host: projectInfo.sourceType,
+                project_id: projectId,
+              });
+            }
           }
         }
       } catch (err) {
