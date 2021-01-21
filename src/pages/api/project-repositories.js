@@ -39,10 +39,10 @@ const getRepositories = async (limit, offset, projectId) => {
     limit: limit,
     offset: offset,
   });
-  await getRepositoriesIds(repoList);
+  let repositories = await getRepositoriesIds(repoList);
   let data = {};
   const project = await Projects.findOne({ where: { id: projectId } });
-  data.repositories = repoList;
+  data.repositories = repositories;
   data.projectName = project.name;
   return data;
 };
