@@ -12,9 +12,9 @@ const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
 //function for check the repo is existe or not if yes the update
-const isRepositoryExist = async (repoInfo, updateRepoObj) => {
+const isRepositoryExist = async (repoInfo) => {
   let isExist = false;
-  let result = await Repositories.update(updateRepoObj, {
+  let result = await Repositories.update(repoInfo, {
     where: {
       source_repo_id: repoInfo.id,
     },
@@ -50,7 +50,7 @@ const insertNewRepo = async (insertRepos, repo) => {
       updated_at: repo.updated_on,
       review: "pending",
     };
-    let updatedRepo = await isRepositoryExist(insertRepos, repoObj);
+    let updatedRepo = await isRepositoryExist(repoObj);
     if (!updatedRepo) {
       insertRepos = await Repositories.create(repoObj);
       return insertRepos;

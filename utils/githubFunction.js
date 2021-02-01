@@ -87,24 +87,55 @@ const getRepoForSpecificUser = async (databaseUser) => {
   return usersRepos;
 };
 
-//function for insert new repository
-const insertNewRepo = async (item) => {
-  try {
-    const insertRepos = await Repositories.create({
-      source_type: "github",
-      source_repo_id: item.id,
-      name: item.name,
-      url: item.html_url,
-      description: item.description,
-      is_disabled: item.disabled,
-      is_archived: item.archived,
-      is_private: item.private,
-      is_forked: item.fork,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-      review: "pending",
+//function for check the repo is existe or not if yes the update
+const isRepositoryExist = async (repoInfo) => {
+  let isExist = false;
+  let result = await Repositories.update(repoInfo, {
+    where: {
+      source_repo_id: repoInfo.id,
+    },
+  });
+  result.map((item) => {
+    if (item > 0) {
+      isExist = true;
+    }
+  });
+  if (isExist) {
+    let updatedRepo = await Repositories.findOne({
+      where: {
+        source_repo_id: repoInfo.id,
+      },
     });
-    return insertRepos;
+    return updatedRepo;
+  } else {
+    return isExist;
+  }
+};
+
+//function for insert new repository
+const insertNewRepo = async (repo) => {
+  try {
+    let repoObj = {
+      source_type: "gitlab",
+      source_repo_id: repo.id,
+      name: repo.name,
+      url: repo.web_url,
+      description: repo.description,
+      is_disabled: !repo.packages_enabled,
+      is_archived: repo.archived,
+      is_private: repo.visibility == "private" ? true : false,
+      is_forked: repo.forked_from_project ? true : false,
+      created_at: repo.created_at,
+      updated_at: repo.last_activity_at,
+      review: "pending",
+    };
+    let updatedRepo = await isRepositoryExist(repoObj);
+    if (!updatedRepo) {
+      let insertRepos = await Repositories.create(repoObj);
+      return insertRepos;
+    } else {
+      return updatedRepo;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
