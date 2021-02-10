@@ -16,7 +16,7 @@ const isRepositoryExist = async (repoInfo) => {
   let isExist = false;
   let result = await Repositories.update(repoInfo, {
     where: {
-      source_repo_id: repoInfo.id,
+      source_repo_id: repoInfo.source_repo_id,
     },
   });
   result.map((item) => {
@@ -27,7 +27,7 @@ const isRepositoryExist = async (repoInfo) => {
   if (isExist) {
     let updatedRepo = await Repositories.findOne({
       where: {
-        source_repo_id: repoInfo.id,
+        source_repo_id: repoInfo.source_repo_id,
       },
     });
     return updatedRepo;
