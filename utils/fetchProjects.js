@@ -12,7 +12,6 @@ const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Repositories = db.repositories;
 const Users_projects = db.users_projects;
-
 //function for get project info by project repo url
 const getInfoByProjectUrl = (url) => {
   let project = {};
@@ -197,6 +196,9 @@ const insertRepository = async (item, projectId) => {
                 host: projectInfo.sourceType,
                 project_id: projectId,
               });
+              return insertRepos;
+            } else {
+              return false;
             }
           }
         }
@@ -358,11 +360,12 @@ module.exports.addIntranetProjects = async (res) => {
     const listOfProjects = await JSON.parse(intranetProjects.text);
     //iterate projects
     const data = await listOfProjects.projects.map(async (item) => {
-      const project = await findProject(item.id);
+      let project = await findProject(item.id);
       if (!project) {
         try {
           const insertProject = await addProject(item);
           if (insertProject) {
+            project = insertProject;
             await insertRepository(item, insertProject.id);
             await insertUsers(item, insertProject.id);
           }
@@ -375,6 +378,26 @@ module.exports.addIntranetProjects = async (res) => {
           logger.info("=========================================");
           return false;
         }
+      }
+      if (project) {
+        item.repositories.map(async (ele) => {
+          if (ele.url !== null) {
+            let repoUrlInfo = getInfoByProjectUrl(ele.url);
+            let projectRepo = false;
+            if (repoUrlInfo) {
+              if (repoUrlInfo.sourceType == "github") {
+                projectRepo = await getRepositoryFromGithub(repoUrlInfo);
+              } else if (repoUrlInfo.sourceType == "gitlab") {
+                projectRepo = await getRepositoryFromGitlab(repoUrlInfo);
+              } else if (repoUrlInfo.sourceType == "bitbucket") {
+                projectRepo = await getRepositoryFromBitbucket(repoUrlInfo);
+              }
+              if (projectRepo) {
+                //check suspicious repo
+              }
+            }
+          }
+        });
       }
     });
     await Promise.all(data);
