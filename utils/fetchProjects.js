@@ -12,6 +12,7 @@ const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
 const Repositories = db.repositories;
 const Users_projects = db.users_projects;
+const checkSuspiciousUserRepo = require("./checkSuspiciousUserRepo");
 //function for get project info by project repo url
 const getInfoByProjectUrl = (url) => {
   let project = {};
@@ -72,9 +73,7 @@ const getRepositoryFromGitlab = async (project) => {
         )
         .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
       gitlabRepos.body.forEach((repo) => {
-        if (
-          project.repositorieName.localeCompare(repo.name.toLowerCase()) == 0
-        ) {
+        if (project.repositorieName.localeCompare(repo.path) == 0) {
           projectStatus = repo;
         }
       });
@@ -393,7 +392,11 @@ module.exports.addIntranetProjects = async (res) => {
                 projectRepo = await getRepositoryFromBitbucket(repoUrlInfo);
               }
               if (projectRepo) {
-                //check suspicious repo
+                await checkSuspiciousUserRepo.checkSuspiciousUserRepo(
+                  projectRepo,
+                  item,
+                  repoUrlInfo
+                );
               }
             }
           }

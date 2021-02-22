@@ -274,7 +274,7 @@ module.exports.getAllProjects = async (handle) => {
 };
 
 //function for get all branches of single repository
-module.exports.getAllBranchesOfRepo = async (project_id) => {
+const getAllBranchesOfRepo = async (project_id) => {
   try {
     let ProjectBranches = await request
       .get(
@@ -591,5 +591,6 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
   }
 };
 module.exports = {
+  getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommits: getCommits,
 };

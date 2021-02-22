@@ -41,14 +41,15 @@ const getUpdatedRepositories = async (databaseUser) => {
 };
 
 //function for get all branches of single repository
-module.exports.getAllBranchesOfRepo = async (repoInfo) => {
+const getAllBranchesOfRepo = async (repoInfo) => {
   try {
     let ProjectBranches = await request
       .get(
         "https://api.github.com/repos/" +
           repoInfo.handle +
           "/" +
-          repoInfo.repositorieName
+          repoInfo.repositorieName +
+          "/branches"
       )
       .set(headers);
     if (ProjectBranches.body) {
@@ -932,5 +933,6 @@ module.exports.insertGithubRepos = async (databaseUser) => {
 
 module.exports = {
   getAllRepositories: getAllRepositories,
+  getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommits: getCommits,
 };
