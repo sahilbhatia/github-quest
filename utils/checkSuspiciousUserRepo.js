@@ -6,17 +6,33 @@ const gitlabFunction = require("./gitlabFunction");
 const bitbucketFunction = require("./bitbucketFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
+const db = require("../models/sequelize");
+const Repositories = db.repositories;
 
 const getProjectDetails = async (project, projectUrlInfo) => {
   if (projectUrlInfo.sourceType == "github") {
+    project.repository = await Repositories.findOne({
+      where: { id: project.repoResponce.id },
+    });
     project.branches = await githubFunction.getAllBranchesOfRepo(
       projectUrlInfo
     );
+    project.commits = await githubFunction.getCommitsByBranches(
+      project.repository,
+      projectUrlInfo,
+      project.branches
+    );
   } else if (projectUrlInfo.sourceType == "gitlab") {
+    project.repository = await Repositories.findOne({
+      where: { id: project.repoResponce.id },
+    });
     project.branches = await gitlabFunction.getAllBranchesOfRepo(
-      project.repository.id
+      project.repoResponce.id
     );
   } else if (projectUrlInfo.sourceType == "bitbucket") {
+    project.repository = await Repositories.findOne({
+      where: { id: project.repoResponce.uuid },
+    });
     project.branches = await bitbucketFunction.getAllBranchesOfRepo(
       projectUrlInfo
     );
