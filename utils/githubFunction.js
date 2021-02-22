@@ -674,6 +674,21 @@ const getCommits = async (repo, databaseUser) => {
   return commits.body;
 };
 
+//function for get commits by branches head sha
+const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
+  let commitsObj = {};
+  await branches.map(async (branch) => {
+    //can we just hit this API for master ,staging and production branches
+    const commits = await request
+      .get(
+        `https://api.github.com/repos/${repoUrlInfo.handle}/${repo.name}/commits?since=${repo.updated_at}&sha=${branch.commit.sha}`
+      )
+      .set(headers);
+    commitsObj[branch.name] = commits.body;
+  });
+  return commitsObj;
+};
+
 //function for update review status
 const updateReviewStatus = async (item, result, databaseUser) => {
   try {
@@ -935,4 +950,5 @@ module.exports = {
   getAllRepositories: getAllRepositories,
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommits: getCommits,
+  getCommitsByBranches: getCommitsByBranches,
 };
