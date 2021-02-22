@@ -40,6 +40,32 @@ const getUpdatedRepositories = async (databaseUser) => {
   }
 };
 
+//function for get all branches of single repository
+module.exports.getAllBranchesOfRepo = async (repoInfo) => {
+  try {
+    let ProjectBranches = await request
+      .get(
+        "https://api.github.com/repos/" +
+          repoInfo.handle +
+          "/" +
+          repoInfo.repositorieName
+      )
+      .set(headers);
+    if (ProjectBranches.body) {
+      return ProjectBranches.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all branches of repo github repositories in get all repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 //function for get all repositories
 const getAllRepositories = async (databaseUser) => {
   try {
@@ -902,4 +928,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
     }
   }
   return null;
+};
+
+module.exports = {
+  getAllRepositories: getAllRepositories,
+  getCommits: getCommits,
 };
