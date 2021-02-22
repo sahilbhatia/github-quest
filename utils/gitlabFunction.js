@@ -249,6 +249,53 @@ const isRepoUpdated = (item, repo) => {
   }
 };
 
+// function for get a all project a users by gitlab-handle
+module.exports.getAllProjects = async (handle) => {
+  try {
+    const gitlabUser = await request.get(
+      `https://gitlab.com/api/v4/users?username=${handle}`
+    );
+    if (gitlabUser.body.length != 0) {
+      const gitlabRepos = await request
+        .get(
+          `https://gitlab.com/api/v4/users/${gitlabUser.body[0].id}/projects`
+        )
+        .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+      return gitlabRepos.body;
+    }
+    return false;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing while get all branches function");
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
+//function for get all branches of single repository
+module.exports.getAllBranchesOfRepo = async (project_id) => {
+  try {
+    let ProjectBranches = await request
+      .get(
+        "https://gitlab.com/api/v4/projects/" +
+          project_id +
+          "/repository/branches"
+      )
+      .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+    if (ProjectBranches.body) {
+      return ProjectBranches.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing while get all branches function");
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 //function for get new commit
 const getCommits = async (repo) => {
   const commits = await request
@@ -542,4 +589,7 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
     logger.info("=========================================");
     return;
   }
+};
+module.exports = {
+  getCommits: getCommits,
 };
