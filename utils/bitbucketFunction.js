@@ -268,6 +268,28 @@ const isRepoUpdated = (item, repo) => {
   }
 };
 
+//function for get all branches of single repository
+const getAllBranchesOfRepo = async (repoInfo) => {
+  try {
+    let ProjectBranches = await request.get(
+      `https://api.bitbucket.org/2.0/repositories/${repoInfo.handle}/${repoInfo.repositorieName}/refs/branches?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
+    );
+    if (ProjectBranches.body) {
+      return ProjectBranches.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all branches of  bitbucket repository in get all branches of repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
 //function for get new commit
 const getCommits = async (repo, databaseUser) => {
   const commits = await request.get(
@@ -529,4 +551,9 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
     logger.info("=========================================");
     return null;
   }
+};
+
+module.exports = {
+  getAllBranchesOfRepo: getAllBranchesOfRepo,
+  getCommits: getCommits,
 };
