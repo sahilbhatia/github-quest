@@ -271,11 +271,24 @@ const isRepoUpdated = (item, repo) => {
 //function for get all branches of single repository
 const getAllBranchesOfRepo = async (repoInfo) => {
   try {
-    let ProjectBranches = await request.get(
-      `https://api.bitbucket.org/2.0/repositories/${repoInfo.handle}/${repoInfo.repositorieName}/refs/branches?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
-    );
-    if (ProjectBranches.body) {
-      return ProjectBranches.body;
+    let isIncompleteCommits = true;
+    let count = 10;
+    let allBranches = [];
+    let url = `https://api.bitbucket.org/2.0/repositories/${repoInfo.handle}/${repoInfo.repositorieName}/refs/branches?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}&pagelen=10`;
+    while (isIncompleteCommits) {
+      let ProjectBranches = await request.get(url);
+      if (ProjectBranches.body) {
+        allBranches = allBranches.concat(ProjectBranches.body.values);
+        if (count < ProjectBranches.body.size) {
+          url = ProjectBranches.body.next;
+          count = count + 10;
+        } else {
+          break;
+        }
+      }
+    }
+    if (allBranches.length > 0) {
+      return allBranches;
     } else {
       return false;
     }

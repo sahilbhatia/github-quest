@@ -45,7 +45,7 @@ const getProjectDetails = async (project, projectUrlInfo) => {
       projectUrlInfo
     );
     if (project.repository) {
-      project.commits = await githubFunction.getCommitsByBranches(
+      project.commits = await bitbucketFunction.getCommitsByBranches(
         project.repository,
         projectUrlInfo,
         project.branches
