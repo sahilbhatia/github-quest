@@ -12,32 +12,52 @@ const Repositories = db.repositories;
 const getProjectDetails = async (project, projectUrlInfo) => {
   if (projectUrlInfo.sourceType == "github") {
     project.repository = await Repositories.findOne({
-      where: { id: project.repoResponce.id },
+      where: { source_repo_id: project.repoResponce.id.toString() },
     });
     project.branches = await githubFunction.getAllBranchesOfRepo(
       projectUrlInfo
     );
-    project.commits = await githubFunction.getCommitsByBranches(
-      project.repository,
-      projectUrlInfo,
-      project.branches
-    );
+    if (project.repository) {
+      project.commits = await githubFunction.getCommitsByBranches(
+        project.repository,
+        projectUrlInfo,
+        project.branches
+      );
+    }
   } else if (projectUrlInfo.sourceType == "gitlab") {
     project.repository = await Repositories.findOne({
-      where: { id: project.repoResponce.id },
+      where: { source_repo_id: project.repoResponce.id.toString() },
     });
     project.branches = await gitlabFunction.getAllBranchesOfRepo(
       project.repoResponce.id
     );
+    if (project.repository) {
+      project.commits = await gitlabFunction.getCommitsByBranches(
+        project.repository,
+        project.branches
+      );
+    }
   } else if (projectUrlInfo.sourceType == "bitbucket") {
     project.repository = await Repositories.findOne({
-      where: { id: project.repoResponce.uuid },
+      where: { source_repo_id: project.repoResponce.uuid.toString() },
     });
     project.branches = await bitbucketFunction.getAllBranchesOfRepo(
       projectUrlInfo
     );
+    if (project.repository) {
+      project.commits = await githubFunction.getCommitsByBranches(
+        project.repository,
+        projectUrlInfo,
+        project.branches
+      );
+    }
   }
-  return project;
+
+  if (project.commits && project.repositories && project.branches) {
+    return project;
+  } else {
+    return false;
+  }
 };
 
 module.exports.checkSuspiciousUserRepo = async (

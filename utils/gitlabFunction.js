@@ -306,6 +306,32 @@ const getCommits = async (repo) => {
   return commits.body;
 };
 
+//function for get new commit by branches
+const getCommitsByBranches = async (repo, branches) => {
+  const commitsObj = {};
+  let data = await branches.map(async (branch) => {
+    try {
+      let url = `https://gitlab.com/api/v4/projects/${
+        repo.source_repo_id
+      }/repository/commits?since=${repo.reviewed_at}&ref_name="${
+        branch.name
+      }"&all=${true}`;
+      if (!repo.reviewed_at) {
+        url = `https://gitlab.com/api/v4/projects/${
+          repo.source_repo_id
+        }/repository/commits?ref_name="${branch.name}"&all=${true}`;
+      }
+      const commits = await request
+        .get(url)
+        .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+      commitsObj[branch.name] = commits.body;
+    } catch (err) {
+      commitsObj[branch.name] = false;
+    }
+  });
+  await Promise.all(data);
+  return commitsObj;
+};
 //function for update review status
 const updateReviewStatus = async (item, findRepo) => {
   try {
@@ -593,4 +619,5 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
 module.exports = {
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommits: getCommits,
+  getCommitsByBranches: getCommitsByBranches,
 };
