@@ -351,7 +351,7 @@ const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
     } catch (err) {
       Sentry.captureException(err);
       logger.error(
-        "Error executing while get all branches of  bitbucket repository in get all branches of repository function"
+        "Error executing while get all branches of  bitbucket repository in get all commits of each branches of repository function"
       );
       logger.error(err);
       logger.info("=========================================");

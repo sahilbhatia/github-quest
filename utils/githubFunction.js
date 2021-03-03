@@ -676,15 +676,25 @@ const getCommits = async (repo, databaseUser) => {
 
 //function for get commits by branches head sha
 const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
-  let commitsObj = {};
-  let data = await branches.map(async (branch) => {
-    //can we just hit this API for master ,staging and production branches
-    const url = `https://api.github.com/repos/${repoUrlInfo.handle}/${repo.name}/commits?sha=${branch.commit.sha}`;
-    const commits = await request.get(url).set(headers);
-    commitsObj[branch.name] = commits.body;
-  });
-  await Promise.all(data);
-  return commitsObj;
+  try {
+    let commitsObj = {};
+    let data = await branches.map(async (branch) => {
+      //can we just hit this API for master ,staging and production branches
+      const url = `https://api.github.com/repos/${repoUrlInfo.handle}/${repo.name}/commits?sha=${branch.commit.sha}`;
+      const commits = await request.get(url).set(headers);
+      commitsObj[branch.name] = commits.body;
+    });
+    await Promise.all(data);
+    return commitsObj;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all commits of each branches of repo github repositories in get all repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
 };
 
 //function for update review status
