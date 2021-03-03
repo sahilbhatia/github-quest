@@ -4,7 +4,7 @@ const { Sentry } = require("./../utils/sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
 
-//function for get new commit
+//function for get all tags from github
 const getTags = async (repoUrlInfo) => {
   try {
     const tags = await request
@@ -22,6 +22,25 @@ const getTags = async (repoUrlInfo) => {
   }
 };
 
+//function for get all labels from github
+const getLabels = async (repoUrlInfo) => {
+  try {
+    const labels = await request
+      .get(
+        `https://api.github.com/repos/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/labels`
+      )
+      .set(headers);
+    return labels.body;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing while get all labels of github repository");
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
 module.exports = {
   getTags: getTags,
+  getLabels: getLabels,
 };
