@@ -350,7 +350,7 @@ module.exports.addProjects = async () => {
 };
 
 //function for insert intranet projects
-module.exports.addIntranetProjects = async (res) => {
+const addIntranetProjects = async (res) => {
   try {
     const intranetProjects = await request
       .get(process.env.INTRANET_PROJECT_API)
@@ -416,4 +416,14 @@ module.exports.addIntranetProjects = async (res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+module.exports = {
+  getInfoByProjectUrl: getInfoByProjectUrl,
+  getRepositoryFromGithub: getRepositoryFromGithub,
+  getRepositoryFromGitlab: getRepositoryFromGitlab,
+  getRepositoryFromBitbucket: getRepositoryFromBitbucket,
+  addIntranetProjects: addIntranetProjects,
+  insertRepository: insertRepository,
+  insertRepositoryInRepositories: insertRepositoryInRepositories,
 };
