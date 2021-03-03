@@ -302,7 +302,65 @@ const getAllBranchesOfRepo = async (repoInfo) => {
     return null;
   }
 };
-
+//function for get all commits of all branches
+const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
+  let commitsObj = {};
+  let data = await branches.map(async (branch) => {
+    //can we just hit this API for master ,staging and production branches
+    try {
+      let isIncompleteCommits = true;
+      let allCommits = [];
+      let url = `https://api.bitbucket.org/2.0/repositories/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/commits/${branch.name}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`;
+      try {
+        while (isIncompleteCommits) {
+          const commits = await request.get(url);
+          if (repo.reviewed_at && commits.body.values.length > 0) {
+            if (
+              new Date(commits.body.values[0].date) > new Date(repo.reviewed_at)
+            ) {
+              if (
+                new Date(
+                  commits.body.values[commits.body.values.length - 1].date
+                ) > new Date(repo.reviewed_at)
+              ) {
+                allCommits = allCommits.concat(commits.body.values);
+                url = commits.body.next;
+              } else {
+                commits.body.values.map((commit) => {
+                  if (new Date(commit.date) >= new Date(repo.reviewed_at)) {
+                    allCommits.push(commit);
+                  }
+                });
+                url = commits.body.next;
+              }
+              if (!url) {
+                isIncompleteCommits = false;
+              }
+            } else {
+              isIncompleteCommits = false;
+            }
+          } else {
+            isIncompleteCommits = false;
+          }
+        }
+      } catch (err) {
+        logger.error(err);
+        logger.info("=========================================");
+      }
+      commitsObj[branch.name] = allCommits;
+    } catch (err) {
+      Sentry.captureException(err);
+      logger.error(
+        "Error executing while get all branches of  bitbucket repository in get all branches of repository function"
+      );
+      logger.error(err);
+      logger.info("=========================================");
+      commitsObj[branch.name] = false;
+    }
+  });
+  await Promise.all(data);
+  return commitsObj;
+};
 //function for get new commit
 const getCommits = async (repo, databaseUser) => {
   const commits = await request.get(
@@ -569,4 +627,5 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
 module.exports = {
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommits: getCommits,
+  getCommitsByBranches: getCommitsByBranches,
 };
