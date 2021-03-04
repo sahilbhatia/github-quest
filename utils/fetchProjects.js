@@ -1,7 +1,6 @@
 const request = require("superagent");
 const dbConn = require("../models/sequelize");
 const { headers } = require("../constants/intranetHeader");
-const gitHeaders = require("../constants/githubHeader").headers;
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
@@ -13,6 +12,10 @@ const Projects_Repositories = db.projects_repositories;
 const Repositories = db.repositories;
 const Users_projects = db.users_projects;
 const checkSuspiciousUserRepo = require("./checkSuspiciousUserRepo");
+const githubServices = require("./../services/githubServices");
+const gitlabServices = require("./../services/gitlabServices");
+const bitbucketServices = require("./../services/bitbucketServices");
+
 //function for get project info by project repo url
 const getInfoByProjectUrl = (url) => {
   let project = {};
@@ -33,82 +36,6 @@ const getInfoByProjectUrl = (url) => {
       return false;
     }
   } else {
-    return false;
-  }
-};
-// function for get project details from github
-const getRepositoryFromGithub = async (project) => {
-  try {
-    let projectRepo = await request
-      .get(
-        `https://api.github.com/repos/${project.handle}/${project.repositorieName}`
-      )
-      .set(gitHeaders);
-    if (projectRepo) {
-      return projectRepo.body;
-    } else {
-      return false;
-    }
-  } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while fetching projects in get repositories from github function"
-    );
-    logger.error(err);
-    logger.info("=========================================");
-    return false;
-  }
-};
-// function for get project details from gitlab
-const getRepositoryFromGitlab = async (project) => {
-  try {
-    let projectStatus = false;
-    const gitlabUser = await request.get(
-      `https://gitlab.com/api/v4/users?username=${project.handle}`
-    );
-    if (gitlabUser.body.length != 0) {
-      const gitlabRepos = await request
-        .get(
-          `https://gitlab.com/api/v4/users/${gitlabUser.body[0].id}/projects`
-        )
-        .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
-      gitlabRepos.body.forEach((repo) => {
-        if (project.repositorieName.localeCompare(repo.path) == 0) {
-          projectStatus = repo;
-        }
-      });
-      return projectStatus;
-    } else {
-      return false;
-    }
-  } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while fetching projects in get repositories from gitlab function"
-    );
-    logger.error(err);
-    logger.info("=========================================");
-    return false;
-  }
-};
-// function for get project details from bitbucket
-const getRepositoryFromBitbucket = async (project) => {
-  try {
-    const projectRepo = await request.get(
-      `https://api.bitbucket.org/2.0/repositories/${project.handle}/${project.repositorieName}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`
-    );
-    if (projectRepo.body) {
-      return projectRepo.body;
-    } else {
-      return false;
-    }
-  } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while fetching projects in get repositories from bitbucket function"
-    );
-    logger.error(err);
-    logger.info("=========================================");
     return false;
   }
 };
@@ -177,11 +104,17 @@ const insertRepository = async (item, projectId) => {
           let projectRepo = false;
           if (projectInfo) {
             if (projectInfo.sourceType == "github") {
-              projectRepo = await getRepositoryFromGithub(projectInfo);
+              projectRepo = await githubServices.getRepositoryFromGithub(
+                projectInfo
+              );
             } else if (projectInfo.sourceType == "gitlab") {
-              projectRepo = await getRepositoryFromGitlab(projectInfo);
+              projectRepo = await gitlabServices.getRepositoryFromGitlab(
+                projectInfo
+              );
             } else if (projectInfo.sourceType == "bitbucket") {
-              projectRepo = await getRepositoryFromBitbucket(projectInfo);
+              projectRepo = await bitbucketServices.getRepositoryFromBitbucket(
+                projectInfo
+              );
             }
           }
           if (projectRepo) {
@@ -385,11 +318,17 @@ const addIntranetProjects = async (res) => {
             let projectRepo = false;
             if (repoUrlInfo) {
               if (repoUrlInfo.sourceType == "github") {
-                projectRepo = await getRepositoryFromGithub(repoUrlInfo);
+                projectRepo = await githubServices.getRepositoryFromGithub(
+                  repoUrlInfo
+                );
               } else if (repoUrlInfo.sourceType == "gitlab") {
-                projectRepo = await getRepositoryFromGitlab(repoUrlInfo);
+                projectRepo = await gitlabServices.getRepositoryFromGitlab(
+                  repoUrlInfo
+                );
               } else if (repoUrlInfo.sourceType == "bitbucket") {
-                projectRepo = await getRepositoryFromBitbucket(repoUrlInfo);
+                projectRepo = await bitbucketServices.getRepositoryFromBitbucket(
+                  repoUrlInfo
+                );
               }
               if (projectRepo) {
                 await checkSuspiciousUserRepo.checkSuspiciousUserRepo(
@@ -420,9 +359,6 @@ const addIntranetProjects = async (res) => {
 
 module.exports = {
   getInfoByProjectUrl: getInfoByProjectUrl,
-  getRepositoryFromGithub: getRepositoryFromGithub,
-  getRepositoryFromGitlab: getRepositoryFromGitlab,
-  getRepositoryFromBitbucket: getRepositoryFromBitbucket,
   addIntranetProjects: addIntranetProjects,
   insertRepository: insertRepository,
   insertRepositoryInRepositories: insertRepositoryInRepositories,

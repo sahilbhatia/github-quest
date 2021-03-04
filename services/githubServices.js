@@ -1,5 +1,5 @@
 const request = require("superagent");
-const { headers } = require("../constants/githubHeader");
+const { headers } = require("./../constants/githubHeader");
 const { Sentry } = require("./../utils/sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
@@ -39,8 +39,32 @@ const getLabels = async (repoUrlInfo) => {
     return false;
   }
 };
+// function for get project details from github
+const getRepositoryFromGithub = async (project) => {
+  try {
+    let projectRepo = await request
+      .get(
+        `https://api.github.com/repos/${project.handle}/${project.repositorieName}`
+      )
+      .set(headers);
+    if (projectRepo) {
+      return projectRepo.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while fetching projects in get repositories from github function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 
 module.exports = {
   getTags: getTags,
   getLabels: getLabels,
+  getRepositoryFromGithub: getRepositoryFromGithub,
 };
