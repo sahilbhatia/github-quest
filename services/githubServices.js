@@ -114,10 +114,25 @@ const getAllBranchesOfRepo = async (repoInfo) => {
   }
 };
 
+//get a filelist by the url from github
+const getFileList = async (url) => {
+  try {
+    const fileList = await request.get(url).set(headers);
+    return fileList.body;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing while get file list of github repository");
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
 module.exports = {
   getTags: getTags,
   getLabels: getLabels,
   getRepositoryFromGithub: getRepositoryFromGithub,
   getCommitsByBranches: getCommitsByBranches,
   getAllBranchesOfRepo: getAllBranchesOfRepo,
+  getFileList: getFileList,
 };
