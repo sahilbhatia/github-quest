@@ -4,56 +4,83 @@ const log4js = require("../config/loggerConfig");
 const githubFunction = require("./githubFunction");
 const gitlabFunction = require("./gitlabFunction");
 const bitbucketFunction = require("./bitbucketFunction");
+const githubServices = require("./../services/githubServices");
+const gitlabServices = require("./../services/gitlabServices");
+const bitbucketServices = require("./../services/bitbucketServices");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Repositories = db.repositories;
 
+//function for get  all project details from github
+const getProjectDetailsFromGithub = async (project, projectUrlInfo) => {
+  project.repository = await Repositories.findOne({
+    where: { source_repo_id: project.repoResponce.id.toString() },
+  });
+  project.branches = await githubFunction.getAllBranchesOfRepo(projectUrlInfo);
+  if (project.repository) {
+    project.commits = await githubFunction.getCommitsByBranches(
+      project.repository,
+      projectUrlInfo,
+      project.branches
+    );
+    project.tags = await githubServices.getTags(projectUrlInfo);
+    project.labels = await githubServices.getLabels(projectUrlInfo);
+    project.language = project.repoResponce.language;
+  }
+  return project;
+};
+
+//function for get  all project details from gitlab
+const getProjectDetailsFromGitlab = async (project) => {
+  project.repository = await Repositories.findOne({
+    where: { source_repo_id: project.repoResponce.id.toString() },
+  });
+  project.branches = await gitlabFunction.getAllBranchesOfRepo(
+    project.repoResponce.id
+  );
+  if (project.repository) {
+    project.commits = await gitlabFunction.getCommitsByBranches(
+      project.repository,
+      project.branches
+    );
+    project.tags = project.repoResponce.tag_list;
+    project.labels = await gitlabServices.getLabels(project.repoResponce.id);
+    project.language = false;
+  }
+  return project;
+};
+
+//function for get  all project details from bitbucket
+const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
+  project.repository = await Repositories.findOne({
+    where: { source_repo_id: project.repoResponce.uuid.toString() },
+  });
+  project.branches = await bitbucketFunction.getAllBranchesOfRepo(
+    projectUrlInfo
+  );
+  if (project.repository) {
+    project.commits = await bitbucketFunction.getCommitsByBranches(
+      project.repository,
+      projectUrlInfo,
+      project.branches
+    );
+    project.language = project.repoResponce.language;
+    project.tags = await bitbucketServices.getTags(projectUrlInfo);
+  }
+  return project;
+};
+
 const getProjectDetails = async (project, projectUrlInfo) => {
   if (projectUrlInfo.sourceType == "github") {
-    project.repository = await Repositories.findOne({
-      where: { source_repo_id: project.repoResponce.id.toString() },
-    });
-    project.branches = await githubFunction.getAllBranchesOfRepo(
-      projectUrlInfo
-    );
-    if (project.repository) {
-      project.commits = await githubFunction.getCommitsByBranches(
-        project.repository,
-        projectUrlInfo,
-        project.branches
-      );
-    }
+    project = await getProjectDetailsFromGithub(project, projectUrlInfo);
   } else if (projectUrlInfo.sourceType == "gitlab") {
-    project.repository = await Repositories.findOne({
-      where: { source_repo_id: project.repoResponce.id.toString() },
-    });
-    project.branches = await gitlabFunction.getAllBranchesOfRepo(
-      project.repoResponce.id
-    );
-    if (project.repository) {
-      project.commits = await gitlabFunction.getCommitsByBranches(
-        project.repository,
-        project.branches
-      );
-    }
+    project = await getProjectDetailsFromGitlab(project);
   } else if (projectUrlInfo.sourceType == "bitbucket") {
-    project.repository = await Repositories.findOne({
-      where: { source_repo_id: project.repoResponce.uuid.toString() },
-    });
-    project.branches = await bitbucketFunction.getAllBranchesOfRepo(
-      projectUrlInfo
-    );
-    if (project.repository) {
-      project.commits = await bitbucketFunction.getCommitsByBranches(
-        project.repository,
-        projectUrlInfo,
-        project.branches
-      );
-    }
+    project = await getProjectDetailsFromBitbucket(project, projectUrlInfo);
   }
 
-  if (project.commits && project.repositories && project.branches) {
+  if (project.commits && project.repository && project.branches) {
     return project;
   } else {
     return false;
