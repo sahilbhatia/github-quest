@@ -1,9 +1,6 @@
 const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
-const githubFunction = require("./githubFunction");
-const gitlabFunction = require("./gitlabFunction");
-const bitbucketFunction = require("./bitbucketFunction");
 const githubServices = require("./../services/githubServices");
 const gitlabServices = require("./../services/gitlabServices");
 const bitbucketServices = require("./../services/bitbucketServices");
@@ -17,9 +14,9 @@ const getProjectDetailsFromGithub = async (project, projectUrlInfo) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.id.toString() },
   });
-  project.branches = await githubFunction.getAllBranchesOfRepo(projectUrlInfo);
+  project.branches = await githubServices.getAllBranchesOfRepo(projectUrlInfo);
   if (project.repository) {
-    project.commits = await githubFunction.getCommitsByBranches(
+    project.commits = await githubServices.getCommitsByBranches(
       project.repository,
       projectUrlInfo,
       project.branches
@@ -36,11 +33,11 @@ const getProjectDetailsFromGitlab = async (project) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.id.toString() },
   });
-  project.branches = await gitlabFunction.getAllBranchesOfRepo(
+  project.branches = await gitlabServices.getAllBranchesOfRepo(
     project.repoResponce.id
   );
   if (project.repository) {
-    project.commits = await gitlabFunction.getCommitsByBranches(
+    project.commits = await gitlabServices.getCommitsByBranches(
       project.repository,
       project.branches
     );
@@ -56,11 +53,11 @@ const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.uuid.toString() },
   });
-  project.branches = await bitbucketFunction.getAllBranchesOfRepo(
+  project.branches = await bitbucketServices.getAllBranchesOfRepo(
     projectUrlInfo
   );
   if (project.repository) {
-    project.commits = await bitbucketFunction.getCommitsByBranches(
+    project.commits = await bitbucketServices.getCommitsByBranches(
       project.repository,
       projectUrlInfo,
       project.branches

@@ -273,29 +273,6 @@ module.exports.getAllProjects = async (handle) => {
   }
 };
 
-//function for get all branches of single repository
-const getAllBranchesOfRepo = async (project_id) => {
-  try {
-    let ProjectBranches = await request
-      .get(
-        "https://gitlab.com/api/v4/projects/" +
-          project_id +
-          "/repository/branches"
-      )
-      .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
-    if (ProjectBranches.body) {
-      return ProjectBranches.body;
-    } else {
-      return false;
-    }
-  } catch (err) {
-    Sentry.captureException(err);
-    logger.error("Error executing while get all branches function");
-    logger.error(err);
-    logger.info("=========================================");
-    return null;
-  }
-};
 //function for get new commit
 const getCommits = async (repo) => {
   const commits = await request
@@ -306,42 +283,6 @@ const getCommits = async (repo) => {
   return commits.body;
 };
 
-//function for get new commit by branches
-const getCommitsByBranches = async (repo, branches) => {
-  try {
-    const commitsObj = {};
-    let data = await branches.map(async (branch) => {
-      try {
-        let url = `https://gitlab.com/api/v4/projects/${
-          repo.source_repo_id
-        }/repository/commits?since=${repo.reviewed_at}&ref_name="${
-          branch.name
-        }"&all=${true}`;
-        if (!repo.reviewed_at) {
-          url = `https://gitlab.com/api/v4/projects/${
-            repo.source_repo_id
-          }/repository/commits?ref_name="${branch.name}"&all=${true}`;
-        }
-        const commits = await request
-          .get(url)
-          .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
-        commitsObj[branch.name] = commits.body;
-      } catch (err) {
-        commitsObj[branch.name] = false;
-      }
-    });
-    await Promise.all(data);
-    return commitsObj;
-  } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while get all commits of each branches of repository of gitlab"
-    );
-    logger.error(err);
-    logger.info("=========================================");
-    return false;
-  }
-};
 //function for update review status
 const updateReviewStatus = async (item, findRepo) => {
   try {
@@ -625,9 +566,4 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
     logger.info("=========================================");
     return;
   }
-};
-module.exports = {
-  getAllBranchesOfRepo: getAllBranchesOfRepo,
-  getCommits: getCommits,
-  getCommitsByBranches: getCommitsByBranches,
 };

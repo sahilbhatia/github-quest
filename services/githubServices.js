@@ -63,8 +63,61 @@ const getRepositoryFromGithub = async (project) => {
   }
 };
 
+//function for get commits by branches head sha
+const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
+  try {
+    let commitsObj = {};
+    let data = await branches.map(async (branch) => {
+      //can we just hit this API for master ,staging and production branches
+      const url = `https://api.github.com/repos/${repoUrlInfo.handle}/${repo.name}/commits?sha=${branch.commit.sha}`;
+      const commits = await request.get(url).set(headers);
+      commitsObj[branch.name] = commits.body;
+    });
+    await Promise.all(data);
+    return commitsObj;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all commits of each branches of repo github repositories in get all repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
+//function for get all branches of single repository
+const getAllBranchesOfRepo = async (repoInfo) => {
+  try {
+    let ProjectBranches = await request
+      .get(
+        "https://api.github.com/repos/" +
+          repoInfo.handle +
+          "/" +
+          repoInfo.repositorieName +
+          "/branches"
+      )
+      .set(headers);
+    if (ProjectBranches.body) {
+      return ProjectBranches.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all branches of repo github repositories in get all repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
 module.exports = {
   getTags: getTags,
   getLabels: getLabels,
   getRepositoryFromGithub: getRepositoryFromGithub,
+  getCommitsByBranches: getCommitsByBranches,
+  getAllBranchesOfRepo: getAllBranchesOfRepo,
 };
