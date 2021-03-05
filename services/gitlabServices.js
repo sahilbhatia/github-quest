@@ -140,10 +140,38 @@ const getCommitByCommitId = async (project_id, commit_id) => {
     return null;
   }
 };
+
+//function for get single blob(file) by blob id from gitlab
+const getBlobByBlobId = async (project_id, blob_id) => {
+  try {
+    let blob = await request
+      .get(
+        "https://gitlab.com/api/v4/projects/" +
+          project_id +
+          "/repository/blobs/" +
+          blob_id
+      )
+      .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+    if (blob.body) {
+      return blob.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get single blob detail by blob id function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 module.exports = {
   getLabels: getLabels,
   getRepositoryFromGitlab: getRepositoryFromGitlab,
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommitsByBranches: getCommitsByBranches,
   getCommitByCommitId: getCommitByCommitId,
+  getBlobByBlobId: getBlobByBlobId,
 };
