@@ -128,6 +128,26 @@ const getFileList = async (url) => {
   }
 };
 
+//get a single commit details by commit_id from github
+const getCommitByCommitId = async (repoUrlInfo, commit_id) => {
+  try {
+    const commit = await request
+      .get(
+        `https://api.github.com/repos/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/commits/${commit_id}`
+      )
+      .set(headers);
+
+    return commit.body;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get commit details by commit_id from github"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 module.exports = {
   getTags: getTags,
   getLabels: getLabels,
@@ -135,4 +155,5 @@ module.exports = {
   getCommitsByBranches: getCommitsByBranches,
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getFileList: getFileList,
+  getCommitByCommitId: getCommitByCommitId,
 };
