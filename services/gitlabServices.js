@@ -113,9 +113,37 @@ const getCommitsByBranches = async (repo, branches) => {
     return false;
   }
 };
+
+//function for get single commit by commit id from gitlab
+const getCommitByCommitId = async (project_id, commit_id) => {
+  try {
+    let commit = await request
+      .get(
+        "https://gitlab.com/api/v4/projects/" +
+          project_id +
+          "/repository/commits/" +
+          commit_id
+      )
+      .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+    if (commit.body) {
+      return commit.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get single commit detail by commit id function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 module.exports = {
   getLabels: getLabels,
   getRepositoryFromGitlab: getRepositoryFromGitlab,
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommitsByBranches: getCommitsByBranches,
+  getCommitByCommitId: getCommitByCommitId,
 };
