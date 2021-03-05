@@ -148,6 +148,27 @@ const getCommitByCommitId = async (repoUrlInfo, commit_id) => {
     return false;
   }
 };
+
+//get a single blob(file) details by blob_id from github
+const getBlobByBlobId = async (repoUrlInfo, blob_id) => {
+  try {
+    const blob = await request
+      .get(
+        `https://api.github.com/repos/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/git/blobs/${blob_id}`
+      )
+      .set(headers);
+
+    return blob.body;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get blob(file) details by blob_id from github"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 module.exports = {
   getTags: getTags,
   getLabels: getLabels,
@@ -156,4 +177,5 @@ module.exports = {
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getFileList: getFileList,
   getCommitByCommitId: getCommitByCommitId,
+  getBlobByBlobId: getBlobByBlobId,
 };
