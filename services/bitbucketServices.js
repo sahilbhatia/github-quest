@@ -154,9 +154,31 @@ const getAllBranchesOfRepo = async (repoInfo) => {
   }
 };
 
+//function for get single commit detail by commit id from bitbucket
+const getCommitByCommitId = async (repoInfo, commit_id) => {
+  try {
+    let url = `https://api.bitbucket.org/2.0/repositories/${repoInfo.handle}/${repoInfo.repositorieName}/commit/${commit_id}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`;
+    const commit = await request.get(url);
+    if (commit.body) {
+      return commit.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while fetching commit details by commit id from bitbucket"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
 module.exports = {
   getTags: getTags,
   getRepositoryFromBitbucket: getRepositoryFromBitbucket,
   getCommitsByBranches: getCommitsByBranches,
   getAllBranchesOfRepo: getAllBranchesOfRepo,
+  getCommitByCommitId: getCommitByCommitId,
 };

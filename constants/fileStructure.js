@@ -1,4 +1,4 @@
-export const fileNames = {
+export const constantFileList = {
   node: [
     "constant",
     "config.js",
@@ -8,8 +8,9 @@ export const fileNames = {
     "routers",
     "router",
     "server.js",
+    "migrations",
   ],
-  react: ["src/constant", "src/components", "src/actions", "src/reducers"],
+  react: ["src", "constant", "components", "actions", "reducers"],
   ror: [
     "db",
     "seeds.rb",
@@ -18,15 +19,16 @@ export const fileNames = {
     "constant",
     "Gemfile",
     "config",
-    "environments/development.rb",
-    "environments/production.rb",
-    "environments/test.rb",
+    "environments",
+    "development.rb",
+    "production.rb",
+    "test.rb",
     "config.ru",
     "app",
-    "app/controllers",
-    "app/models",
-    "app/view",
-    "app/helpers",
+    "controllers",
+    "models",
+    "view",
+    "helpers",
   ],
-  common: ["README.md", ".gitignore", "package.json"],
+  common: ["README.md", ".gitignore", "package.json", "index.js"],
 };
