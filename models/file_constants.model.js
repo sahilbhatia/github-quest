@@ -12,6 +12,14 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING(50),
         allowNull: false,
       },
+      type: {
+        type: Sequelize.STRING(50),
+        allowNull: false,
+      },
+      content_type: {
+        type: Sequelize.STRING(50),
+        allowNull: false,
+      },
       path: {
         type: Sequelize.STRING(50),
         allowNull: true,

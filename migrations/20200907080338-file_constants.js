@@ -13,6 +13,14 @@ module.exports = {
           type: Sequelize.STRING(25),
           allowNull: false,
         },
+        type: {
+          type: Sequelize.STRING(25),
+          allowNull: false,
+        },
+        content_type: {
+          type: Sequelize.STRING(25),
+          allowNull: false,
+        },
         path: {
           type: Sequelize.STRING(25),
           allowNull: true,
