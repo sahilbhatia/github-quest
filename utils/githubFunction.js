@@ -5,6 +5,7 @@ const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
 const githubServices = require("./../services/githubServices");
+const commonFunction = require("./commonFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
@@ -58,7 +59,7 @@ const getFileDirStructure = async (repoUrlInfo, branches, FileConstants) => {
       if (fileList) {
         fileList.forEach((file) => {
           if (file.type == "file") {
-            let isFileFound = FileIsExistInConstantConfigList(
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
               file,
               FileConstants
             );
@@ -67,7 +68,7 @@ const getFileDirStructure = async (repoUrlInfo, branches, FileConstants) => {
               projectTypes.concat(isFileFound.projectType);
             }
           } else {
-            let isFileFound = FileIsExistInConstantConfigList(
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
               file,
               FileConstants
             );
@@ -87,33 +88,6 @@ const getFileDirStructure = async (repoUrlInfo, branches, FileConstants) => {
   });
   await Promise.all(data);
   return filesListOfBranches;
-};
-const FileIsExistInConstantConfigList = (file, FileConstants) => {
-  try {
-    let fileStatus = false;
-    let projectType = [];
-    FileConstants.forEach((ele) => {
-      if (file.name.toLowerCase().includes(ele.dataValues.name)) {
-        fileStatus = file;
-        projectType.push(ele.dataValues.tech_type);
-      }
-    });
-    if (fileStatus) {
-      return {
-        projectType: projectType,
-      };
-    } else {
-      return false;
-    }
-  } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while checking the file name is exist in data base"
-    );
-    logger.error(err);
-    logger.info("=========================================");
-    return null;
-  }
 };
 //function for get file list from dirlist array
 const getFilesFromDirList = async (dirList, repoUrlInfo, branchName) => {
