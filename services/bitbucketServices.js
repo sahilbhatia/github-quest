@@ -183,6 +183,14 @@ const getFileList = async (url) => {
     while (isIncompleteFiles) {
       let ProjectFiles = await request.get(url);
       if (ProjectFiles.body) {
+        ProjectFiles.body.values.map((file) => {
+          if (file.type == "commit_file") {
+            file.name = file.escaped_path.split("/").pop();
+            allFiles.push(file);
+          } else {
+            allFiles.push(file);
+          }
+        });
         allFiles = allFiles.concat(ProjectFiles.body.values);
         if (ProjectFiles.body.next) {
           url = ProjectFiles.body.next;
