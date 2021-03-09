@@ -175,10 +175,42 @@ const getCommitByCommitId = async (repoInfo, commit_id) => {
   }
 };
 
+//function for get all file by passing url from bitbucket
+const getFileList = async (url) => {
+  try {
+    let isIncompleteFiles = true;
+    let allFiles = [];
+    while (isIncompleteFiles) {
+      let ProjectFiles = await request.get(url);
+      if (ProjectFiles.body) {
+        allFiles = allFiles.concat(ProjectFiles.body.values);
+        if (ProjectFiles.body.next) {
+          url = ProjectFiles.body.next;
+        } else {
+          break;
+        }
+      }
+    }
+    if (allFiles.length > 0) {
+      return allFiles;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all files of branch from bitbucket repository"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 module.exports = {
   getTags: getTags,
   getRepositoryFromBitbucket: getRepositoryFromBitbucket,
   getCommitsByBranches: getCommitsByBranches,
   getAllBranchesOfRepo: getAllBranchesOfRepo,
   getCommitByCommitId: getCommitByCommitId,
+  getFileList: getFileList,
 };
