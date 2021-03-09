@@ -8,6 +8,7 @@ const githubFunctions = require("./githubFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
+const gitlabFunction = require("./gitlabFunction");
 const Repositories = db.repositories;
 const File_constants = db.file_constants;
 
@@ -47,6 +48,16 @@ const getProjectDetailsFromGitlab = async (project) => {
   });
   project.branches = await gitlabServices.getAllBranchesOfRepo(
     project.repoResponce.id
+  );
+  const configFileConstants = await File_constants.findAll({
+    where: {
+      content_type: "configuration",
+    },
+  });
+  project.fileStructure = await gitlabFunction.getFileDirStructure(
+    project.repoResponce.id,
+    project.branches,
+    configFileConstants
   );
   if (project.repository) {
     project.commits = await gitlabServices.getCommitsByBranches(
