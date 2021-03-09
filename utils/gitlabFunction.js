@@ -3,6 +3,8 @@ const moment = require("moment");
 const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
+const gitlabServices = require("../services/gitlabServices");
+const commonFunction = require("../utils/commonFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
@@ -35,6 +37,97 @@ const isRepositoryExist = async (repoInfo) => {
     return isExist;
   }
 };
+const getFileDirStructure = async (projectId, branches, FileConstants) => {
+  let filesListOfBranches = {};
+  let data = await branches.map(async (branch) => {
+    if (
+      branch.name == "staging" ||
+      branch.name == "production" ||
+      branch.name == "master" ||
+      branch.name == "main"
+    ) {
+      let url = `https://gitlab.com/api/v4/projects/${projectId}/repository/tree?ref=${branch.name}`;
+      let fileList = await gitlabServices.getFileList(url);
+      let filesListOfBranch = [];
+      let projectTypes = [];
+      let dirList = [];
+      if (fileList) {
+        fileList.forEach((file) => {
+          if (file.type == "blob") {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              filesListOfBranch.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          } else {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              dirList.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          }
+        });
+      }
+      if (dirList.length > 0) {
+        let list = await getFilesFromDirList(dirList, projectId, branch.name);
+        filesListOfBranch = filesListOfBranch.concat(list);
+      }
+      filesListOfBranches[branch.name] = filesListOfBranch;
+    }
+  });
+  await Promise.all(data);
+  return filesListOfBranches;
+};
+
+const getFilesFromDirList = async (dirList, projectId, branchName) => {
+  try {
+    let fileList = [];
+    let fileListByEachDir = [];
+    if (dirList) {
+      let data = await dirList.map(async (dir) => {
+        let localDirList = [];
+        let url = `https://gitlab.com/api/v4/projects/${projectId}/repository/tree?ref=${branchName}&path=${dir.path}`;
+        fileListByEachDir = await gitlabServices.getFileList(url);
+        if (fileListByEachDir) {
+          fileListByEachDir.forEach((file) => {
+            if (file.type == "blob") {
+              fileList.push(file);
+            } else {
+              localDirList.push(file);
+            }
+          });
+          if (localDirList.length > 0) {
+            let list = await getFilesFromDirList(
+              localDirList,
+              projectId,
+              branchName
+            );
+            if (list.length > 0) {
+              fileList = fileList.concat(list);
+            }
+          }
+        }
+      });
+      await Promise.all(data);
+    }
+    return fileList;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while getting the file list by some dir from gitlab repo"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
 //function for insert new repository
 const insertNewRepo = async (insertRepos, repo) => {
   try {
@@ -330,7 +423,7 @@ const updateReviewStatus = async (item, findRepo) => {
 };
 
 //insert gitlab repositories
-module.exports.insertGitlabRepos = async (databaseUser) => {
+const insertGitlabRepos = async (databaseUser) => {
   try {
     const gitlabUser = await request.get(
       `https://gitlab.com/api/v4/users?username=${databaseUser.dataValues.gitlab_handle}`
@@ -566,4 +659,9 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
     logger.info("=========================================");
     return;
   }
+};
+
+module.exports = {
+  getFileDirStructure: getFileDirStructure,
+  insertGitlabRepos: insertGitlabRepos,
 };
