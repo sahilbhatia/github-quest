@@ -4,17 +4,29 @@ const log4js = require("../config/loggerConfig");
 const githubServices = require("./../services/githubServices");
 const gitlabServices = require("./../services/gitlabServices");
 const bitbucketServices = require("./../services/bitbucketServices");
+const githubFunctions = require("./githubFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Repositories = db.repositories;
+const File_constants = db.file_constants;
 
 //function for get  all project details from github
 const getProjectDetailsFromGithub = async (project, projectUrlInfo) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.id.toString() },
   });
+  const configFileConstants = await File_constants.findAll({
+    where: {
+      content_type: "configuration",
+    },
+  });
   project.branches = await githubServices.getAllBranchesOfRepo(projectUrlInfo);
+  project.fileStructure = await githubFunctions.getFileDirStructure(
+    projectUrlInfo,
+    project.branches,
+    configFileConstants
+  );
   if (project.repository) {
     project.commits = await githubServices.getCommitsByBranches(
       project.repository,
