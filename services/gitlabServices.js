@@ -167,6 +167,23 @@ const getBlobByBlobId = async (project_id, blob_id) => {
     return null;
   }
 };
+
+//get a filelist by the url from gitlab
+const getFileList = async (url) => {
+  try {
+    const fileList = await request
+      .get(url)
+      .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+    return fileList.body;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing while get file list of gitlab repository");
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
 module.exports = {
   getLabels: getLabels,
   getRepositoryFromGitlab: getRepositoryFromGitlab,
@@ -174,4 +191,5 @@ module.exports = {
   getCommitsByBranches: getCommitsByBranches,
   getCommitByCommitId: getCommitByCommitId,
   getBlobByBlobId: getBlobByBlobId,
+  getFileList: getFileList,
 };
