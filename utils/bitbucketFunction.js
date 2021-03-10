@@ -10,7 +10,101 @@ const Users = db.users;
 const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
+const commonFunction = require("./commonFunction");
+const bitbucketServices = require("../services/bitbucketServices");
 
+const getFileDirStructure = async (repoUrlInfo, branches, FileConstants) => {
+  let filesListOfBranches = {};
+  let data = await branches.map(async (branch) => {
+    if (
+      branch.name == "staging" ||
+      branch.name == "production" ||
+      branch.name == "master" ||
+      branch.name == "main"
+    ) {
+      let hash = branch.target.hash.substr(0, 7);
+      let url = `https://api.bitbucket.org/2.0/repositories/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/src/${hash}/?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}&pagelen=10`;
+      let fileList = await bitbucketServices.getFileList(url);
+
+      let filesListOfBranch = [];
+      let projectTypes = [];
+      let dirList = [];
+      if (fileList) {
+        fileList.forEach((file) => {
+          if (file.type == "commit_file") {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              filesListOfBranch.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          } else {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              dirList.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          }
+        });
+      }
+      if (dirList.length > 0) {
+        let list = await getFilesFromDirList(dirList, repoUrlInfo, hash);
+        filesListOfBranch = filesListOfBranch.concat(list);
+      }
+      filesListOfBranches[branch.name] = filesListOfBranch;
+    }
+  });
+  await Promise.all(data);
+  return filesListOfBranches;
+};
+//function for get file list from dirlist array
+const getFilesFromDirList = async (dirList, repoUrlInfo, hash) => {
+  try {
+    let fileList = [];
+    let fileListByEachDir = [];
+    if (dirList) {
+      let data = await dirList.map(async (dir) => {
+        let localDirList = [];
+        let url = `https://api.bitbucket.org/2.0/repositories/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/src/${hash}/${dir.path}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}&pagelen=20`;
+        fileListByEachDir = await bitbucketServices.getFileList(url);
+        if (fileListByEachDir) {
+          fileListByEachDir.forEach((file) => {
+            if (file.type == "commit_file") {
+              fileList.push(file);
+            } else {
+              localDirList.push(file);
+            }
+          });
+          if (localDirList.length > 0) {
+            let list = await getFilesFromDirList(
+              localDirList,
+              repoUrlInfo,
+              hash
+            );
+            if (list.length > 0) {
+              fileList = fileList.concat(list);
+            }
+          }
+        }
+      });
+      await Promise.all(data);
+    }
+    return fileList;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while getting the file list by some dir from bitbucket repo"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 //function for check the repo is existe or not if yes the update
 const isRepositoryExist = async (repoInfo) => {
   let isExist = false;
@@ -333,7 +427,7 @@ const updateReviewStatus = async (item, findRepo, databaseUser) => {
 };
 
 //insert bitbucket repositories
-module.exports.insertBitbucketRepos = async (databaseUser) => {
+const insertBitbucketRepos = async (databaseUser) => {
   try {
     let bitbucketRepos = await getBitBucketRepos(databaseUser);
     const data = await bitbucketRepos.body.values.map(async (repo) => {
@@ -529,4 +623,9 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
     logger.info("=========================================");
     return null;
   }
+};
+
+module.exports = {
+  getFileDirStructure: getFileDirStructure,
+  insertBitbucketRepos: insertBitbucketRepos,
 };
