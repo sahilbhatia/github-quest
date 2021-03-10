@@ -188,10 +188,10 @@ const getFileList = async (url) => {
             file.name = file.escaped_path.split("/").pop();
             allFiles.push(file);
           } else {
+            file.name = file.path.split("/").pop();
             allFiles.push(file);
           }
         });
-        allFiles = allFiles.concat(ProjectFiles.body.values);
         if (ProjectFiles.body.next) {
           url = ProjectFiles.body.next;
         } else {

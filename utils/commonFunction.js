@@ -7,7 +7,7 @@ const FileIsExistInConstantConfigList = (file, FileConstants) => {
     let fileStatus = false;
     let projectType = [];
     FileConstants.forEach((ele) => {
-      if (file.name.toLowerCase().includes(ele.dataValues.name)) {
+      if (file.name && file.name.toLowerCase().includes(ele.dataValues.name)) {
         fileStatus = file;
         projectType.push(ele.dataValues.tech_type);
       }
