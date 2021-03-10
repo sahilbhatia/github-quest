@@ -12,6 +12,8 @@ const db = require("../models/sequelize");
 const gitlabFunction = require("./gitlabFunction");
 const Repositories = db.repositories;
 const File_constants = db.file_constants;
+const Users = db.users;
+const Users_repositories = db.users_repositories;
 
 //function for get  all project details from github
 const getProjectDetailsFromGithub = async (project, projectUrlInfo) => {
@@ -118,6 +120,75 @@ const getProjectDetails = async (project, projectUrlInfo) => {
   }
 };
 
+const getRepositoryByUserId = async (user_id) => {
+  try {
+    let userRepositories = await Users_repositories.findAll({
+      where: {
+        user_id: user_id,
+      },
+    });
+    let repository_ids = userRepositories.map((entry) => {
+      return entry.dataValues.repository_id;
+    });
+    let repositories = await Repositories.findAll({
+      where: {
+        id: repository_ids,
+      },
+    });
+
+    let repositoryList = repositories.map((entry) => {
+      return entry.dataValues;
+    });
+    return repositoryList;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in check suspicious user repo function while iterating user repositores details from database"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
+const getAllActiveUsersInfoList = async (active_users) => {
+  try {
+    let userList = {};
+    let ids = active_users.map((user) => {
+      return user.id;
+    });
+    const users = await Users.findAll({
+      where: {
+        org_user_id: ids,
+      },
+      attributes: [
+        "id",
+        "github_handle",
+        "gitlab_handle",
+        "bitbucket_handle",
+        "last_fetched_at",
+      ],
+    });
+    let data = await users.map(async (user) => {
+      userList[user.dataValues.id] = user.dataValues;
+      userList[user.dataValues.id].repositories = await getRepositoryByUserId(
+        user.dataValues.id
+      );
+      return user.dataValues;
+    });
+    await Promise.all(data);
+    return userList;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in check suspicious user repo function while iterating users details from database"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
 module.exports.checkSuspiciousUserRepo = async (
   projectRepo,
   intranetProject,
@@ -127,6 +198,7 @@ module.exports.checkSuspiciousUserRepo = async (
     let projectDetail = {};
     projectDetail.repoResponce = projectRepo;
     projectDetail = await getProjectDetails(projectDetail, projectUrlInfo);
+    await getAllActiveUsersInfoList(intranetProject.active_users);
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
