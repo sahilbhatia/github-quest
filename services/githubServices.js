@@ -3,6 +3,7 @@ const { headers } = require("./../constants/githubHeader");
 const { Sentry } = require("./../utils/sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
+const databaseService = require("./databaseServices");
 
 //function for get all tags from github
 const getTags = async (repoUrlInfo) => {
@@ -64,13 +65,22 @@ const getRepositoryFromGithub = async (project) => {
 };
 
 //function for get commits by branches head sha
-const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
+const getCommitsByBranches = async (
+  repo,
+  repoUrlInfo,
+  branches,
+  repositoryId
+) => {
   try {
     let commitsObj = {};
     let data = await branches.map(async (branch) => {
       //can we just hit this API for master ,staging and production branches
       const url = `https://api.github.com/repos/${repoUrlInfo.handle}/${repo.name}/commits?sha=${branch.commit.sha}`;
       const commits = await request.get(url).set(headers);
+      let data = await commits.body.map(async (commit) => {
+        await databaseService.insertCommits(repositoryId, commit, "github");
+      });
+      await Promise.all(data);
       commitsObj[branch.name] = commits.body;
     });
     await Promise.all(data);
@@ -87,7 +97,7 @@ const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
 };
 
 //function for get all branches of single repository
-const getAllBranchesOfRepo = async (repoInfo) => {
+const getAllBranchesOfRepo = async (repoInfo, repositoryId) => {
   try {
     let ProjectBranches = await request
       .get(
@@ -99,6 +109,10 @@ const getAllBranchesOfRepo = async (repoInfo) => {
       )
       .set(headers);
     if (ProjectBranches.body) {
+      let data = await ProjectBranches.body.map(async (branch) => {
+        await databaseService.insertBranch(repositoryId, branch, "github");
+      });
+      await Promise.all(data);
       return ProjectBranches.body;
     } else {
       return false;
@@ -113,7 +127,6 @@ const getAllBranchesOfRepo = async (repoInfo) => {
     return null;
   }
 };
-
 //get a filelist by the url from github
 const getFileList = async (url) => {
   try {
