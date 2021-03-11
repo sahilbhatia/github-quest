@@ -2,6 +2,7 @@ const request = require("superagent");
 const { Sentry } = require("./../utils/sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
+const databaseService = require("./databaseServices");
 
 //function for get all labels of repository
 const getLabels = async (project_id) => {
@@ -54,7 +55,7 @@ const getRepositoryFromGitlab = async (project) => {
 };
 
 //function for get all branches of single repository
-const getAllBranchesOfRepo = async (project_id) => {
+const getAllBranchesOfRepo = async (project_id, repositoryId) => {
   try {
     let ProjectBranches = await request
       .get(
@@ -64,6 +65,10 @@ const getAllBranchesOfRepo = async (project_id) => {
       )
       .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
     if (ProjectBranches.body) {
+      let data = await ProjectBranches.body.map(async (branch) => {
+        await databaseService.insertBranch(repositoryId, branch, "gitlab");
+      });
+      await Promise.all(data);
       return ProjectBranches.body;
     } else {
       return false;
@@ -78,7 +83,7 @@ const getAllBranchesOfRepo = async (project_id) => {
 };
 
 //function for get new commit by branches
-const getCommitsByBranches = async (repo, branches) => {
+const getCommitsByBranches = async (repo, branches, repositoryId) => {
   try {
     const commitsObj = {};
     let data = await branches.map(async (branch) => {
@@ -96,6 +101,10 @@ const getCommitsByBranches = async (repo, branches) => {
         const commits = await request
           .get(url)
           .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+        let data = await commits.body.map(async (commit) => {
+          await databaseService.insertCommits(repositoryId, commit, "gitlab");
+        });
+        await Promise.all(data);
         commitsObj[branch.name] = commits.body;
       } catch (err) {
         commitsObj[branch.name] = false;
