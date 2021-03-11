@@ -1,5 +1,5 @@
 const dbConn = require("../models/sequelize");
-const { Sentry } = require("./sentry");
+const { Sentry } = require("./../utils/sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
 dbConn.sequelize;
@@ -32,7 +32,7 @@ const insertBranch = async (repositoryId, item, sourceType) => {
     if (branch) {
       await Branches.update(branchObj, {
         returning: true,
-        where: { id: branch.id },
+        where: { id: branch.dataValues.id },
       });
     } else {
       await Branches.create(branchObj);
@@ -52,7 +52,7 @@ const insertBranch = async (repositoryId, item, sourceType) => {
 const getCommitObjBySourceType = (repositoryId, commit, sourceType) => {
   const commitObj = {
     commit_id: commit.sha,
-    commit: commit.commit.message,
+    commit: commit.commit ? commit.commit.message : "",
     repository_id: repositoryId,
   };
 
@@ -87,12 +87,12 @@ const insertCommits = async (repositoryId, item, sourceType) => {
       where: queryObj,
     });
     if (commit) {
-      await Branches.update(commitObj, {
+      await Commits.update(commitObj, {
         returning: true,
         where: queryObj,
       });
     } else {
-      await Branches.create(commitObj);
+      await Commits.create(commitObj);
     }
     return null;
   } catch (err) {
