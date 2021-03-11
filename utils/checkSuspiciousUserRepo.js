@@ -133,6 +133,7 @@ const getRepositoryByUserId = async (user_id) => {
     let repositories = await Repositories.findAll({
       where: {
         id: repository_ids,
+        is_private: false,
       },
     });
 
