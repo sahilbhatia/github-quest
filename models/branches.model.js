@@ -24,12 +24,6 @@ module.exports = (sequelize, Sequelize) => {
           key: "id",
         },
       },
-      created_at: {
-        type: "TIMESTAMP",
-      },
-      updated_at: {
-        type: "TIMESTAMP",
-      },
     },
     {
       timestamp: false,
