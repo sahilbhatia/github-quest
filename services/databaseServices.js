@@ -5,6 +5,7 @@ const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
 const Branches = db.branches;
+const Commits = db.commits;
 
 const getBranchObjBySourceType = (repository_id, branch, sourceType) => {
   let branchObj = {
@@ -48,6 +49,64 @@ const insertBranch = async (repositoryId, item, sourceType) => {
   }
 };
 
+const getCommitObjBySourceType = (repositoryId, commit, sourceType) => {
+  const commitObj = {
+    commit_id: commit.sha,
+    commit: commit.commit.message,
+    repository_id: repositoryId,
+  };
+
+  if (sourceType == "gitlab") {
+    commitObj.commit_id = commit.id;
+    commitObj.commit = commit.message;
+  } else if (sourceType == "bitbucket") {
+    commitObj.commit_id = commit.hash;
+    commitObj.commit = commit.message;
+  }
+  return commitObj;
+};
+
+const getCommitQueryBySourceType = (repositoryId, commit, sourceType) => {
+  let query = {
+    repository_id: repositoryId,
+    commit_id: commit.sha,
+  };
+  if (sourceType == "gitlab") {
+    query.commit_id = commit.id;
+  } else if (sourceType == "bitbucket") {
+    query.commit_id = commit.hash;
+  }
+  return query;
+};
+
+const insertCommits = async (repositoryId, item, sourceType) => {
+  try {
+    let commitObj = getCommitObjBySourceType(repositoryId, item, sourceType);
+    let queryObj = getCommitQueryBySourceType(repositoryId, item, sourceType);
+    let commit = await Commits.findOne({
+      where: queryObj,
+    });
+    if (commit) {
+      await Branches.update(commitObj, {
+        returning: true,
+        where: queryObj,
+      });
+    } else {
+      await Branches.create(commitObj);
+    }
+    return null;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting or updating Commits in database"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
 module.exports = {
   insertBranch: insertBranch,
+  insertCommits: insertCommits,
 };
