@@ -20,22 +20,26 @@ const getProjectDetailsFromGithub = async (project, projectUrlInfo) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.id.toString() },
   });
-  const configFileConstants = await File_constants.findAll({
-    where: {
-      content_type: "configuration",
-    },
-  });
-  project.branches = await githubServices.getAllBranchesOfRepo(projectUrlInfo);
-  project.fileStructure = await githubFunctions.getFileDirStructure(
-    projectUrlInfo,
-    project.branches,
-    configFileConstants
-  );
   if (project.repository) {
+    project.branches = await githubServices.getAllBranchesOfRepo(
+      projectUrlInfo,
+      project.repository.dataValues.id
+    );
+    const configFileConstants = await File_constants.findAll({
+      where: {
+        content_type: "configuration",
+      },
+    });
+    project.fileStructure = await githubFunctions.getFileDirStructure(
+      projectUrlInfo,
+      project.branches,
+      configFileConstants
+    );
     project.commits = await githubServices.getCommitsByBranches(
       project.repository,
       projectUrlInfo,
-      project.branches
+      project.branches,
+      project.repository.dataValues.id
     );
     project.tags = await githubServices.getTags(projectUrlInfo);
     project.labels = await githubServices.getLabels(projectUrlInfo);
@@ -49,23 +53,25 @@ const getProjectDetailsFromGitlab = async (project) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.id.toString() },
   });
-  project.branches = await gitlabServices.getAllBranchesOfRepo(
-    project.repoResponce.id
-  );
-  const configFileConstants = await File_constants.findAll({
-    where: {
-      content_type: "configuration",
-    },
-  });
-  project.fileStructure = await gitlabFunction.getFileDirStructure(
-    project.repoResponce.id,
-    project.branches,
-    configFileConstants
-  );
   if (project.repository) {
+    project.branches = await gitlabServices.getAllBranchesOfRepo(
+      project.repoResponce.id,
+      project.repository.dataValues.id
+    );
+    const configFileConstants = await File_constants.findAll({
+      where: {
+        content_type: "configuration",
+      },
+    });
+    project.fileStructure = await gitlabFunction.getFileDirStructure(
+      project.repoResponce.id,
+      project.branches,
+      configFileConstants
+    );
     project.commits = await gitlabServices.getCommitsByBranches(
       project.repository,
-      project.branches
+      project.branches,
+      project.repository.dataValues.id
     );
     project.tags = project.repoResponce.tag_list;
     project.labels = await gitlabServices.getLabels(project.repoResponce.id);
@@ -79,24 +85,26 @@ const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.uuid.toString() },
   });
-  project.branches = await bitbucketServices.getAllBranchesOfRepo(
-    projectUrlInfo
-  );
-  const configFileConstants = await File_constants.findAll({
-    where: {
-      content_type: "configuration",
-    },
-  });
-  project.fileStructure = await bitbucketFunction.getFileDirStructure(
-    projectUrlInfo,
-    project.branches,
-    configFileConstants
-  );
   if (project.repository) {
+    project.branches = await bitbucketServices.getAllBranchesOfRepo(
+      projectUrlInfo,
+      project.repository.dataValues.id
+    );
+    const configFileConstants = await File_constants.findAll({
+      where: {
+        content_type: "configuration",
+      },
+    });
+    project.fileStructure = await bitbucketFunction.getFileDirStructure(
+      projectUrlInfo,
+      project.branches,
+      configFileConstants
+    );
     project.commits = await bitbucketServices.getCommitsByBranches(
       project.repository,
       projectUrlInfo,
-      project.branches
+      project.branches,
+      project.repository.dataValues.id
     );
     project.language = project.repoResponce.language;
     project.tags = await bitbucketServices.getTags(projectUrlInfo);
@@ -127,20 +135,27 @@ const getRepositoryByUserId = async (user_id) => {
         user_id: user_id,
       },
     });
-    let repository_ids = userRepositories.map((entry) => {
-      return entry.dataValues.repository_id;
-    });
-    let repositories = await Repositories.findAll({
-      where: {
-        id: repository_ids,
-        is_private: false,
-      },
-    });
-
-    let repositoryList = repositories.map((entry) => {
-      return entry.dataValues;
-    });
-    return repositoryList;
+    if (userRepositories) {
+      let repository_ids = userRepositories.map((entry) => {
+        return entry.dataValues.repository_id;
+      });
+      let repositories = await Repositories.findAll({
+        where: {
+          id: repository_ids,
+          is_private: false,
+        },
+      });
+      if (repositories) {
+        let repositoryList = repositories.map((entry) => {
+          return entry.dataValues;
+        });
+        return repositoryList;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
