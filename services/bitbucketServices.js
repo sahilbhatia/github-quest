@@ -2,6 +2,7 @@ const request = require("superagent");
 const { Sentry } = require("./../utils/sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
+const databaseService = require("./databaseServices");
 
 //function for get all tags of single repository
 const getTags = async (repoInfo) => {
@@ -60,7 +61,12 @@ const getRepositoryFromBitbucket = async (project) => {
   }
 };
 //function for get all commits of all branches
-const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
+const getCommitsByBranches = async (
+  repo,
+  repoUrlInfo,
+  branches,
+  repositoryId
+) => {
   let commitsObj = {};
   let data = await branches.map(async (branch) => {
     //can we just hit this API for master ,staging and production branches
@@ -104,6 +110,10 @@ const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
         logger.error(err);
         logger.info("=========================================");
       }
+      let data = await allCommits.map(async (commit) => {
+        await databaseService.insertCommits(repositoryId, commit, "bitbucket");
+      });
+      await Promise.all(data);
       commitsObj[branch.name] = allCommits;
     } catch (err) {
       Sentry.captureException(err);
@@ -120,7 +130,7 @@ const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
 };
 
 //function for get all branches of single repository
-const getAllBranchesOfRepo = async (repoInfo) => {
+const getAllBranchesOfRepo = async (repoInfo, repositoryId) => {
   try {
     let isIncompleteCommits = true;
     let count = 10;
@@ -139,6 +149,10 @@ const getAllBranchesOfRepo = async (repoInfo) => {
       }
     }
     if (allBranches.length > 0) {
+      let data = await allBranches.map(async (branch) => {
+        await databaseService.insertBranch(repositoryId, branch, "bitbucket");
+      });
+      await Promise.all(data);
       return allBranches;
     } else {
       return false;
