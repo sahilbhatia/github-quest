@@ -236,7 +236,78 @@ const checkRepositoryNameIsSame = (repository, projectUrlInfo) => {
     return 0.5;
   }
 };
+const checkBranchNameIsSame = async (repository, projectBranches) => {
+  let branches = [];
+  let matchingBranches = [];
+  let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
 
+  if (repository.source_type == "github") {
+    branches = await githubServices.getAllBranchesOfRepo(
+      repoUrlInfo,
+      repository.id
+    );
+    matchingBranches = projectBranches.map((branch) => {
+      for (let index = 0; index < branches.length; index++) {
+        const ele = branches[index];
+        if (
+          branch.name != "staging" ||
+          branch.name != "production" ||
+          branch.name != "master" ||
+          branch.name != "main"
+        ) {
+          if (ele.name.localeCompare(branch.name) === 1) {
+            return ele;
+          }
+        }
+      }
+    });
+  } else if (repository.source_type == "github") {
+    branches = await gitlabServices.getAllBranchesOfRepo(
+      repoUrlInfo,
+      repository.id
+    );
+    matchingBranches = projectBranches.map((branch) => {
+      for (let index = 0; index < branches.length; index++) {
+        const ele = branches[index];
+        if (
+          branch.name != "staging" ||
+          branch.name != "production" ||
+          branch.name != "master" ||
+          branch.name != "main"
+        ) {
+          if (ele.name.localeCompare(branch.name) === 1) {
+            return ele;
+          }
+        }
+      }
+    });
+  } else if (repository.source_type == "github") {
+    branches = await bitbucketServices.getAllBranchesOfRepo(
+      repoUrlInfo,
+      repository.id
+    );
+    matchingBranches = projectBranches.map((branch) => {
+      for (let index = 0; index < branches.length; index++) {
+        const ele = branches[index];
+        if (
+          branch.name != "staging" ||
+          branch.name != "production" ||
+          branch.name != "master" ||
+          branch.name != "main"
+        ) {
+          if (ele.name.localeCompare(branch.name) === 1) {
+            return ele;
+          }
+        }
+      }
+    });
+  }
+  if (matchingBranches.length > 3) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
     let dataObj = await user.repositories.map(async (repository) => {
@@ -244,6 +315,10 @@ const checkUsersRepos = async (projectDetail) => {
       thresholdObj.repository = checkRepositoryNameIsSame(
         repository,
         projectDetail.projectUrlInfo
+      );
+      thresholdObj.branch = await checkBranchNameIsSame(
+        repository,
+        projectDetail.branches
       );
     });
     await Promise.all(dataObj);
