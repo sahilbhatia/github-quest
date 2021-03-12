@@ -15,30 +15,7 @@ const checkSuspiciousUserRepo = require("./checkSuspiciousUserRepo");
 const githubServices = require("./../services/githubServices");
 const gitlabServices = require("./../services/gitlabServices");
 const bitbucketServices = require("./../services/bitbucketServices");
-
-//function for get project info by project repo url
-const getInfoByProjectUrl = (url) => {
-  let project = {};
-  const splitArray = url.split("/");
-  if (splitArray.length > 4) {
-    let sourceType = splitArray[2].split(".")[0];
-    if (
-      sourceType.localeCompare("github") == 0 ||
-      sourceType.localeCompare("bitbucket") == 0 ||
-      sourceType.localeCompare("gitlab") == 0
-    ) {
-      project.sourceType = sourceType;
-      project.handle = splitArray[3];
-      project.repositorieName = splitArray[4];
-      project.url = url;
-      return project;
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
-};
+const commonFunctions = require("./commonFunction");
 
 //funtion for create a repository database object as per project source  type
 const getRepositoryObjBySourceType = (repo, sourceType) => {
@@ -100,7 +77,7 @@ const insertRepository = async (item, projectId) => {
     await item.repositories.map(async (item) => {
       try {
         if (item.url != null) {
-          let projectInfo = getInfoByProjectUrl(item.url);
+          let projectInfo = commonFunctions.getInfoByProjectUrl(item.url);
           let projectRepo = false;
           if (projectInfo) {
             if (projectInfo.sourceType == "github") {
@@ -314,7 +291,7 @@ const addIntranetProjects = async (res) => {
       if (project) {
         item.repositories.map(async (ele) => {
           if (ele.url !== null) {
-            let repoUrlInfo = getInfoByProjectUrl(ele.url);
+            let repoUrlInfo = commonFunctions.getInfoByProjectUrl(ele.url);
             let projectRepo = false;
             if (repoUrlInfo) {
               if (repoUrlInfo.sourceType == "github") {
@@ -358,7 +335,6 @@ const addIntranetProjects = async (res) => {
 };
 
 module.exports = {
-  getInfoByProjectUrl: getInfoByProjectUrl,
   addIntranetProjects: addIntranetProjects,
   insertRepository: insertRepository,
   insertRepositoryInRepositories: insertRepositoryInRepositories,

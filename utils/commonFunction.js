@@ -30,6 +30,30 @@ const FileIsExistInConstantConfigList = (file, FileConstants) => {
   }
 };
 
+//function for get project info by project repo url
+const getInfoByProjectUrl = (url) => {
+  let project = {};
+  const splitArray = url.split("/");
+  if (splitArray.length > 4) {
+    let sourceType = splitArray[2].split(".")[0];
+    if (
+      sourceType.localeCompare("github") == 0 ||
+      sourceType.localeCompare("bitbucket") == 0 ||
+      sourceType.localeCompare("gitlab") == 0
+    ) {
+      project.sourceType = sourceType;
+      project.handle = splitArray[3];
+      project.repositorieName = splitArray[4];
+      project.url = url;
+      return project;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+};
 module.exports = {
   FileIsExistInConstantConfigList: FileIsExistInConstantConfigList,
+  getInfoByProjectUrl: getInfoByProjectUrl,
 };
