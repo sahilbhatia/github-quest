@@ -1,4 +1,5 @@
 const dbConn = require("../models/sequelize");
+const { Op } = require("sequelize");
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
 const githubServices = require("./../services/githubServices");
@@ -167,16 +168,34 @@ const getRepositoryByUserId = async (user_id) => {
   }
 };
 
-const getAllActiveUsersInfoList = async (active_users) => {
+const avoidProjectCreatorUserQuery = (userIds, projectUrlInfo) => {
+  let queryObj = {
+    org_user_id: userIds,
+  };
+  if (projectUrlInfo.sourceType == "github") {
+    queryObj.github_handle = {
+      [Op.not]: projectUrlInfo.repositorieName,
+    };
+  } else if (projectUrlInfo.sourceType == "gitlab") {
+    queryObj.gitlab_handle = {
+      [Op.not]: projectUrlInfo.repositorieName,
+    };
+  } else if (projectUrlInfo.sourceType == "bitbucket") {
+    queryObj.bitbucket_handle = {
+      [Op.not]: projectUrlInfo.repositorieName,
+    };
+  }
+  return queryObj;
+};
+const getAllActiveUsersInfoList = async (active_users, projectUrlInfo) => {
   try {
     let userList = {};
     let ids = active_users.map((user) => {
       return user.id;
     });
+    let queryObj = avoidProjectCreatorUserQuery(ids, projectUrlInfo);
     const users = await Users.findAll({
-      where: {
-        org_user_id: ids,
-      },
+      where: queryObj,
       attributes: [
         "id",
         "github_handle",
@@ -214,7 +233,12 @@ module.exports.checkSuspiciousUserRepo = async (
     let projectDetail = {};
     projectDetail.repoResponce = projectRepo;
     projectDetail = await getProjectDetails(projectDetail, projectUrlInfo);
-    await getAllActiveUsersInfoList(intranetProject.active_users);
+    if (projectDetail) {
+      projectDetail.projectActiveUsers = await getAllActiveUsersInfoList(
+        intranetProject.active_users,
+        projectUrlInfo
+      );
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
