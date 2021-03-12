@@ -7,6 +7,7 @@ const gitlabServices = require("./../services/gitlabServices");
 const bitbucketServices = require("./../services/bitbucketServices");
 const githubFunctions = require("./githubFunction");
 const bitbucketFunction = require("./bitbucketFunction");
+const commonFunction = require("./commonFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
@@ -189,7 +190,7 @@ const avoidProjectCreatorUserQuery = (userIds, projectUrlInfo) => {
 };
 const getAllActiveUsersInfoList = async (active_users, projectUrlInfo) => {
   try {
-    let userList = {};
+    let userList = [];
     let ids = active_users.map((user) => {
       return user.id;
     });
@@ -205,10 +206,9 @@ const getAllActiveUsersInfoList = async (active_users, projectUrlInfo) => {
       ],
     });
     let data = await users.map(async (user) => {
-      userList[user.dataValues.id] = user.dataValues;
-      userList[user.dataValues.id].repositories = await getRepositoryByUserId(
-        user.dataValues.id
-      );
+      let userObj = user.dataValues;
+      userObj.repositories = await getRepositoryByUserId(user.dataValues.id);
+      userList.push(userObj);
       return user.dataValues;
     });
     await Promise.all(data);
@@ -224,6 +224,32 @@ const getAllActiveUsersInfoList = async (active_users, projectUrlInfo) => {
   }
 };
 
+const checkRepositoryNameIsSame = (repository, projectUrlInfo) => {
+  let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
+  if (repoUrlInfo.repositorieName === projectUrlInfo.repositorieName) {
+    return 1;
+  } else if (
+    repoUrlInfo.repositorieName.localeCompare(
+      projectUrlInfo.repositorieName
+    ) === 1
+  ) {
+    return 0.5;
+  }
+};
+
+const checkUsersRepos = async (projectDetail) => {
+  let data = await projectDetail.projectActiveUsers.map(async (user) => {
+    let dataObj = await user.repositories.map(async (repository) => {
+      let thresholdObj = {};
+      thresholdObj.repository = checkRepositoryNameIsSame(
+        repository,
+        projectDetail.projectUrlInfo
+      );
+    });
+    await Promise.all(dataObj);
+  });
+  await Promise.all(data);
+};
 module.exports.checkSuspiciousUserRepo = async (
   projectRepo,
   intranetProject,
@@ -238,6 +264,10 @@ module.exports.checkSuspiciousUserRepo = async (
         intranetProject.active_users,
         projectUrlInfo
       );
+      if (projectDetail.projectActiveUsers) {
+        projectDetail.projectUrlInfo = projectUrlInfo;
+        await checkUsersRepos(projectDetail);
+      }
     }
   } catch (err) {
     Sentry.captureException(err);
