@@ -16,6 +16,7 @@ const Repositories = db.repositories;
 const File_constants = db.file_constants;
 const Users = db.users;
 const Users_repositories = db.users_repositories;
+const Commits = db.commits;
 
 //function for get  all project details from github
 const getProjectDetailsFromGithub = async (project, projectUrlInfo) => {
@@ -246,6 +247,12 @@ const checkBranchNameIsSame = async (repository, projectBranches) => {
       repoUrlInfo,
       repository.id
     );
+    await githubServices.getCommitsByBranches(
+      repository,
+      repoUrlInfo,
+      branches,
+      repository.id
+    );
     matchingBranches = projectBranches.map((branch) => {
       for (let index = 0; index < branches.length; index++) {
         const ele = branches[index];
@@ -266,6 +273,11 @@ const checkBranchNameIsSame = async (repository, projectBranches) => {
       repoUrlInfo,
       repository.id
     );
+    await gitlabServices.getCommitsByBranches(
+      repository,
+      branches,
+      repository.id
+    );
     matchingBranches = projectBranches.map((branch) => {
       for (let index = 0; index < branches.length; index++) {
         const ele = branches[index];
@@ -284,6 +296,12 @@ const checkBranchNameIsSame = async (repository, projectBranches) => {
   } else if (repository.source_type == "github") {
     branches = await bitbucketServices.getAllBranchesOfRepo(
       repoUrlInfo,
+      repository.id
+    );
+    await bitbucketServices.getCommitsByBranches(
+      repository,
+      repoUrlInfo,
+      branches,
       repository.id
     );
     matchingBranches = projectBranches.map((branch) => {
@@ -308,6 +326,59 @@ const checkBranchNameIsSame = async (repository, projectBranches) => {
     return 0;
   }
 };
+const getCommitIdsFromProjectCommits = async (repository, commits) => {
+  let commitIds = [];
+  for (const key in commits) {
+    const element = commits[key];
+    if (
+      key == "staging" ||
+      key == "production" ||
+      key == "master" ||
+      key == "main"
+    ) {
+      element.map((commit) => {
+        if (repository.source_type == "github") {
+          commitIds.push(commit.sha);
+        } else if (repository.source_type == "gitlab") {
+          commitIds.push(commit.id);
+        } else if (repository.source_type == "bitbucket") {
+          commitIds.push(commit.hash);
+        }
+      });
+    }
+  }
+  return commitIds;
+};
+const checkCommitIds = async (repository, project) => {
+  try {
+    let queryObj = {
+      repository_id: repository.id,
+    };
+    let commitIds = await getCommitIdsFromProjectCommits(
+      repository,
+      project.commits
+    );
+    if (commitIds.length > 0) {
+      queryObj.commit_id = commitIds;
+    }
+    let matchingCommits = await Commits.findAll({
+      where: queryObj,
+    });
+    if (matchingCommits.length > 5) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing in check suspicious user repo commits function while checking matching commits available in personal repository"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
     let dataObj = await user.repositories.map(async (repository) => {
@@ -320,6 +391,7 @@ const checkUsersRepos = async (projectDetail) => {
         repository,
         projectDetail.branches
       );
+      thresholdObj.branch = await checkCommitIds(repository, projectDetail);
     });
     await Promise.all(dataObj);
   });
