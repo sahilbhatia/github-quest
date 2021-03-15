@@ -379,6 +379,25 @@ const checkCommitIds = async (repository, project) => {
     return false;
   }
 };
+const markAsSuspiciousRepository = async (repositoryId) => {
+  try {
+    let updateObj = {
+      is_suspicious: true,
+    };
+    await Repositories.update(updateObj, {
+      returning: true,
+      where: {
+        id: repositoryId,
+      },
+    });
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing in mark as suspicious user repo function");
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
     let dataObj = await user.repositories.map(async (repository) => {
@@ -391,7 +410,11 @@ const checkUsersRepos = async (projectDetail) => {
         repository,
         projectDetail.branches
       );
-      thresholdObj.branch = await checkCommitIds(repository, projectDetail);
+      thresholdObj.commit = await checkCommitIds(repository, projectDetail);
+      if (thresholdObj.commit) {
+        await markAsSuspiciousRepository(repository.id);
+        return null;
+      }
     });
     await Promise.all(dataObj);
   });
