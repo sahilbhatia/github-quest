@@ -175,15 +175,15 @@ const avoidProjectCreatorUserQuery = (userIds, projectUrlInfo) => {
   };
   if (projectUrlInfo.sourceType == "github") {
     queryObj.github_handle = {
-      [Op.not]: projectUrlInfo.repositorieName,
+      [Op.not]: projectUrlInfo.handle,
     };
   } else if (projectUrlInfo.sourceType == "gitlab") {
     queryObj.gitlab_handle = {
-      [Op.not]: projectUrlInfo.repositorieName,
+      [Op.not]: projectUrlInfo.handle,
     };
   } else if (projectUrlInfo.sourceType == "bitbucket") {
     queryObj.bitbucket_handle = {
-      [Op.not]: projectUrlInfo.repositorieName,
+      [Op.not]: projectUrlInfo.handle,
     };
   }
   return queryObj;
@@ -226,14 +226,14 @@ const getAllActiveUsersInfoList = async (active_users, projectUrlInfo) => {
 
 const checkRepositoryNameIsSame = (repository, projectUrlInfo) => {
   let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
-  if (repoUrlInfo.repositorieName === projectUrlInfo.repositorieName) {
-    return 1;
-  } else if (
+  if (
     repoUrlInfo.repositorieName.localeCompare(
       projectUrlInfo.repositorieName
     ) === 1
   ) {
-    return 0.5;
+    return 1;
+  } else {
+    return 0;
   }
 };
 const checkBranchNameIsSame = async (repository, projectBranches) => {
