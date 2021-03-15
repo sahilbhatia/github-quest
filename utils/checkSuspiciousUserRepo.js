@@ -398,6 +398,52 @@ const markAsSuspiciousRepository = async (repositoryId) => {
     return false;
   }
 };
+
+const checkBlobIdsIsSame = (
+  repository,
+  ProjectFileStructure,
+  projectUrlInfo
+) => {
+  let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
+  if (
+    repoUrlInfo.handle === "bitbucket" ||
+    projectUrlInfo.handle === "bitbucket"
+  ) {
+    return false;
+  }
+  for (const key in ProjectFileStructure) {
+    const fileOfSingleBranch = ProjectFileStructure[key];
+    let matchingBlobs = [];
+    for (let index = 0; index < fileOfSingleBranch.length; index++) {
+      const element = fileOfSingleBranch[index];
+      if (
+        repoUrlInfo.handle === "github" &&
+        projectUrlInfo.handle === "github"
+      ) {
+        element;
+        matchingBlobs;
+      } else if (
+        repoUrlInfo.handle === "gitlab" &&
+        projectUrlInfo.handle === "gitlab"
+      ) {
+        element;
+        matchingBlobs;
+      } else if (
+        repoUrlInfo.handle === "gitlab" &&
+        projectUrlInfo.handle === "github"
+      ) {
+        element;
+        matchingBlobs;
+      } else if (
+        repoUrlInfo.handle === "github" &&
+        projectUrlInfo.handle === "gitlab"
+      ) {
+        element;
+        matchingBlobs;
+      }
+    }
+  }
+};
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
     let dataObj = await user.repositories.map(async (repository) => {
@@ -415,6 +461,11 @@ const checkUsersRepos = async (projectDetail) => {
         await markAsSuspiciousRepository(repository.id);
         return null;
       }
+      thresholdObj.blob = await checkBlobIdsIsSame(
+        repository,
+        projectDetail.fileStructure,
+        projectDetail.projectUrlInfo
+      );
     });
     await Promise.all(dataObj);
   });
