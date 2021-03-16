@@ -2,6 +2,7 @@ const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
 const logger = log4js.getLogger();
 
+//chech a file name is exist in file constants list
 const FileIsExistInConstantConfigList = (file, FileConstants) => {
   try {
     let fileStatus = false;

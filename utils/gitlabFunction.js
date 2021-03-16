@@ -37,6 +37,7 @@ const isRepositoryExist = async (repoInfo) => {
     return isExist;
   }
 };
+//function for get a repository file structure by each branch from gitlab.
 const getFileDirStructure = async (projectId, branches, FileConstants) => {
   let filesListOfBranches = {};
   let data = await branches.map(async (branch) => {

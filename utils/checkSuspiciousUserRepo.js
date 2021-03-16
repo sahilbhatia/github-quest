@@ -506,6 +506,10 @@ const checkUsersRepos = async (projectDetail) => {
         projectDetail.fileStructure,
         projectDetail.projectUrlInfo
       );
+      if (thresholdObj.blob) {
+        await markAsSuspiciousRepository(repository.id);
+        return null;
+      }
     });
     await Promise.all(dataObj);
   });

@@ -13,6 +13,7 @@ const Users_repositories = db.users_repositories;
 const commonFunction = require("./commonFunction");
 const bitbucketServices = require("../services/bitbucketServices");
 
+//function for get a repository file structure by each branch from bitbucket
 const getFileDirStructure = async (repoUrlInfo, branches, FileConstants) => {
   let filesListOfBranches = {};
   let data = await branches.map(async (branch) => {

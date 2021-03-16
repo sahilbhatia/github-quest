@@ -42,6 +42,7 @@ const getUpdatedRepositories = async (databaseUser) => {
   }
 };
 
+//function for get a repository file structure by each branch from github
 const getFileDirStructure = async (repoUrlInfo, branches, FileConstants) => {
   let filesListOfBranches = {};
   let data = await branches.map(async (branch) => {
