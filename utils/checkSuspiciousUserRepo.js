@@ -399,7 +399,7 @@ const markAsSuspiciousRepository = async (repositoryId) => {
   }
 };
 
-const checkBlobIdsIsSame = (
+const checkBlobIdsIsSame = async (
   repository,
   ProjectFileStructure,
   projectUrlInfo
@@ -411,38 +411,68 @@ const checkBlobIdsIsSame = (
   ) {
     return false;
   }
+  let matchingBlobs = [];
+  let blobThreshold = false;
   for (const key in ProjectFileStructure) {
     const fileOfSingleBranch = ProjectFileStructure[key];
-    let matchingBlobs = [];
+    let matchingBlobsOfEachBranch = [];
     for (let index = 0; index < fileOfSingleBranch.length; index++) {
       const element = fileOfSingleBranch[index];
       if (
         repoUrlInfo.handle === "github" &&
         projectUrlInfo.handle === "github"
       ) {
-        element;
-        matchingBlobs;
+        let blob = await githubServices.getBlobByBlobId(
+          repoUrlInfo,
+          element.sha
+        );
+        if (blob) {
+          matchingBlobsOfEachBranch.push(blob);
+        }
       } else if (
         repoUrlInfo.handle === "gitlab" &&
         projectUrlInfo.handle === "gitlab"
       ) {
-        element;
-        matchingBlobs;
+        let blob = await gitlabServices.getBlobByBlobId(
+          repository.id,
+          element.id
+        );
+        if (blob) {
+          matchingBlobsOfEachBranch.push(blob);
+        }
       } else if (
         repoUrlInfo.handle === "gitlab" &&
         projectUrlInfo.handle === "github"
       ) {
-        element;
-        matchingBlobs;
+        let blob = await githubServices.getBlobByBlobId(
+          repoUrlInfo,
+          element.sha
+        );
+        if (blob) {
+          matchingBlobsOfEachBranch.push(blob);
+        }
       } else if (
         repoUrlInfo.handle === "github" &&
         projectUrlInfo.handle === "gitlab"
       ) {
-        element;
-        matchingBlobs;
+        let blob = await gitlabServices.getBlobByBlobId(
+          repository.id,
+          element.id
+        );
+        if (blob) {
+          matchingBlobsOfEachBranch.push(blob);
+        }
+      }
+      if (matchingBlobsOfEachBranch.length > 5) {
+        matchingBlobs = matchingBlobsOfEachBranch;
+        break;
       }
     }
+    if (matchingBlobs.length > 5) {
+      break;
+    }
   }
+  return blobThreshold;
 };
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
