@@ -7,6 +7,7 @@ const db = require("../models/sequelize");
 const Branches = db.branches;
 const Commits = db.commits;
 
+//function for get object as per database branch schema format
 const getBranchObjBySourceType = (repository_id, branch, sourceType) => {
   let branchObj = {
     name: branch.name,
@@ -20,6 +21,7 @@ const getBranchObjBySourceType = (repository_id, branch, sourceType) => {
   }
   return branchObj;
 };
+//function for store a branch in database
 const insertBranch = async (repositoryId, item, sourceType) => {
   try {
     let branchObj = getBranchObjBySourceType(repositoryId, item, sourceType);
@@ -48,7 +50,7 @@ const insertBranch = async (repositoryId, item, sourceType) => {
     return null;
   }
 };
-
+//function for get object as per database commit schema format
 const getCommitObjBySourceType = (repositoryId, commit, sourceType) => {
   const commitObj = {
     commit_id: commit.sha,
@@ -65,7 +67,7 @@ const getCommitObjBySourceType = (repositoryId, commit, sourceType) => {
   }
   return commitObj;
 };
-
+//function for get query object as per sourceType
 const getCommitQueryBySourceType = (repositoryId, commit, sourceType) => {
   let query = {
     repository_id: repositoryId,
@@ -78,7 +80,7 @@ const getCommitQueryBySourceType = (repositoryId, commit, sourceType) => {
   }
   return query;
 };
-
+//function for store a commits in database
 const insertCommits = async (repositoryId, item, sourceType) => {
   try {
     let commitObj = getCommitObjBySourceType(repositoryId, item, sourceType);
