@@ -415,8 +415,8 @@ const checkBlobIdsIsSame = async (
 ) => {
   let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
   if (
-    repoUrlInfo.handle === "bitbucket" ||
-    projectUrlInfo.handle === "bitbucket"
+    repoUrlInfo.sourceType === "bitbucket" ||
+    projectUrlInfo.sourceType === "bitbucket"
   ) {
     return false;
   }
@@ -428,8 +428,8 @@ const checkBlobIdsIsSame = async (
     for (let index = 0; index < fileOfSingleBranch.length; index++) {
       const element = fileOfSingleBranch[index];
       if (
-        repoUrlInfo.handle === "github" &&
-        projectUrlInfo.handle === "github"
+        repoUrlInfo.sourceType === "github" &&
+        projectUrlInfo.sourceType === "github"
       ) {
         let blob = await githubServices.getBlobByBlobId(
           repoUrlInfo,
@@ -439,8 +439,8 @@ const checkBlobIdsIsSame = async (
           matchingBlobsOfEachBranch.push(blob);
         }
       } else if (
-        repoUrlInfo.handle === "gitlab" &&
-        projectUrlInfo.handle === "gitlab"
+        repoUrlInfo.sourceType === "gitlab" &&
+        projectUrlInfo.sourceType === "gitlab"
       ) {
         let blob = await gitlabServices.getBlobByBlobId(
           repository.id,
@@ -450,8 +450,8 @@ const checkBlobIdsIsSame = async (
           matchingBlobsOfEachBranch.push(blob);
         }
       } else if (
-        repoUrlInfo.handle === "gitlab" &&
-        projectUrlInfo.handle === "github"
+        repoUrlInfo.sourceType === "gitlab" &&
+        projectUrlInfo.sourceType === "github"
       ) {
         let blob = await githubServices.getBlobByBlobId(
           repoUrlInfo,
@@ -461,8 +461,8 @@ const checkBlobIdsIsSame = async (
           matchingBlobsOfEachBranch.push(blob);
         }
       } else if (
-        repoUrlInfo.handle === "github" &&
-        projectUrlInfo.handle === "gitlab"
+        repoUrlInfo.sourceType === "github" &&
+        projectUrlInfo.sourceType === "gitlab"
       ) {
         let blob = await gitlabServices.getBlobByBlobId(
           repository.id,
@@ -478,6 +478,7 @@ const checkBlobIdsIsSame = async (
       }
     }
     if (matchingBlobs.length > 5) {
+      blobThreshold = true;
       break;
     }
   }
