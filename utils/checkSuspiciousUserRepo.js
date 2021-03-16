@@ -83,7 +83,7 @@ const getProjectDetailsFromGitlab = async (project) => {
   return project;
 };
 
-//function for get  all project details from bitbucket
+//function for get all project details from bitbucket
 const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
   project.repository = await Repositories.findOne({
     where: { source_repo_id: project.repoResponce.uuid.toString() },
@@ -115,6 +115,7 @@ const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
   return project;
 };
 
+//function for get all project details
 const getProjectDetails = async (project, projectUrlInfo) => {
   if (projectUrlInfo.sourceType == "github") {
     project = await getProjectDetailsFromGithub(project, projectUrlInfo);
@@ -131,6 +132,7 @@ const getProjectDetails = async (project, projectUrlInfo) => {
   }
 };
 
+//function for get all repository list by userId
 const getRepositoryByUserId = async (user_id) => {
   try {
     let userRepositories = await Users_repositories.findAll({
@@ -170,6 +172,7 @@ const getRepositoryByUserId = async (user_id) => {
   }
 };
 
+//function for get qurey and avoid project creator user
 const avoidProjectCreatorUserQuery = (userIds, projectUrlInfo) => {
   let queryObj = {
     org_user_id: userIds,
@@ -189,6 +192,7 @@ const avoidProjectCreatorUserQuery = (userIds, projectUrlInfo) => {
   }
   return queryObj;
 };
+//function for get all active user details from database
 const getAllActiveUsersInfoList = async (active_users, projectUrlInfo) => {
   try {
     let userList = [];
@@ -225,6 +229,7 @@ const getAllActiveUsersInfoList = async (active_users, projectUrlInfo) => {
   }
 };
 
+//function for check a repository name with project name ,Is same?
 const checkRepositoryNameIsSame = (repository, projectUrlInfo) => {
   let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
   if (
@@ -237,6 +242,7 @@ const checkRepositoryNameIsSame = (repository, projectUrlInfo) => {
     return 0;
   }
 };
+//function for check a repository branches name with project branches name ,Is same?
 const checkBranchNameIsSame = async (repository, projectBranches) => {
   let branches = [];
   let matchingBranches = [];
@@ -326,6 +332,7 @@ const checkBranchNameIsSame = async (repository, projectBranches) => {
     return 0;
   }
 };
+//function for get commitIds list in  project commits
 const getCommitIdsFromProjectCommits = async (repository, commits) => {
   let commitIds = [];
   for (const key in commits) {
@@ -349,6 +356,7 @@ const getCommitIdsFromProjectCommits = async (repository, commits) => {
   }
   return commitIds;
 };
+//function for check repository commits ids with project commits ids, Is Same?
 const checkCommitIds = async (repository, project) => {
   try {
     let queryObj = {
@@ -379,6 +387,7 @@ const checkCommitIds = async (repository, project) => {
     return false;
   }
 };
+//function for mark repository suspicious as true in database
 const markAsSuspiciousRepository = async (repositoryId) => {
   try {
     let updateObj = {
@@ -398,7 +407,7 @@ const markAsSuspiciousRepository = async (repositoryId) => {
     return false;
   }
 };
-
+//function for check repository blob ids with project blob ids, Is Same?
 const checkBlobIdsIsSame = async (
   repository,
   ProjectFileStructure,
@@ -474,6 +483,7 @@ const checkBlobIdsIsSame = async (
   }
   return blobThreshold;
 };
+//function for check repository is suspicious or not?
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
     let dataObj = await user.repositories.map(async (repository) => {
