@@ -152,12 +152,14 @@ const getCommitByCommitId = async (repoUrlInfo, commit_id) => {
 
     return commit.body;
   } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while get commit details by commit_id from github"
-    );
-    logger.error(err);
-    logger.info("=========================================");
+    if (err.status !== 404) {
+      Sentry.captureException(err);
+      logger.error(
+        "Error executing while get commit details by commit_id from github"
+      );
+      logger.error(err);
+      logger.info("=========================================");
+    }
     return false;
   }
 };
@@ -173,12 +175,14 @@ const getBlobByBlobId = async (repoUrlInfo, blob_id) => {
 
     return blob.body;
   } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while get blob(file) details by blob_id from github"
-    );
-    logger.error(err);
-    logger.info("=========================================");
+    if (err.status !== 404) {
+      Sentry.captureException(err);
+      logger.error(
+        "Error executing while get blob(file) details by blob_id from github"
+      );
+      logger.error(err);
+      logger.info("=========================================");
+    }
     return false;
   }
 };

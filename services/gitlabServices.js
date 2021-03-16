@@ -140,12 +140,14 @@ const getCommitByCommitId = async (project_id, commit_id) => {
       return false;
     }
   } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while get single commit detail by commit id function"
-    );
-    logger.error(err);
-    logger.info("=========================================");
+    if (err.status !== 404) {
+      Sentry.captureException(err);
+      logger.error(
+        "Error executing while get single commit detail by commit id function"
+      );
+      logger.error(err);
+      logger.info("=========================================");
+    }
     return null;
   }
 };
@@ -167,12 +169,14 @@ const getBlobByBlobId = async (project_id, blob_id) => {
       return false;
     }
   } catch (err) {
-    Sentry.captureException(err);
-    logger.error(
-      "Error executing while get single blob detail by blob id function"
-    );
-    logger.error(err);
-    logger.info("=========================================");
+    if (err.status !== 404) {
+      Sentry.captureException(err);
+      logger.error(
+        "Error executing while get single blob detail by blob id function"
+      );
+      logger.error(err);
+      logger.info("=========================================");
+    }
     return null;
   }
 };
