@@ -326,7 +326,7 @@ const checkBranchNameIsSame = async (repository, projectBranches) => {
       }
     });
   }
-  if (matchingBranches.length > 3) {
+  if (matchingBranches.length > parseInt(process.env.MATCHING_BRANCHES_COUNT)) {
     return 1;
   } else {
     return 0;
@@ -372,7 +372,9 @@ const checkCommitIds = async (repository, project) => {
     let matchingCommits = await Commits.findAll({
       where: queryObj,
     });
-    if (matchingCommits.length > 5) {
+    if (
+      matchingCommits.length >= parseInt(process.env.MATCHING_COMMITS_COUNT)
+    ) {
       return true;
     } else {
       return false;
@@ -477,7 +479,7 @@ const checkBlobIdsIsSame = async (
         break;
       }
     }
-    if (matchingBlobs.length > 5) {
+    if (matchingBlobs.length > parseInt(process.env.MATCHING_BLOBS_COUNT)) {
       blobThreshold = true;
       break;
     }
@@ -500,7 +502,7 @@ const checkUsersRepos = async (projectDetail) => {
       thresholdObj.commit = await checkCommitIds(repository, projectDetail);
       if (thresholdObj.commit) {
         await markAsSuspiciousRepository(repository.id);
-        return null;
+        return null; // continue the loop
       }
       thresholdObj.blob = await checkBlobIdsIsSame(
         repository,
@@ -509,7 +511,7 @@ const checkUsersRepos = async (projectDetail) => {
       );
       if (thresholdObj.blob) {
         await markAsSuspiciousRepository(repository.id);
-        return null;
+        return null; // continue the loop
       }
     });
     await Promise.all(dataObj);
