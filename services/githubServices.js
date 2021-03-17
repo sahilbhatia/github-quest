@@ -175,7 +175,7 @@ const getBlobByBlobId = async (repoUrlInfo, blob_id) => {
 
     return blob.body;
   } catch (err) {
-    if (err.status !== 404) {
+    if (err.status !== 404 || err.status !== 409) {
       Sentry.captureException(err);
       logger.error(
         "Error executing while get blob(file) details by blob_id from github"

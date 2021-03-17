@@ -169,7 +169,7 @@ const getBlobByBlobId = async (project_id, blob_id) => {
       return false;
     }
   } catch (err) {
-    if (err.status !== 404) {
+    if (err.status !== 404 || err.status !== 409) {
       Sentry.captureException(err);
       logger.error(
         "Error executing while get single blob detail by blob id function"
