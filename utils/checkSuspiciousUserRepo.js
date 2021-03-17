@@ -6,8 +6,7 @@ const gitlabFunction = require("./gitlabFunction");
 const bitbucketFunction = require("./bitbucketFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
-const db = require("../models/sequelize");
-const Repositories = db.repositories;
+const Repositories = dbConn.repositories;
 
 const getProjectDetails = async (project, projectUrlInfo) => {
   if (projectUrlInfo.sourceType == "github") {
