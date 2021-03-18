@@ -533,7 +533,7 @@ const checkTagsNameIsSame = async (repository, projectTags, projectId) => {
   }
 };
 //function for check a repository tags with project tags ,Is same?
-const checkLabelsNameIsSame = async (repository, projectLabels) => {
+const checkLabelsNameIsSame = async (repository, projectLabels, projectId) => {
   let matchingLabels = [];
   let repositoryLabels = [];
   let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
@@ -551,8 +551,18 @@ const checkLabelsNameIsSame = async (repository, projectLabels) => {
           }
         }
       });
+    } else if (repository.source_type == "gitlab") {
+      repositoryLabels = await gitlabServices.getLabels(projectId);
+      matchingLabels = projectLabels.map((tag) => {
+        for (let index = 0; index < repositoryLabels.length; index++) {
+          const ele = repositoryLabels[index];
+          if (ele.name.localeCompare(tag.name) === 1) {
+            return ele;
+          }
+        }
+      });
     }
-    if (matchingLabels.length >= process.env.MATCHING_TAGS_COUNT) {
+    if (matchingLabels.length >= process.env.MATCHING_LABELS_COUNT) {
       return matchingLabels;
     } else {
       return false;
