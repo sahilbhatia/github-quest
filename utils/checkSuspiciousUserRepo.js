@@ -486,6 +486,49 @@ const checkBlobIdsIsSame = async (
   }
   return blobThreshold;
 };
+//function for check a repository tags with project tags ,Is same?
+const checkTagsNameIsSame = async (repository, projectTags, projectId) => {
+  let matchingTags = [];
+  let repositoryTags = [];
+  let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
+
+  if (repository.source_type == "github") {
+    repositoryTags = await githubServices.getTags(repoUrlInfo);
+    matchingTags = projectTags.map((tag) => {
+      for (let index = 0; index < repositoryTags.length; index++) {
+        const ele = repositoryTags[index];
+        if (ele.name.localeCompare(tag.name) === 1) {
+          return ele;
+        }
+      }
+    });
+  } else if (repository.source_type == "gitlab") {
+    repositoryTags = await gitlabServices.getTags(projectId);
+    matchingTags = projectTags.map((tag) => {
+      for (let index = 0; index < repositoryTags.length; index++) {
+        const ele = repositoryTags[index];
+        if (ele.name.localeCompare(tag.name) === 1) {
+          return ele;
+        }
+      }
+    });
+  } else if (repository.source_type == "bitbucket") {
+    repositoryTags = await bitbucketServices.getTags(repoUrlInfo);
+    matchingTags = projectTags.map((tag) => {
+      for (let index = 0; index < repositoryTags.length; index++) {
+        const ele = repositoryTags[index];
+        if (ele.name.localeCompare(tag.name) === 1) {
+          return ele;
+        }
+      }
+    });
+  }
+  if (matchingTags.length >= 3) {
+    return matchingTags;
+  } else {
+    return false;
+  }
+};
 //function for check repository is suspicious or not?
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
@@ -513,6 +556,11 @@ const checkUsersRepos = async (projectDetail) => {
         await markAsSuspiciousRepository(repository.id);
         return null; // continue the loop
       }
+      thresholdObj.tags = await checkTagsNameIsSame(
+        repository,
+        projectDetail.tags,
+        projectDetail.repoResponce.id
+      );
     });
     await Promise.all(dataObj);
   });

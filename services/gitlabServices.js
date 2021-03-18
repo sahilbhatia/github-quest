@@ -197,6 +197,22 @@ const getFileList = async (url) => {
   }
 };
 
+//get a filelist by the url from gitlab
+const getTags = async (projectId) => {
+  try {
+    const fileList = await request
+      .get(`https://gitlab.com/api/v4/projects/${projectId}/repository/tags`)
+      .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+    return fileList.body;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing while get tags list of gitlab repository");
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
+
 module.exports = {
   getLabels: getLabels,
   getRepositoryFromGitlab: getRepositoryFromGitlab,
@@ -205,4 +221,5 @@ module.exports = {
   getCommitByCommitId: getCommitByCommitId,
   getBlobByBlobId: getBlobByBlobId,
   getFileList: getFileList,
+  getTags: getTags,
 };
