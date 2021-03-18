@@ -87,12 +87,37 @@ const getRepoForSpecificUser = async (databaseUser) => {
   return usersRepos;
 };
 
+//function for check the repo is existe or not if yes the update
+const isRepositoryExist = async (repoInfo) => {
+  let isExist = false;
+  let result = await Repositories.update(repoInfo, {
+    where: {
+      source_repo_id: repoInfo.source_repo_id,
+    },
+  });
+  result.map((item) => {
+    if (item > 0) {
+      isExist = true;
+    }
+  });
+  if (isExist) {
+    let updatedRepo = await Repositories.findOne({
+      where: {
+        source_repo_id: repoInfo.source_repo_id,
+      },
+    });
+    return updatedRepo;
+  } else {
+    return isExist;
+  }
+};
+
 //function for insert new repository
 const insertNewRepo = async (item) => {
   try {
-    const insertRepos = await Repositories.create({
+    let repoObj = {
       source_type: "github",
-      source_repo_id: item.id,
+      source_repo_id: item.id.toString(),
       name: item.name,
       url: item.html_url,
       description: item.description,
@@ -103,8 +128,14 @@ const insertNewRepo = async (item) => {
       created_at: item.created_at,
       updated_at: item.updated_at,
       review: "pending",
-    });
-    return insertRepos;
+    };
+    let updatedRepo = await isRepositoryExist(repoObj);
+    if (!updatedRepo) {
+      let insertRepos = await Repositories.create(repoObj);
+      return insertRepos;
+    } else {
+      return updatedRepo;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
