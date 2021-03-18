@@ -40,6 +40,33 @@ const getUpdatedRepositories = async (databaseUser) => {
   }
 };
 
+//function for get all branches of single repository
+const getAllBranchesOfRepo = async (repoInfo) => {
+  try {
+    let ProjectBranches = await request
+      .get(
+        "https://api.github.com/repos/" +
+          repoInfo.handle +
+          "/" +
+          repoInfo.repositorieName +
+          "/branches"
+      )
+      .set(headers);
+    if (ProjectBranches.body) {
+      return ProjectBranches.body;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all branches of repo github repositories in get all repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 //function for get all repositories
 const getAllRepositories = async (databaseUser) => {
   try {
@@ -87,12 +114,37 @@ const getRepoForSpecificUser = async (databaseUser) => {
   return usersRepos;
 };
 
+//function for check the repo is existe or not if yes the update
+const isRepositoryExist = async (repoInfo) => {
+  let isExist = false;
+  let result = await Repositories.update(repoInfo, {
+    where: {
+      source_repo_id: repoInfo.source_repo_id,
+    },
+  });
+  result.map((item) => {
+    if (item > 0) {
+      isExist = true;
+    }
+  });
+  if (isExist) {
+    let updatedRepo = await Repositories.findOne({
+      where: {
+        source_repo_id: repoInfo.source_repo_id,
+      },
+    });
+    return updatedRepo;
+  } else {
+    return isExist;
+  }
+};
+
 //function for insert new repository
 const insertNewRepo = async (item) => {
   try {
-    const insertRepos = await Repositories.create({
+    let repoObj = {
       source_type: "github",
-      source_repo_id: item.id,
+      source_repo_id: item.id.toString(),
       name: item.name,
       url: item.html_url,
       description: item.description,
@@ -103,8 +155,14 @@ const insertNewRepo = async (item) => {
       created_at: item.created_at,
       updated_at: item.updated_at,
       review: "pending",
-    });
-    return insertRepos;
+    };
+    let updatedRepo = await isRepositoryExist(repoObj);
+    if (!updatedRepo) {
+      let insertRepos = await Repositories.create(repoObj);
+      return insertRepos;
+    } else {
+      return updatedRepo;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
@@ -616,6 +674,29 @@ const getCommits = async (repo, databaseUser) => {
   return commits.body;
 };
 
+//function for get commits by branches head sha
+const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
+  try {
+    let commitsObj = {};
+    let data = await branches.map(async (branch) => {
+      //can we just hit this API for master ,staging and production branches
+      const url = `https://api.github.com/repos/${repoUrlInfo.handle}/${repo.name}/commits?sha=${branch.commit.sha}`;
+      const commits = await request.get(url).set(headers);
+      commitsObj[branch.name] = commits.body;
+    });
+    await Promise.all(data);
+    return commitsObj;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all commits of each branches of repo github repositories in get all repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
 //function for update review status
 const updateReviewStatus = async (item, result, databaseUser) => {
   try {
@@ -871,4 +952,11 @@ module.exports.insertGithubRepos = async (databaseUser) => {
     }
   }
   return null;
+};
+
+module.exports = {
+  getAllRepositories: getAllRepositories,
+  getAllBranchesOfRepo: getAllBranchesOfRepo,
+  getCommits: getCommits,
+  getCommitsByBranches: getCommitsByBranches,
 };
