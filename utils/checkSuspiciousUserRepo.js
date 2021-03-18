@@ -532,7 +532,7 @@ const checkTagsNameIsSame = async (repository, projectTags, projectId) => {
     return false;
   }
 };
-//function for check a repository tags with project tags ,Is same?
+//function for check a repository labels with project labels ,Is same?
 const checkLabelsNameIsSame = async (repository, projectLabels, projectId) => {
   let matchingLabels = [];
   let repositoryLabels = [];
@@ -564,6 +564,33 @@ const checkLabelsNameIsSame = async (repository, projectLabels, projectId) => {
     }
     if (matchingLabels.length >= process.env.MATCHING_LABELS_COUNT) {
       return matchingLabels;
+    } else {
+      return false;
+    }
+  }
+};
+//function for check a repository languages with project languages ,Is same?
+const checkLanguagesNameIsSame = async (repository, projectLanguages) => {
+  let matchingLanguages = [];
+  let repositoryLanguages = [];
+  let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
+
+  if (projectLanguages.length <= 0) {
+    return false;
+  } else {
+    if (repository.source_type == "github") {
+      repositoryLanguages = await githubServices.getLabels(repoUrlInfo);
+      matchingLanguages = projectLanguages.map((tag) => {
+        for (let index = 0; index < repositoryLanguages.length; index++) {
+          const ele = repositoryLanguages[index];
+          if (ele.name.localeCompare(tag.name) === 1) {
+            return ele;
+          }
+        }
+      });
+    }
+    if (matchingLanguages.length > 2) {
+      return true;
     } else {
       return false;
     }
@@ -601,9 +628,14 @@ const checkUsersRepos = async (projectDetail) => {
         projectDetail.tags,
         projectDetail.repoResponce.id
       );
-      thresholdObj.tags = await checkLabelsNameIsSame(
+      thresholdObj.labels = await checkLabelsNameIsSame(
         repository,
-        projectDetail.tags,
+        projectDetail.labels,
+        projectDetail.repoResponce.id
+      );
+      thresholdObj.language = await checkLanguagesNameIsSame(
+        repository,
+        projectDetail.language,
         projectDetail.repoResponce.id
       );
     });
