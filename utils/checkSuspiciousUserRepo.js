@@ -111,6 +111,9 @@ const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
     );
     project.language = project.repoResponce.language;
     project.tags = await bitbucketServices.getTags(projectUrlInfo);
+    project.labels = project.repoResponce.language
+      ? project.repoResponce.language
+      : [];
   }
   return project;
 };
@@ -529,6 +532,33 @@ const checkTagsNameIsSame = async (repository, projectTags, projectId) => {
     return false;
   }
 };
+//function for check a repository tags with project tags ,Is same?
+const checkLabelsNameIsSame = async (repository, projectLabels) => {
+  let matchingLabels = [];
+  let repositoryLabels = [];
+  let repoUrlInfo = commonFunction.getInfoByProjectUrl(repository.url);
+
+  if (projectLabels.length <= 0) {
+    return false;
+  } else {
+    if (repository.source_type == "github") {
+      repositoryLabels = await githubServices.getLabels(repoUrlInfo);
+      matchingLabels = projectLabels.map((tag) => {
+        for (let index = 0; index < repositoryLabels.length; index++) {
+          const ele = repositoryLabels[index];
+          if (ele.name.localeCompare(tag.name) === 1) {
+            return ele;
+          }
+        }
+      });
+    }
+    if (matchingLabels.length >= process.env.MATCHING_TAGS_COUNT) {
+      return matchingLabels;
+    } else {
+      return false;
+    }
+  }
+};
 //function for check repository is suspicious or not?
 const checkUsersRepos = async (projectDetail) => {
   let data = await projectDetail.projectActiveUsers.map(async (user) => {
@@ -557,6 +587,11 @@ const checkUsersRepos = async (projectDetail) => {
         return null; // continue the loop
       }
       thresholdObj.tags = await checkTagsNameIsSame(
+        repository,
+        projectDetail.tags,
+        projectDetail.repoResponce.id
+      );
+      thresholdObj.tags = await checkLabelsNameIsSame(
         repository,
         projectDetail.tags,
         projectDetail.repoResponce.id
