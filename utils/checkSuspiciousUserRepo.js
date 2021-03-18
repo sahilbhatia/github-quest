@@ -523,7 +523,7 @@ const checkTagsNameIsSame = async (repository, projectTags, projectId) => {
       }
     });
   }
-  if (matchingTags.length >= 3) {
+  if (matchingTags.length >= process.env.MATCHING_TAGS_COUNT) {
     return matchingTags;
   } else {
     return false;
