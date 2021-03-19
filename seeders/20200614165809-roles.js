@@ -1,11 +1,12 @@
 "use strict";
+const db = require("../models/sequelize");
+db.sequelize;
+const Roles = db.roles;
 
 module.exports = {
   up: async (queryInterface) => {
-    const rolesCount = await queryInterface.sequelize.query(
-      "SELECT count(*) from roles;"
-    );
-    if (rolesCount[0][0].count > 0) {
+    const rolesCount = await Roles.count();
+    if (rolesCount > 0) {
       return rolesCount;
     } else {
       return queryInterface.bulkInsert("roles", [
