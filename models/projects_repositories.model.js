@@ -8,13 +8,13 @@ module.exports = (sequelize, Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      repository_url: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-      },
-      host: {
-        type: Sequelize.STRING(70),
-        allowNull: true,
+      repository_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: "repositories",
+          key: "id",
+        },
       },
       project_id: {
         type: Sequelize.INTEGER,
@@ -42,6 +42,9 @@ module.exports = (sequelize, Sequelize) => {
   ProjectRepositories.associate = (models) => {
     ProjectRepositories.belongsTo(models.projects, {
       foreignKey: { name: "project_id", allowNull: true },
+    });
+    ProjectRepositories.belongsTo(models.repositories, {
+      foreignKey: { name: "repository_id", allowNull: true },
     });
   };
   return ProjectRepositories;
