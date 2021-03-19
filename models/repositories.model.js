@@ -72,6 +72,11 @@ module.exports = (sequelize, Sequelize) => {
         defaultValue: false,
         allowNull: false,
       },
+      is_personal: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+        allowNull: false,
+      },
       parent_repo_id: {
         type: Sequelize.INTEGER,
         references: {
@@ -98,6 +103,9 @@ module.exports = (sequelize, Sequelize) => {
   );
   Repositories.associate = (models) => {
     Repositories.hasMany(models.users_repositories, {
+      foreignKey: { name: "repository_id", allowNull: true },
+    });
+    Repositories.hasMany(models.projects_repositories, {
       foreignKey: { name: "repository_id", allowNull: true },
     });
     Repositories.belongsTo(models.repositories, {
