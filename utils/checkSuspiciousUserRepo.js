@@ -619,7 +619,7 @@ const checkLanguagesNameIsSame = async (repository, projectLanguages) => {
         });
       }
     }
-    if (matchingLanguages.length > 2) {
+    if (matchingLanguages.length > process.env.MATCHING_LANGUAGES_COUNT) {
       return true;
     } else {
       return false;
