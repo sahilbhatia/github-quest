@@ -121,8 +121,8 @@ const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
       project.language = project.repoResponce.language.split(",");
     }
     project.tags = await bitbucketServices.getTags(projectUrlInfo);
-    project.labels = project.repoResponce.language
-      ? project.repoResponce.language
+    project.labels = project.repoResponce.labels
+      ? project.repoResponce.labels
       : [];
   }
   return project;
@@ -621,34 +621,44 @@ const checkUsersRepos = async (projectDetail) => {
         repository,
         projectDetail.projectUrlInfo
       );
-      thresholdObj.branch = await checkBranchNameIsSame(
-        repository,
-        projectDetail.branches
-      );
-      thresholdObj.commit = await checkCommitIds(repository, projectDetail);
-      if (thresholdObj.commit) {
-        await markAsSuspiciousRepository(repository.id);
-        return null; // continue the loop
+      if (projectDetail.branches) {
+        thresholdObj.branch = await checkBranchNameIsSame(
+          repository,
+          projectDetail.branches
+        );
       }
-      thresholdObj.blob = await checkBlobIdsIsSame(
-        repository,
-        projectDetail.fileStructure,
-        projectDetail.projectUrlInfo
-      );
-      if (thresholdObj.blob) {
-        await markAsSuspiciousRepository(repository.id);
-        return null; // continue the loop
+      if (projectDetail.commits) {
+        thresholdObj.commit = await checkCommitIds(repository, projectDetail);
+        if (thresholdObj.commit) {
+          await markAsSuspiciousRepository(repository.id);
+          return null; // continue the loop
+        }
       }
-      thresholdObj.tags = await checkTagsNameIsSame(
-        repository,
-        projectDetail.tags,
-        projectDetail.repoResponce.id
-      );
-      thresholdObj.labels = await checkLabelsNameIsSame(
-        repository,
-        projectDetail.labels,
-        projectDetail.repoResponce.id
-      );
+      if (projectDetail.fileStructure) {
+        thresholdObj.blob = await checkBlobIdsIsSame(
+          repository,
+          projectDetail.fileStructure,
+          projectDetail.projectUrlInfo
+        );
+        if (thresholdObj.blob) {
+          await markAsSuspiciousRepository(repository.id);
+          return null; // continue the loop
+        }
+      }
+      if (projectDetail.tags) {
+        thresholdObj.tags = await checkTagsNameIsSame(
+          repository,
+          projectDetail.tags,
+          projectDetail.repoResponce.id
+        );
+      }
+      if (projectDetail.labels) {
+        thresholdObj.labels = await checkLabelsNameIsSame(
+          repository,
+          projectDetail.labels,
+          projectDetail.repoResponce.id
+        );
+      }
       if (projectDetail.language) {
         thresholdObj.language = await checkLanguagesNameIsSame(
           repository,
