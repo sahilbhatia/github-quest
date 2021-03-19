@@ -46,7 +46,11 @@ const getProjectDetailsFromGithub = async (project, projectUrlInfo) => {
     );
     project.tags = await githubServices.getTags(projectUrlInfo);
     project.labels = await githubServices.getLabels(projectUrlInfo);
-    project.language = project.repoResponce.language;
+    if (project.repoResponce && project.repoResponce.language) {
+      project.language = project.repoResponce.language.split(",");
+    } else {
+      project.language = false;
+    }
   }
   return project;
 };
@@ -109,7 +113,13 @@ const getProjectDetailsFromBitbucket = async (project, projectUrlInfo) => {
       project.branches,
       project.repository.dataValues.id
     );
-    project.language = project.repoResponce.language;
+    if (
+      project.repoResponce &&
+      project.repoResponce.language &&
+      project.repoResponce.language != ""
+    ) {
+      project.language = project.repoResponce.language.split(",");
+    }
     project.tags = await bitbucketServices.getTags(projectUrlInfo);
     project.labels = project.repoResponce.language
       ? project.repoResponce.language
@@ -579,15 +589,21 @@ const checkLanguagesNameIsSame = async (repository, projectLanguages) => {
     return false;
   } else {
     if (repository.source_type == "github") {
-      repositoryLanguages = await githubServices.getLabels(repoUrlInfo);
-      matchingLanguages = projectLanguages.map((tag) => {
-        for (let index = 0; index < repositoryLanguages.length; index++) {
-          const ele = repositoryLanguages[index];
-          if (ele.name.localeCompare(tag.name) === 1) {
-            return ele;
+      repositoryLanguages = await githubServices.getRepositoryFromGithub(
+        repoUrlInfo
+      );
+      if (repositoryLanguages && repositoryLanguages.language) {
+        repositoryLanguages = repositoryLanguages.language.split(",");
+        projectLanguages = projectLanguages.split(",");
+        matchingLanguages = projectLanguages.map((tag) => {
+          for (let index = 0; index < repositoryLanguages.length; index++) {
+            const ele = repositoryLanguages[index];
+            if (ele.name.localeCompare(tag.name) === 1) {
+              return ele;
+            }
           }
-        }
-      });
+        });
+      }
     }
     if (matchingLanguages.length > 2) {
       return true;
@@ -633,11 +649,13 @@ const checkUsersRepos = async (projectDetail) => {
         projectDetail.labels,
         projectDetail.repoResponce.id
       );
-      thresholdObj.language = await checkLanguagesNameIsSame(
-        repository,
-        projectDetail.language,
-        projectDetail.repoResponce.id
-      );
+      if (projectDetail.language) {
+        thresholdObj.language = await checkLanguagesNameIsSame(
+          repository,
+          projectDetail.language,
+          projectDetail.repoResponce.id
+        );
+      }
     });
     await Promise.all(dataObj);
   });
