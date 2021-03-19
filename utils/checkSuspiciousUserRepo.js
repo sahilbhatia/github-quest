@@ -594,11 +594,25 @@ const checkLanguagesNameIsSame = async (repository, projectLanguages) => {
       );
       if (repositoryLanguages && repositoryLanguages.language) {
         repositoryLanguages = repositoryLanguages.language.split(",");
-        projectLanguages = projectLanguages.split(",");
-        matchingLanguages = projectLanguages.map((tag) => {
+        matchingLanguages = projectLanguages.map((language) => {
           for (let index = 0; index < repositoryLanguages.length; index++) {
             const ele = repositoryLanguages[index];
-            if (ele.name.localeCompare(tag.name) === 1) {
+            if (ele.localeCompare(language) === 1) {
+              return ele;
+            }
+          }
+        });
+      }
+    } else if (repository.source_type == "bitbucket") {
+      repositoryLanguages = await bitbucketServices.getRepositoryFromBitbucket(
+        repoUrlInfo
+      );
+      if (repositoryLanguages && repositoryLanguages.language) {
+        repositoryLanguages = repositoryLanguages.language.split(",");
+        matchingLanguages = projectLanguages.map((language) => {
+          for (let index = 0; index < repositoryLanguages.length; index++) {
+            const ele = repositoryLanguages[index];
+            if (ele.localeCompare(language) === 1) {
               return ele;
             }
           }
