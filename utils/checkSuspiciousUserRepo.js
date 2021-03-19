@@ -371,6 +371,7 @@ const getCommitIdsFromProjectCommits = async (repository, commits) => {
 };
 //function for check repository commits ids with project commits ids, Is Same?
 const checkCommitIds = async (repository, project) => {
+  let matchingCommitsStatus = false;
   try {
     let queryObj = {
       repository_id: repository.id,
@@ -385,13 +386,18 @@ const checkCommitIds = async (repository, project) => {
     let matchingCommits = await Commits.findAll({
       where: queryObj,
     });
+    matchingCommits = matchingCommits.map((commit) => {
+      return commit.dataValues;
+    });
     if (
       matchingCommits.length >= parseInt(process.env.MATCHING_COMMITS_COUNT)
     ) {
-      return true;
-    } else {
-      return false;
+      matchingCommitsStatus = true;
     }
+    return {
+      result: matchingCommitsStatus,
+      match: matchingCommits,
+    };
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
@@ -497,7 +503,10 @@ const checkBlobIdsIsSame = async (
       break;
     }
   }
-  return blobThreshold;
+  return {
+    result: blobThreshold,
+    match: matchingBlobs,
+  };
 };
 //function for check a repository tags with project tags ,Is same?
 const checkTagsNameIsSame = async (repository, projectTags, projectId) => {
@@ -643,7 +652,7 @@ const checkUsersRepos = async (projectDetail) => {
       }
       if (projectDetail.commits) {
         thresholdObj.commit = await checkCommitIds(repository, projectDetail);
-        if (thresholdObj.commit) {
+        if (thresholdObj.commit.result) {
           await markAsSuspiciousRepository(repository.id);
           return null; // continue the loop
         }
@@ -654,7 +663,7 @@ const checkUsersRepos = async (projectDetail) => {
           projectDetail.fileStructure,
           projectDetail.projectUrlInfo
         );
-        if (thresholdObj.blob) {
+        if (thresholdObj.blob.result) {
           await markAsSuspiciousRepository(repository.id);
           return null; // continue the loop
         }
