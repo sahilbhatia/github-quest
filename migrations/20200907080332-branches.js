@@ -3,7 +3,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable(
-      "projects_repositories",
+      "branches",
       {
         id: {
           type: Sequelize.INTEGER,
@@ -11,29 +11,27 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true,
         },
-        repository_url: {
+        name: {
           type: Sequelize.TEXT,
-          allowNull: true,
+          allowNull: false,
         },
-        host: {
-          type: Sequelize.STRING(70),
-          allowNull: true,
+        head_commit_id: {
+          type: Sequelize.STRING(50),
+          allowNull: false,
         },
-        project_id: {
+        repository_id: {
           type: Sequelize.INTEGER,
           allowNull: false,
           references: {
-            model: "projects",
+            model: "repositories",
             key: "id",
           },
         },
         created_at: {
           type: "TIMESTAMP",
-          defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         },
         updated_at: {
           type: "TIMESTAMP",
-          defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         },
       },
       {
@@ -44,6 +42,6 @@ module.exports = {
     );
   },
   down: (queryInterface) => {
-    return queryInterface.dropTable("projects_repositories");
+    return queryInterface.dropTable("branches");
   },
 };
