@@ -9,18 +9,108 @@ const db = require("../models/sequelize");
 const Users = db.users;
 const Projects = db.projects;
 const Projects_Repositories = db.projects_repositories;
+const Repositories = db.repositories;
 const Users_projects = db.users_projects;
+const checkSuspiciousUserRepo = require("./checkSuspiciousUserRepo");
+const githubServices = require("./../services/githubServices");
+const gitlabServices = require("./../services/gitlabServices");
+const bitbucketServices = require("./../services/bitbucketServices");
+const commonFunctions = require("./commonFunction");
 
+//funtion for create a repository database object as per project source  type
+const getRepositoryObjBySourceType = (repo, sourceType) => {
+  let customRepoObj = {
+    source_type: sourceType,
+    name: repo.name,
+    description: repo.description,
+    url: repo.html_url,
+    source_repo_id: repo.id,
+    is_personal: false,
+    is_disabled: repo.disabled,
+    is_archived: repo.archived,
+    is_private: repo.private,
+    is_forked: repo.fork,
+    created_at: repo.created_at,
+    updated_at: repo.updated_at,
+    review: "pending",
+  };
+  if (sourceType == "gitlab") {
+    customRepoObj.url = repo.web_url;
+    customRepoObj.is_disabled = !repo.packages_enabled;
+    customRepoObj.is_private = repo.visibility == "private" ? true : false;
+    customRepoObj.is_forked = repo.forked_from_project ? true : false;
+    customRepoObj.updated_at = repo.last_activity_at;
+  } else if (sourceType == "bitbucket") {
+    customRepoObj.url = repo.links.html.href;
+    customRepoObj.source_repo_id = repo.uuid;
+    customRepoObj.is_private = repo.is_private;
+    customRepoObj.is_forked = repo.parent ? true : false;
+    customRepoObj.created_at = repo.created_on;
+    customRepoObj.updated_at = repo.updated_on;
+    delete customRepoObj.is_disabled;
+    delete customRepoObj.is_archived;
+  }
+  return customRepoObj;
+};
+//function for add entry in repositories table
+const insertRepositoryInRepositories = async (repo, projectInfo) => {
+  try {
+    const customRepoObj = getRepositoryObjBySourceType(
+      repo,
+      projectInfo.sourceType
+    );
+    let insertRepos = await Repositories.create(customRepoObj);
+    return insertRepos;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while inserting bitbucket repositories in insert new repo function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return false;
+  }
+};
 //function for insert repositories
 const insertRepository = async (item, projectId) => {
   if (item.repositories.length > 0) {
     await item.repositories.map(async (item) => {
       try {
-        await Projects_Repositories.create({
-          repository_url: item.url ? item.url : null,
-          host: item.host ? item.host : null,
-          project_id: projectId,
-        });
+        if (item.url != null) {
+          let projectInfo = commonFunctions.getInfoByProjectUrl(item.url);
+          let projectRepo = false;
+          if (projectInfo) {
+            if (projectInfo.sourceType == "github") {
+              projectRepo = await githubServices.getRepositoryFromGithub(
+                projectInfo
+              );
+            } else if (projectInfo.sourceType == "gitlab") {
+              projectRepo = await gitlabServices.getRepositoryFromGitlab(
+                projectInfo
+              );
+            } else if (projectInfo.sourceType == "bitbucket") {
+              projectRepo = await bitbucketServices.getRepositoryFromBitbucket(
+                projectInfo
+              );
+            }
+          }
+          if (projectRepo) {
+            let insertRepos = await insertRepositoryInRepositories(
+              projectRepo,
+              projectInfo
+            );
+            if (insertRepos) {
+              await Projects_Repositories.create({
+                repository_id: insertRepos.dataValues.id,
+                host: projectInfo.sourceType,
+                project_id: projectId,
+              });
+              return insertRepos;
+            } else {
+              return false;
+            }
+          }
+        }
       } catch (err) {
         Sentry.captureException(err);
         logger.error(
@@ -170,7 +260,7 @@ module.exports.addProjects = async () => {
 };
 
 //function for insert intranet projects
-module.exports.addIntranetProjects = async (res) => {
+const addIntranetProjects = async (res) => {
   try {
     const intranetProjects = await request
       .get(process.env.INTRANET_PROJECT_API)
@@ -179,11 +269,12 @@ module.exports.addIntranetProjects = async (res) => {
     const listOfProjects = await JSON.parse(intranetProjects.text);
     //iterate projects
     const data = await listOfProjects.projects.map(async (item) => {
-      const project = await findProject(item.id);
+      let project = await findProject(item.id);
       if (!project) {
         try {
           const insertProject = await addProject(item);
           if (insertProject) {
+            project = insertProject;
             await insertRepository(item, insertProject.id);
             await insertUsers(item, insertProject.id);
           }
@@ -196,6 +287,36 @@ module.exports.addIntranetProjects = async (res) => {
           logger.info("=========================================");
           return false;
         }
+      }
+      if (project) {
+        item.repositories.map(async (ele) => {
+          if (ele.url !== null) {
+            let repoUrlInfo = commonFunctions.getInfoByProjectUrl(ele.url);
+            let projectRepo = false;
+            if (repoUrlInfo) {
+              if (repoUrlInfo.sourceType == "github") {
+                projectRepo = await githubServices.getRepositoryFromGithub(
+                  repoUrlInfo
+                );
+              } else if (repoUrlInfo.sourceType == "gitlab") {
+                projectRepo = await gitlabServices.getRepositoryFromGitlab(
+                  repoUrlInfo
+                );
+              } else if (repoUrlInfo.sourceType == "bitbucket") {
+                projectRepo = await bitbucketServices.getRepositoryFromBitbucket(
+                  repoUrlInfo
+                );
+              }
+              if (projectRepo) {
+                await checkSuspiciousUserRepo.checkSuspiciousUserRepo(
+                  projectRepo,
+                  item,
+                  repoUrlInfo
+                );
+              }
+            }
+          }
+        });
       }
     });
     await Promise.all(data);
@@ -211,4 +332,10 @@ module.exports.addIntranetProjects = async (res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+module.exports = {
+  addIntranetProjects: addIntranetProjects,
+  insertRepository: insertRepository,
+  insertRepositoryInRepositories: insertRepositoryInRepositories,
 };

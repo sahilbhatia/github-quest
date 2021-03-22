@@ -4,6 +4,8 @@ const moment = require("moment");
 const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
+const githubServices = require("./../services/githubServices");
+const commonFunction = require("./commonFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
@@ -40,6 +42,97 @@ const getUpdatedRepositories = async (databaseUser) => {
   }
 };
 
+//function for get a repository file structure by each branch from github
+const getFileDirStructure = async (repoUrlInfo, branches, FileConstants) => {
+  let filesListOfBranches = {};
+  let data = await branches.map(async (branch) => {
+    if (
+      branch.name == "staging" ||
+      branch.name == "production" ||
+      branch.name == "master" ||
+      branch.name == "main"
+    ) {
+      let url = `https://api.github.com/repos/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/contents?ref=${branch.name}`;
+      let fileList = await githubServices.getFileList(url);
+      let filesListOfBranch = [];
+      let projectTypes = [];
+      let dirList = [];
+      if (fileList) {
+        fileList.forEach((file) => {
+          if (file.type == "file") {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              filesListOfBranch.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          } else {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              dirList.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          }
+        });
+      }
+      if (dirList.length > 0) {
+        let list = await getFilesFromDirList(dirList, repoUrlInfo, branch.name);
+        filesListOfBranch = filesListOfBranch.concat(list);
+      }
+      filesListOfBranches[branch.name] = filesListOfBranch;
+    }
+  });
+  await Promise.all(data);
+  return filesListOfBranches;
+};
+//function for get file list from dirlist array
+const getFilesFromDirList = async (dirList, repoUrlInfo, branchName) => {
+  try {
+    let fileList = [];
+    let fileListByEachDir = [];
+    if (dirList) {
+      let data = await dirList.map(async (dir) => {
+        let localDirList = [];
+        let url = `https://api.github.com/repos/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/contents/${dir.path}?ref=${branchName}`;
+        fileListByEachDir = await githubServices.getFileList(url);
+        if (fileListByEachDir) {
+          fileListByEachDir.forEach((file) => {
+            if (file.type == "file") {
+              fileList.push(file);
+            } else {
+              localDirList.push(file);
+            }
+          });
+          if (localDirList.length > 0) {
+            let list = await getFilesFromDirList(
+              localDirList,
+              repoUrlInfo,
+              branchName
+            );
+            if (list.length > 0) {
+              fileList = fileList.concat(list);
+            }
+          }
+        }
+      });
+      await Promise.all(data);
+    }
+    return fileList;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while getting the file list by some dir from github repo"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
 //function for get all repositories
 const getAllRepositories = async (databaseUser) => {
   try {
@@ -87,12 +180,37 @@ const getRepoForSpecificUser = async (databaseUser) => {
   return usersRepos;
 };
 
+//function for check the repo is existe or not if yes the update
+const isRepositoryExist = async (repoInfo) => {
+  let isExist = false;
+  let result = await Repositories.update(repoInfo, {
+    where: {
+      source_repo_id: repoInfo.source_repo_id,
+    },
+  });
+  result.map((item) => {
+    if (item > 0) {
+      isExist = true;
+    }
+  });
+  if (isExist) {
+    let updatedRepo = await Repositories.findOne({
+      where: {
+        source_repo_id: repoInfo.source_repo_id,
+      },
+    });
+    return updatedRepo;
+  } else {
+    return isExist;
+  }
+};
+
 //function for insert new repository
 const insertNewRepo = async (item) => {
   try {
-    const insertRepos = await Repositories.create({
+    let repoObj = {
       source_type: "github",
-      source_repo_id: item.id,
+      source_repo_id: item.id.toString(),
       name: item.name,
       url: item.html_url,
       description: item.description,
@@ -103,8 +221,14 @@ const insertNewRepo = async (item) => {
       created_at: item.created_at,
       updated_at: item.updated_at,
       review: "pending",
-    });
-    return insertRepos;
+    };
+    let updatedRepo = await isRepositoryExist(repoObj);
+    if (!updatedRepo) {
+      let insertRepos = await Repositories.create(repoObj);
+      return insertRepos;
+    } else {
+      return updatedRepo;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
@@ -661,7 +785,7 @@ const updateReviewStatus = async (item, result, databaseUser) => {
 };
 
 //insert repositories by github handle
-module.exports.insertGithubRepos = async (databaseUser) => {
+const insertGithubRepos = async (databaseUser) => {
   const data = await getRepoForSpecificUser(databaseUser);
   if (data) {
     const mapData = await data.body.map(async (item) => {
@@ -871,4 +995,9 @@ module.exports.insertGithubRepos = async (databaseUser) => {
     }
   }
   return null;
+};
+
+module.exports = {
+  getFileDirStructure: getFileDirStructure,
+  insertGithubRepos: insertGithubRepos,
 };

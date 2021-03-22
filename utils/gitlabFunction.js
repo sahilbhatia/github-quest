@@ -3,6 +3,8 @@ const moment = require("moment");
 const dbConn = require("../models/sequelize");
 const { Sentry } = require("./sentry");
 const log4js = require("../config/loggerConfig");
+const gitlabServices = require("../services/gitlabServices");
+const commonFunction = require("../utils/commonFunction");
 const logger = log4js.getLogger();
 dbConn.sequelize;
 const db = require("../models/sequelize");
@@ -11,10 +13,126 @@ const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
+//function for check the repo is existe or not if yes the update
+const isRepositoryExist = async (repoInfo) => {
+  let isExist = false;
+  let result = await Repositories.update(repoInfo, {
+    where: {
+      source_repo_id: repoInfo.source_repo_id,
+    },
+  });
+  result.map((item) => {
+    if (item > 0) {
+      isExist = true;
+    }
+  });
+  if (isExist) {
+    let updatedRepo = await Repositories.findOne({
+      where: {
+        source_repo_id: repoInfo.source_repo_id,
+      },
+    });
+    return updatedRepo;
+  } else {
+    return isExist;
+  }
+};
+//function for get a repository file structure by each branch from gitlab.
+const getFileDirStructure = async (projectId, branches, FileConstants) => {
+  let filesListOfBranches = {};
+  let data = await branches.map(async (branch) => {
+    if (
+      branch.name == "staging" ||
+      branch.name == "production" ||
+      branch.name == "master" ||
+      branch.name == "main"
+    ) {
+      let url = `https://gitlab.com/api/v4/projects/${projectId}/repository/tree?ref=${branch.name}`;
+      let fileList = await gitlabServices.getFileList(url);
+      let filesListOfBranch = [];
+      let projectTypes = [];
+      let dirList = [];
+      if (fileList) {
+        fileList.forEach((file) => {
+          if (file.type == "blob") {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              filesListOfBranch.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          } else {
+            let isFileFound = commonFunction.FileIsExistInConstantConfigList(
+              file,
+              FileConstants
+            );
+            if (isFileFound) {
+              dirList.push(file);
+              projectTypes.concat(isFileFound.projectType);
+            }
+          }
+        });
+      }
+      if (dirList.length > 0) {
+        let list = await getFilesFromDirList(dirList, projectId, branch.name);
+        filesListOfBranch = filesListOfBranch.concat(list);
+      }
+      filesListOfBranches[branch.name] = filesListOfBranch;
+    }
+  });
+  await Promise.all(data);
+  return filesListOfBranches;
+};
+
+const getFilesFromDirList = async (dirList, projectId, branchName) => {
+  try {
+    let fileList = [];
+    let fileListByEachDir = [];
+    if (dirList) {
+      let data = await dirList.map(async (dir) => {
+        let localDirList = [];
+        let url = `https://gitlab.com/api/v4/projects/${projectId}/repository/tree?ref=${branchName}&path=${dir.path}`;
+        fileListByEachDir = await gitlabServices.getFileList(url);
+        if (fileListByEachDir) {
+          fileListByEachDir.forEach((file) => {
+            if (file.type == "blob") {
+              fileList.push(file);
+            } else {
+              localDirList.push(file);
+            }
+          });
+          if (localDirList.length > 0) {
+            let list = await getFilesFromDirList(
+              localDirList,
+              projectId,
+              branchName
+            );
+            if (list.length > 0) {
+              fileList = fileList.concat(list);
+            }
+          }
+        }
+      });
+      await Promise.all(data);
+    }
+    return fileList;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while getting the file list by some dir from gitlab repo"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
 //function for insert new repository
 const insertNewRepo = async (insertRepos, repo) => {
   try {
-    insertRepos = await Repositories.create({
+    let repoObj = {
       source_type: "gitlab",
       source_repo_id: repo.id,
       name: repo.name,
@@ -27,8 +145,14 @@ const insertNewRepo = async (insertRepos, repo) => {
       created_at: repo.created_at,
       updated_at: repo.last_activity_at,
       review: "pending",
-    });
-    return insertRepos;
+    };
+    let updatedRepo = await isRepositoryExist(repoObj);
+    if (!updatedRepo) {
+      insertRepos = await Repositories.create(repoObj);
+      return insertRepos;
+    } else {
+      return updatedRepo;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
@@ -219,6 +343,30 @@ const isRepoUpdated = (item, repo) => {
   }
 };
 
+// function for get a all project a users by gitlab-handle
+module.exports.getAllProjects = async (handle) => {
+  try {
+    const gitlabUser = await request.get(
+      `https://gitlab.com/api/v4/users?username=${handle}`
+    );
+    if (gitlabUser.body.length != 0) {
+      const gitlabRepos = await request
+        .get(
+          `https://gitlab.com/api/v4/users/${gitlabUser.body[0].id}/projects`
+        )
+        .set({ "PRIVATE-TOKEN": process.env.GITLAB_ACCESS_TOKEN });
+      return gitlabRepos.body;
+    }
+    return false;
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error("Error executing while get all branches function");
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+
 //function for get new commit
 const getCommits = async (repo) => {
   const commits = await request
@@ -276,7 +424,7 @@ const updateReviewStatus = async (item, findRepo) => {
 };
 
 //insert gitlab repositories
-module.exports.insertGitlabRepos = async (databaseUser) => {
+const insertGitlabRepos = async (databaseUser) => {
   try {
     const gitlabUser = await request.get(
       `https://gitlab.com/api/v4/users?username=${databaseUser.dataValues.gitlab_handle}`
@@ -512,4 +660,9 @@ module.exports.insertGitlabRepos = async (databaseUser) => {
     logger.info("=========================================");
     return;
   }
+};
+
+module.exports = {
+  getFileDirStructure: getFileDirStructure,
+  insertGitlabRepos: insertGitlabRepos,
 };
