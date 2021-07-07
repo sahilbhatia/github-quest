@@ -11,10 +11,34 @@ const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
+//function for check the repo is existe or not if yes the update
+const isRepositoryExist = async (repoInfo) => {
+  let isExist = false;
+  let result = await Repositories.update(repoInfo, {
+    where: {
+      source_repo_id: repoInfo.source_repo_id,
+    },
+  });
+  result.map((item) => {
+    if (item > 0) {
+      isExist = true;
+    }
+  });
+  if (isExist) {
+    let updatedRepo = await Repositories.findOne({
+      where: {
+        source_repo_id: repoInfo.source_repo_id,
+      },
+    });
+    return updatedRepo;
+  } else {
+    return isExist;
+  }
+};
 //function for insert new repository
 const insertNewRepo = async (insertRepos, repo) => {
   try {
-    insertRepos = await Repositories.create({
+    let repoObj = {
       source_type: "gitlab",
       source_repo_id: repo.id,
       name: repo.name,
@@ -27,8 +51,14 @@ const insertNewRepo = async (insertRepos, repo) => {
       created_at: repo.created_at,
       updated_at: repo.last_activity_at,
       review: "pending",
-    });
-    return insertRepos;
+    };
+    let updatedRepo = await isRepositoryExist(repoObj);
+    if (!updatedRepo) {
+      insertRepos = await Repositories.create(repoObj);
+      return insertRepos;
+    } else {
+      return updatedRepo;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
