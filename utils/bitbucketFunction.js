@@ -11,10 +11,34 @@ const Commits = db.commits;
 const Repositories = db.repositories;
 const Users_repositories = db.users_repositories;
 
+//function for check the repo is existe or not if yes the update
+const isRepositoryExist = async (repoInfo) => {
+  let isExist = false;
+  let result = await Repositories.update(repoInfo, {
+    where: {
+      source_repo_id: repoInfo.id,
+    },
+  });
+  result.map((item) => {
+    if (item > 0) {
+      isExist = true;
+    }
+  });
+  if (isExist) {
+    let updatedRepo = await Repositories.findOne({
+      where: {
+        source_repo_id: repoInfo.id,
+      },
+    });
+    return updatedRepo;
+  } else {
+    return isExist;
+  }
+};
 //function for insert new repository
 const insertNewRepo = async (insertRepos, repo) => {
   try {
-    insertRepos = await Repositories.create({
+    let repoObj = {
       source_type: "bitbucket",
       source_repo_id: repo.uuid,
       name: repo.name,
@@ -25,8 +49,14 @@ const insertNewRepo = async (insertRepos, repo) => {
       created_at: repo.created_on,
       updated_at: repo.updated_on,
       review: "pending",
-    });
-    return insertRepos;
+    };
+    let updatedRepo = await isRepositoryExist(repoObj);
+    if (!updatedRepo) {
+      insertRepos = await Repositories.create(repoObj);
+      return insertRepos;
+    } else {
+      return updatedRepo;
+    }
   } catch (err) {
     Sentry.captureException(err);
     logger.error(
@@ -238,6 +268,99 @@ const isRepoUpdated = (item, repo) => {
   }
 };
 
+//function for get all branches of single repository
+const getAllBranchesOfRepo = async (repoInfo) => {
+  try {
+    let isIncompleteCommits = true;
+    let count = 10;
+    let allBranches = [];
+    let url = `https://api.bitbucket.org/2.0/repositories/${repoInfo.handle}/${repoInfo.repositorieName}/refs/branches?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}&pagelen=10`;
+    while (isIncompleteCommits) {
+      let ProjectBranches = await request.get(url);
+      if (ProjectBranches.body) {
+        allBranches = allBranches.concat(ProjectBranches.body.values);
+        if (count < ProjectBranches.body.size) {
+          url = ProjectBranches.body.next;
+          count = count + 10;
+        } else {
+          break;
+        }
+      }
+    }
+    if (allBranches.length > 0) {
+      return allBranches;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    Sentry.captureException(err);
+    logger.error(
+      "Error executing while get all branches of  bitbucket repository in get all branches of repository function"
+    );
+    logger.error(err);
+    logger.info("=========================================");
+    return null;
+  }
+};
+//function for get all commits of all branches
+const getCommitsByBranches = async (repo, repoUrlInfo, branches) => {
+  let commitsObj = {};
+  let data = await branches.map(async (branch) => {
+    //can we just hit this API for master ,staging and production branches
+    try {
+      let isIncompleteCommits = true;
+      let allCommits = [];
+      let url = `https://api.bitbucket.org/2.0/repositories/${repoUrlInfo.handle}/${repoUrlInfo.repositorieName}/commits/${branch.name}?access_token=${process.env.BITBUCKET_ACCESS_TOKEN}`;
+      try {
+        while (isIncompleteCommits) {
+          const commits = await request.get(url);
+          if (repo.reviewed_at && commits.body.values.length > 0) {
+            if (
+              new Date(commits.body.values[0].date) > new Date(repo.reviewed_at)
+            ) {
+              if (
+                new Date(
+                  commits.body.values[commits.body.values.length - 1].date
+                ) > new Date(repo.reviewed_at)
+              ) {
+                allCommits = allCommits.concat(commits.body.values);
+                url = commits.body.next;
+              } else {
+                commits.body.values.map((commit) => {
+                  if (new Date(commit.date) >= new Date(repo.reviewed_at)) {
+                    allCommits.push(commit);
+                  }
+                });
+                url = commits.body.next;
+              }
+              if (!url) {
+                isIncompleteCommits = false;
+              }
+            } else {
+              isIncompleteCommits = false;
+            }
+          } else {
+            isIncompleteCommits = false;
+          }
+        }
+      } catch (err) {
+        logger.error(err);
+        logger.info("=========================================");
+      }
+      commitsObj[branch.name] = allCommits;
+    } catch (err) {
+      Sentry.captureException(err);
+      logger.error(
+        "Error executing while get all branches of  bitbucket repository in get all commits of each branches of repository function"
+      );
+      logger.error(err);
+      logger.info("=========================================");
+      commitsObj[branch.name] = false;
+    }
+  });
+  await Promise.all(data);
+  return commitsObj;
+};
 //function for get new commit
 const getCommits = async (repo, databaseUser) => {
   const commits = await request.get(
@@ -499,4 +622,10 @@ module.exports.insertBitbucketRepos = async (databaseUser) => {
     logger.info("=========================================");
     return null;
   }
+};
+
+module.exports = {
+  getAllBranchesOfRepo: getAllBranchesOfRepo,
+  getCommits: getCommits,
+  getCommitsByBranches: getCommitsByBranches,
 };

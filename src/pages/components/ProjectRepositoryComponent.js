@@ -14,12 +14,12 @@ export default function ProjectRepositoryComponent({
   const columns = [
     {
       name: "Host",
-      selector: (d) => (d.host != null ? d.host : "host not provided"),
+      selector: (d) =>
+        d.source_type != null ? d.source_type : "host not provided",
     },
     {
       name: "url",
-      selector: (d) =>
-        d.repository_url != null ? d.repository_url : "url not provided",
+      selector: (d) => (d.url != null ? d.url : "url not provided"),
     },
   ];
   const customStyles = {
